@@ -30,27 +30,27 @@ use crate::tui::config::{ConfigWizard, ConfigWizardState};
 #[derive(Subcommand, Clone, Debug)]
 pub enum ConfigSubcommand {
     /// 交互式初始化配置向导
-    #[command(name = "+init")]
+    #[command(name = "init")]
     Init {
         #[arg(long, short = 'g')]
         global: bool,
     },
     /// 显示当前配置
-    #[command(name = "+show")]
+    #[command(name = "show")]
     Show,
     /// 设置配置项
-    #[command(name = "+set")]
+    #[command(name = "set")]
     Set {
         key: String,
         value: String,
     },
     /// 获取配置项
-    #[command(name = "+get")]
+    #[command(name = "get")]
     Get {
         key: String,
     },
     /// 取消设置配置项
-    #[command(name = "+unset")]
+    #[command(name = "unset")]
     Unset {
         key: String,
     },

@@ -23,10 +23,10 @@ use crate::core::{Config, OutputFormat};
 #[derive(Subcommand, Clone, Debug)]
 pub enum ProductAction {
     /// 列出所有产品
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List,
     /// 获取指定产品的详细信息
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         /// 产品 ID
         id: u64,

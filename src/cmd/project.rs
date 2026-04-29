@@ -20,10 +20,10 @@ use crate::core::{Config, OutputFormat};
 #[derive(Subcommand, Clone, Debug)]
 pub enum ProjectAction {
     /// 列出所有项目
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List,
     /// 获取指定项目的详细信息
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         /// 项目 ID
         id: u64,

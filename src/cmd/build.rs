@@ -19,7 +19,7 @@ use crate::core::{Config, OutputFormat};
 #[derive(Subcommand, Clone, Debug)]
 pub enum BuildAction {
     /// 列出所有版本
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List {
         /// 按项目 ID 筛选
         #[arg(long)]
@@ -29,7 +29,7 @@ pub enum BuildAction {
         product: Option<u64>,
     },
     /// 获取指定版本的详细信息
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         /// 版本 ID
         id: u64,

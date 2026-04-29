@@ -23,14 +23,14 @@ use crate::core::{Config, OutputFormat};
 #[derive(Subcommand, Clone, Debug)]
 pub enum ExecutionAction {
     /// 列出项目下的执行
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List {
         /// 项目 ID（必填）
         #[arg(long)]
         project: Option<u64>,
     },
     /// 获取执行详情
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         /// 执行 ID
         id: u64,

@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand};
 use anyhow::Result;
 use crate::core::{Config, load_config, OutputFormat};
-use crate::cmd::{auth, config_cmd, api_cmd, doctor, story, bug, browse, product, project, task, user, testcase, release, build, execution, doc, shortcuts};
+use crate::cmd::{auth, config_cmd, api_cmd, doctor, story, bug, browse, product, project, task, user, testcase, release, build, execution, doc};
 use crate::cmd::api_cmd::ApiSubcommand;
 use crate::cmd::auth::AuthSubcommand;
 use crate::cmd::config_cmd::ConfigSubcommand;
@@ -108,17 +108,12 @@ enum Commands {
         #[arg(long)]
         product: Option<u64>,
     },
-    /// 快捷命令 (+ 前缀)
-    Shortcuts {
-        #[command(subcommand)]
-        action: shortcuts::ShortcutCommand,
-    },
 }
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum StorySubcommand {
     /// 列出需求列表
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List {
         #[arg(long)]
         product: Option<u64>,
@@ -128,12 +123,12 @@ pub enum StorySubcommand {
         status: Option<String>,
     },
     /// 获取需求详情
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         id: u64,
     },
     /// 创建需求
-    #[command(name = "create")]
+    #[command(name = "+create")]
     Create {
         #[arg(long)]
         title: String,
@@ -149,7 +144,7 @@ pub enum StorySubcommand {
         estimate: Option<f64>,
     },
     /// 更新需求
-    #[command(name = "update")]
+    #[command(name = "+update")]
     Update {
         id: u64,
         #[arg(long)]
@@ -166,7 +161,7 @@ pub enum StorySubcommand {
 #[derive(Subcommand, Clone, Debug)]
 pub enum BugSubcommand {
     /// 列出 Bug 列表
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List {
         #[arg(long)]
         product: u64,
@@ -176,12 +171,12 @@ pub enum BugSubcommand {
         assigned_to: Option<String>,
     },
     /// 获取 Bug 详情
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         id: u64,
     },
     /// 创建 Bug
-    #[command(name = "create")]
+    #[command(name = "+create")]
     Create {
         #[arg(long)]
         title: String,
@@ -199,7 +194,7 @@ pub enum BugSubcommand {
         story: Option<u64>,
     },
     /// 更新 Bug
-    #[command(name = "update")]
+    #[command(name = "+update")]
     Update {
         id: u64,
         #[arg(long)]
@@ -216,7 +211,7 @@ pub enum BugSubcommand {
 #[derive(Subcommand, Clone, Debug)]
 pub enum TestcaseSubcommand {
     /// 列出测试用例
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List {
         #[arg(long)]
         product: Option<u64>,
@@ -228,7 +223,7 @@ pub enum TestcaseSubcommand {
         status: Option<String>,
     },
     /// 获取用例详情
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         id: u64,
     },
@@ -237,10 +232,10 @@ pub enum TestcaseSubcommand {
 #[derive(Subcommand, Clone, Debug)]
 pub enum ReleaseSubcommand {
     /// 列出发布
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List,
     /// 获取发布详情
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         id: u64,
     },
@@ -335,9 +330,6 @@ pub fn run() -> Result<()> {
                 cfg.product_id = Some(pid);
             }
             browse::story_browse(&cfg).expect("Story browse failed");
-        }
-        Commands::Shortcuts { action } => {
-            shortcuts::run(&action, &config, cli.format);
         }
     }
 

@@ -44,13 +44,13 @@ impl ApiEndpoint {
 #[derive(Subcommand, Clone, Debug)]
 pub enum ApiSubcommand {
     /// 测试 API 连接是否正常
-    #[command(name = "+test")]
+    #[command(name = "test")]
     Test,
     /// 列出所有可用的 API 端点
-    #[command(name = "+endpoints")]
+    #[command(name = "endpoints")]
     Endpoints,
     /// 交互式选择并调用 API 端点
-    #[command(name = "+list")]
+    #[command(name = "list")]
     List {
         /// 直接指定端点名称（跳过交互选择）
         #[arg(long)]

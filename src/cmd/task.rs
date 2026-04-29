@@ -25,7 +25,7 @@ use crate::core::{Config, OutputFormat};
 #[derive(Subcommand, Clone, Debug)]
 pub enum TaskAction {
     /// 列出项目下的任务
-    #[command(name = "list")]
+    #[command(name = "+list")]
     List {
         /// 项目 ID（必填）
         /// 使用 #[arg(long)] 表示必须使用 --project 参数
@@ -37,13 +37,13 @@ pub enum TaskAction {
         assigned_to: Option<String>,
     },
     /// 获取任务详情
-    #[command(name = "get")]
+    #[command(name = "+get")]
     Get {
         /// 任务 ID
         id: u64,
     },
     /// 创建新任务
-    #[command(name = "create")]
+    #[command(name = "+create")]
     Create {
         /// 任务名称
         #[arg(long)]
@@ -65,7 +65,7 @@ pub enum TaskAction {
         estimate: Option<f64>,
     },
     /// 更新任务
-    #[command(name = "update")]
+    #[command(name = "+update")]
     Update {
         /// 任务 ID（位置参数，不需要 -- 前缀）
         id: u64,

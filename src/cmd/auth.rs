@@ -17,7 +17,7 @@ pub enum AuthSubcommand {
     /// 登录命令
     /// - account: 禅道账号 (对应环境变量 ZENTAO_ACCOUNT)
     /// - password: 禅道密码 (对应环境变量 ZENTAO_PASSWORD)
-    #[command(name = "+login")]
+    #[command(name = "login")]
     Login {
         #[arg(long, env = "ZENTAO_ACCOUNT")]
         account: String,
@@ -27,11 +27,11 @@ pub enum AuthSubcommand {
     },
 
     /// 登出命令 - 清除保存的 token
-    #[command(name = "+logout")]
+    #[command(name = "logout")]
     Logout,
 
     /// 查看认证状态 - 验证 token 是否有效
-    #[command(name = "+status")]
+    #[command(name = "status")]
     Status,
 }
 
