@@ -41,7 +41,7 @@ pub enum BuildAction {
 // ============================================================
 
 /// 执行 Build 相关命令
-pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: bool) {
     let rt = tokio::runtime::Runtime::new()
         .expect("Failed to create Tokio runtime - system may be out of memory");
 
@@ -51,6 +51,18 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat) {
 
         match cmd {
             BuildAction::List { project, product } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BuildApi::list()");
+                    println!("  URL: {}/api.php/v1/builds", config.url);
+                    println!("  Params:");
+                    if let Some(p) = project {
+                        println!("    project: {}", p);
+                    }
+                    if let Some(p) = product {
+                        println!("    product: {}", p);
+                    }
+                    return;
+                }
                 match BuildApi::list(&client, *project, *product).await {
                     Ok(builds) => {
                         println!(
@@ -64,17 +76,24 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat) {
                 }
             }
 
-            BuildAction::Get { id } => match BuildApi::get(&client, *id).await {
-                Ok(build) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&build).unwrap_or_default()
-                    );
+            BuildAction::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BuildApi::get()");
+                    println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match BuildApi::get(&client, *id).await {
+                    Ok(build) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&build).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
         }
     })
 }

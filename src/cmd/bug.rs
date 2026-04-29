@@ -9,7 +9,7 @@ use crate::core::{Config, OutputFormat};
 /// 执行 Bug 相关命令
 ///
 /// 根据子命令类型调用对应的 API 并输出结果
-pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run: bool) {
     let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
 
     rt.block_on(async {
@@ -22,27 +22,49 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat) {
                 product,
                 status,
                 assigned_to,
-            } => match BugApi::list(&client, *product, status.clone(), assigned_to.clone()).await {
-                Ok(bugs) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&bugs).unwrap_or_default()
-                    );
+            } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::list()");
+                    println!("  URL: {}/api.php/v1/bugs", config.url);
+                    println!("  Params:");
+                    println!("    product: {}", product);
+                    if let Some(s) = status {
+                        println!("    status: {}", s);
+                    }
+                    if let Some(a) = assigned_to {
+                        println!("    assigned_to: {}", a);
+                    }
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match BugApi::list(&client, *product, status.clone(), assigned_to.clone()).await {
+                    Ok(bugs) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&bugs).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
 
             // -------------------- get --------------------
-            BugSubcommand::Get { id } => match BugApi::get(&client, *id).await {
-                Ok(bug) => {
-                    println!("{}", serde_json::to_string_pretty(&bug).unwrap_or_default());
+            BugSubcommand::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::get()");
+                    println!("  URL: {}/api.php/v1/bugs/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match BugApi::get(&client, *id).await {
+                    Ok(bug) => {
+                        println!("{}", serde_json::to_string_pretty(&bug).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
 
             // -------------------- create --------------------
             BugSubcommand::Create {
@@ -64,6 +86,13 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat) {
                     story: *story,
                     assigned_to: None,
                 };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::create()");
+                    println!("  URL: {}/api.php/v1/bugs", config.url);
+                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    return;
+                }
 
                 match BugApi::create(&client, &req).await {
                     Ok(bug) => {
@@ -89,6 +118,13 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat) {
                     resolution: resolution.clone(),
                     assigned_to: assigned_to.clone(),
                 };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::update()");
+                    println!("  URL: {}/api.php/v1/bugs/{}", config.url, id);
+                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    return;
+                }
 
                 match BugApi::update(&client, *id, &req).await {
                     Ok(bug) => {

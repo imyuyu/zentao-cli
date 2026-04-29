@@ -58,7 +58,7 @@ pub enum ProductAction {
 ///           ↓
 /// 输出 JSON: println!()
 /// ```
-pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run: bool) {
     // 创建 Tokio 异步运行时
     // CLI 命令需要手动创建运行时来执行 async 代码
     // 类似于 Java 中的 ExecutorService 或 Go 中的 goroutine 调度器
@@ -78,6 +78,11 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat) {
         match cmd {
             // -------------------- list 命令 --------------------
             ProductAction::List => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProductApi::list()");
+                    println!("  URL: {}/api.php/v1/products", config.url);
+                    return;
+                }
                 // 调用产品列表接口
                 match ProductApi::list(&client).await {
                     Ok(products) => {
@@ -99,6 +104,11 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat) {
 
             // -------------------- get 命令 --------------------
             ProductAction::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProductApi::get()");
+                    println!("  URL: {}/api.php/v1/products/{}", config.url, id);
+                    return;
+                }
                 // id 前面的 * 是解引用操作
                 // 因为 cmd 参数是引用，id 是 &u64，需要 * 获取 u64 值
                 match ProductApi::get(&client, *id).await {

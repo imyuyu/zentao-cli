@@ -35,7 +35,7 @@ pub enum ProjectAction {
 // ============================================================
 
 /// 执行 Project 相关命令
-pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run: bool) {
     // 创建 Tokio 运行时
     // 与 product.rs 的模式完全相同，参考那里的详细注释
     let rt = tokio::runtime::Runtime::new()
@@ -47,30 +47,44 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat) {
 
         match cmd {
             // -------------------- list 命令 --------------------
-            ProjectAction::List => match ProjectApi::list(&client).await {
-                Ok(projects) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&projects).unwrap_or_default()
-                    );
+            ProjectAction::List => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProjectApi::list()");
+                    println!("  URL: {}/api.php/v1/projects", config.url);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match ProjectApi::list(&client).await {
+                    Ok(projects) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&projects).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
 
             // -------------------- get 命令 --------------------
-            ProjectAction::Get { id } => match ProjectApi::get(&client, *id).await {
-                Ok(project) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&project).unwrap_or_default()
-                    );
+            ProjectAction::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProjectApi::get()");
+                    println!("  URL: {}/api.php/v1/projects/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match ProjectApi::get(&client, *id).await {
+                    Ok(project) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&project).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
         }
     })
 }

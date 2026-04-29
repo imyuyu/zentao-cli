@@ -43,7 +43,7 @@ pub enum DocAction {
 /// - `cmd`: 解析后的子命令
 /// - `config`: 全局配置（包含 URL 和 Token）
 /// - `_format`: 输出格式（预留参数，当前固定输出 JSON）
-pub fn run(cmd: &DocAction, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &DocAction, config: &Config, _format: OutputFormat, dry_run: bool) {
     let rt = tokio::runtime::Runtime::new()
         .expect("Failed to create Tokio runtime - system may be out of memory");
 
@@ -53,27 +53,41 @@ pub fn run(cmd: &DocAction, config: &Config, _format: OutputFormat) {
 
         match cmd {
             // -------------------- list 命令 --------------------
-            DocAction::List => match DocApi::list(&client).await {
-                Ok(docs) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&docs).unwrap_or_default()
-                    );
+            DocAction::List => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call DocApi::list()");
+                    println!("  URL: {}/api.php/v1/docs", config.url);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match DocApi::list(&client).await {
+                    Ok(docs) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&docs).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
 
             // -------------------- get 命令 --------------------
-            DocAction::Get { id } => match DocApi::get(&client, *id).await {
-                Ok(doc) => {
-                    println!("{}", serde_json::to_string_pretty(&doc).unwrap_or_default());
+            DocAction::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call DocApi::get()");
+                    println!("  URL: {}/api.php/v1/docs/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match DocApi::get(&client, *id).await {
+                    Ok(doc) => {
+                        println!("{}", serde_json::to_string_pretty(&doc).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
         }
     })
 }

@@ -42,7 +42,7 @@ pub enum ExecutionAction {
 // ============================================================
 
 /// 执行 Execution 相关命令
-pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_run: bool) {
     let rt = tokio::runtime::Runtime::new()
         .expect("Failed to create Tokio runtime - system may be out of memory");
 
@@ -53,6 +53,15 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat) {
         match cmd {
             // -------------------- list 命令 --------------------
             ExecutionAction::List { project } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ExecutionApi::list()");
+                    println!("  URL: {}/api.php/v1/executions", config.url);
+                    println!("  Params:");
+                    if let Some(p) = project {
+                        println!("    project: {}", p);
+                    }
+                    return;
+                }
                 match ExecutionApi::list(&client, *project).await {
                     Ok(executions) => {
                         println!(
@@ -67,17 +76,24 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- get 命令 --------------------
-            ExecutionAction::Get { id } => match ExecutionApi::get(&client, *id).await {
-                Ok(execution) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&execution).unwrap_or_default()
-                    );
+            ExecutionAction::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ExecutionApi::get()");
+                    println!("  URL: {}/api.php/v1/executions/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match ExecutionApi::get(&client, *id).await {
+                    Ok(execution) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&execution).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
         }
     })
 }

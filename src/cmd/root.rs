@@ -25,6 +25,10 @@ struct Cli {
 
     #[arg(long, global = true, value_enum, default_value = "table")]
     format: OutputFormat,
+
+    /// 预执行模式：只显示将要执行的操作，不实际调用 API
+    #[arg(long, global = true)]
+    dry_run: bool,
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -260,10 +264,10 @@ pub fn run() -> Result<()> {
 
     match cli.command {
         Commands::Story { action } => {
-            story::run(&action, &config, cli.format);
+            story::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Bug { action } => {
-            bug::run(&action, &config, cli.format);
+            bug::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Auth { action } => {
             let rt = tokio::runtime::Runtime::new()
@@ -283,31 +287,31 @@ pub fn run() -> Result<()> {
                 .expect("API command failed");
         }
         Commands::Product { action } => {
-            product::run(&action, &config, cli.format);
+            product::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Project { action } => {
-            project::run(&action, &config, cli.format);
+            project::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Task { action } => {
-            task::run(&action, &config, cli.format);
+            task::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::User { action } => {
-            user::run(&action, &config, cli.format);
+            user::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Testcase { action } => {
-            testcase::run(&action, &config, cli.format);
+            testcase::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Release { action } => {
-            release::run(&action, &config, cli.format);
+            release::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Build { action } => {
-            build::run(&action, &config, cli.format);
+            build::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Execution { action } => {
-            execution::run(&action, &config, cli.format);
+            execution::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Doc { action } => {
-            doc::run(&action, &config, cli.format);
+            doc::run(&action, &config, cli.format, cli.dry_run);
         }
         Commands::Doctor => {
             let rt = tokio::runtime::Runtime::new()

@@ -89,7 +89,7 @@ pub enum TaskAction {
 // ============================================================
 
 /// 执行 Task 相关命令
-pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bool) {
     let rt = tokio::runtime::Runtime::new()
         .expect("Failed to create Tokio runtime - system may be out of memory");
 
@@ -103,6 +103,16 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
                 project,
                 assigned_to,
             } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::list()");
+                    println!("  URL: {}/api.php/v1/tasks", config.url);
+                    println!("  Params:");
+                    println!("    project: {}", project);
+                    if let Some(a) = assigned_to {
+                        println!("    assigned_to: {}", a);
+                    }
+                    return;
+                }
                 // 调用任务列表 API
                 // 传入 project ID 和可选的指派人筛选
                 match TaskApi::list(&client, *project, assigned_to.clone()).await {
@@ -119,17 +129,24 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- get 命令 --------------------
-            TaskAction::Get { id } => match TaskApi::get(&client, *id).await {
-                Ok(task) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&task).unwrap_or_default()
-                    );
+            TaskAction::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::get()");
+                    println!("  URL: {}/api.php/v1/tasks/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match TaskApi::get(&client, *id).await {
+                    Ok(task) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
 
             // -------------------- create 命令 --------------------
             TaskAction::Create {
@@ -151,6 +168,13 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
                     assigned_to: assigned_to.clone(),
                     estimate: *estimate,
                 };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::create()");
+                    println!("  URL: {}/api.php/v1/tasks", config.url);
+                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    return;
+                }
 
                 match TaskApi::create(&client, &req).await {
                     Ok(task) => {
@@ -182,6 +206,13 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
                     pri: *pri,
                     assigned_to: assigned_to.clone(),
                 };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::update()");
+                    println!("  URL: {}/api.php/v1/tasks/{}", config.url, id);
+                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    return;
+                }
 
                 match TaskApi::update(&client, *id, &req).await {
                     Ok(task) => {

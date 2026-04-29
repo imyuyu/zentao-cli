@@ -24,7 +24,7 @@ pub enum UserAction {
 /// 执行 User 相关命令
 ///
 /// 根据子命令类型调用对应的 API 并输出结果
-pub fn run(cmd: &UserAction, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &UserAction, config: &Config, _format: OutputFormat, dry_run: bool) {
     let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
 
     rt.block_on(async {
@@ -33,6 +33,18 @@ pub fn run(cmd: &UserAction, config: &Config, _format: OutputFormat) {
 
         match cmd {
             UserAction::List { dept, role } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call UserApi::list()");
+                    println!("  URL: {}/api.php/v1/users", config.url);
+                    println!("  Params:");
+                    if let Some(d) = dept {
+                        println!("    dept: {}", d);
+                    }
+                    if let Some(r) = role {
+                        println!("    role: {}", r);
+                    }
+                    return;
+                }
                 match UserApi::list(&client, *dept, role.clone()).await {
                     Ok(users) => {
                         println!(
@@ -45,17 +57,24 @@ pub fn run(cmd: &UserAction, config: &Config, _format: OutputFormat) {
                     }
                 }
             }
-            UserAction::Get { id } => match UserApi::get(&client, *id).await {
-                Ok(user) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&user).unwrap_or_default()
-                    );
+            UserAction::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call UserApi::get()");
+                    println!("  URL: {}/api.php/v1/users/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match UserApi::get(&client, *id).await {
+                    Ok(user) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&user).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
         }
     });
 }

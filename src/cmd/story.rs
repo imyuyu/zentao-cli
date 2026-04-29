@@ -9,7 +9,7 @@ use crate::core::{Config, OutputFormat};
 /// 执行 Story 相关命令
 ///
 /// 根据子命令类型调用对应的 API 并输出结果
-pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_run: bool) {
     // 创建 Tokio 异步运行时
     // CLI 命令需要手动创建运行时来执行 async 代码
     let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
@@ -26,6 +26,21 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
                 project,
                 status,
             } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call StoryApi::list()");
+                    println!("  URL: {}/api.php/v1/stories", config.url);
+                    println!("  Params:");
+                    if let Some(p) = product {
+                        println!("    product: {}", p);
+                    }
+                    if let Some(p) = project {
+                        println!("    project: {}", p);
+                    }
+                    if let Some(s) = status {
+                        println!("    status: {}", s);
+                    }
+                    return;
+                }
                 // 调用 StoryApi::list 获取需求列表
                 match StoryApi::list(&client, *product, status.clone(), *project).await {
                     Ok(stories) => {
@@ -42,17 +57,24 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- get --------------------
-            StorySubcommand::Get { id } => match StoryApi::get(&client, *id).await {
-                Ok(story) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&story).unwrap_or_default()
-                    );
+            StorySubcommand::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call StoryApi::get()");
+                    println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match StoryApi::get(&client, *id).await {
+                    Ok(story) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&story).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
 
             // -------------------- create --------------------
             StorySubcommand::Create {
@@ -74,6 +96,13 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
                     verify: None,
                     estimate: *estimate,
                 };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call StoryApi::create()");
+                    println!("  URL: {}/api.php/v1/stories", config.url);
+                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    return;
+                }
 
                 match StoryApi::create(&client, &req).await {
                     Ok(story) => {
@@ -103,6 +132,13 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
                     pri: *pri,
                     assigned_to: assigned_to.clone(),
                 };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call StoryApi::update()");
+                    println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
+                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    return;
+                }
 
                 match StoryApi::update(&client, *id, &req).await {
                     Ok(story) => {

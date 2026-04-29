@@ -9,7 +9,7 @@ use crate::core::{Config, OutputFormat};
 /// 执行测试用例相关命令
 ///
 /// 根据子命令类型调用对应的 API 并输出结果
-pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat) {
+pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry_run: bool) {
     let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
 
     rt.block_on(async {
@@ -24,6 +24,24 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat) {
                 type_,
                 status,
             } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TestcaseApi::list()");
+                    println!("  URL: {}/api.php/v1/testcases", config.url);
+                    println!("  Params:");
+                    if let Some(p) = product {
+                        println!("    product: {}", p);
+                    }
+                    if let Some(p) = project {
+                        println!("    project: {}", p);
+                    }
+                    if let Some(t) = type_ {
+                        println!("    type: {}", t);
+                    }
+                    if let Some(s) = status {
+                        println!("    status: {}", s);
+                    }
+                    return;
+                }
                 match TestcaseApi::list(&client, *product, *project, type_.clone(), status.clone())
                     .await
                 {
@@ -40,17 +58,24 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- get --------------------
-            TestcaseSubcommand::Get { id } => match TestcaseApi::get(&client, *id).await {
-                Ok(testcase) => {
-                    println!(
-                        "{}",
-                        serde_json::to_string_pretty(&testcase).unwrap_or_default()
-                    );
+            TestcaseSubcommand::Get { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TestcaseApi::get()");
+                    println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
+                    return;
                 }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
+                match TestcaseApi::get(&client, *id).await {
+                    Ok(testcase) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&testcase).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
                 }
-            },
+            }
         }
     });
 }
