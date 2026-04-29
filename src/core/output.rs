@@ -80,7 +80,6 @@ impl<T> ApiResponse<T> {
             }),
         }
     }
-
 }
 
 pub fn print_json<T: Serialize + DeserializeOwned>(value: &T) -> anyhow::Result<String> {
@@ -177,7 +176,9 @@ pub fn print_csv<T: Serialize>(items: &[T], columns: &[&str]) -> String {
 /// 根据格式输出
 pub fn format_output<T: Serialize>(items: &[T], format: OutputFormat, columns: &[&str]) -> String {
     match format {
-        OutputFormat::Json | OutputFormat::Pretty => serde_json::to_string_pretty(items).unwrap_or_default(),
+        OutputFormat::Json | OutputFormat::Pretty => {
+            serde_json::to_string_pretty(items).unwrap_or_default()
+        }
         OutputFormat::Ndjson => print_ndjson(items),
         OutputFormat::Csv => print_csv(items, columns),
         OutputFormat::Table => print_table(items, columns),

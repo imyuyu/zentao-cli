@@ -53,28 +53,27 @@ pub fn run(cmd: &DocAction, config: &Config, _format: OutputFormat) {
 
         match cmd {
             // -------------------- list 命令 --------------------
-            DocAction::List => {
-                match DocApi::list(&client).await {
-                    Ok(docs) => {
-                        println!("{}", serde_json::to_string_pretty(&docs).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            DocAction::List => match DocApi::list(&client).await {
+                Ok(docs) => {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&docs).unwrap_or_default()
+                    );
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
 
             // -------------------- get 命令 --------------------
-            DocAction::Get { id } => {
-                match DocApi::get(&client, *id).await {
-                    Ok(doc) => {
-                        println!("{}", serde_json::to_string_pretty(&doc).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            DocAction::Get { id } => match DocApi::get(&client, *id).await {
+                Ok(doc) => {
+                    println!("{}", serde_json::to_string_pretty(&doc).unwrap_or_default());
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
         }
     })
 }

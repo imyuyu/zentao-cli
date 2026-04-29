@@ -1,3 +1,5 @@
+use anyhow::Result;
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout, Rect},
@@ -6,9 +8,7 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, Paragraph},
     Terminal,
 };
-use crossterm::event::{KeyCode, KeyEvent};
 use std::io::Stdout;
-use anyhow::Result;
 
 use super::app::{App, AppState};
 
@@ -87,16 +87,14 @@ impl Browser {
             KeyCode::Enter => {
                 // Handle selection - caller should process this
             }
-            KeyCode::Esc | KeyCode::Char('q') => {
-                match &app.state {
-                    AppState::BugDetail { .. } | AppState::StoryDetail { .. } => {
-                        app.go_back_to_list();
-                    }
-                    _ => {
-                        app.quit();
-                    }
+            KeyCode::Esc | KeyCode::Char('q') => match &app.state {
+                AppState::BugDetail { .. } | AppState::StoryDetail { .. } => {
+                    app.go_back_to_list();
                 }
-            }
+                _ => {
+                    app.quit();
+                }
+            },
             KeyCode::Char('r') => {
                 // Refresh - caller should handle this
             }
@@ -108,7 +106,9 @@ impl Browser {
         let text = Paragraph::new(Text::from(vec![
             Line::from(Span::raw("ZenTao CLI")),
             Line::from(Span::raw("")),
-            Line::from(Span::raw("Use commands: zentao bug browse, zentao story browse")),
+            Line::from(Span::raw(
+                "Use commands: zentao bug browse, zentao story browse",
+            )),
         ]))
         .block(Block::default().borders(Borders::ALL).title("ZenTao"));
 
@@ -129,7 +129,12 @@ impl Browser {
         f.render_widget(text, area);
     }
 
-    fn render_bug_list(f: &mut ratatui::Frame, area: Rect, bugs: &[crate::api::Bug], selected: usize) {
+    fn render_bug_list(
+        f: &mut ratatui::Frame,
+        area: Rect,
+        bugs: &[crate::api::Bug],
+        selected: usize,
+    ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -139,27 +144,31 @@ impl Browser {
             ])
             .split(area);
 
-        let header = Paragraph::new(Text::from(vec![
-            Line::from(vec![
-                Span::raw("Bug List ("),
-                Span::raw(format!("{}", bugs.len())),
-                Span::raw(" items) - "),
-                Span::styled("↑↓ select | Enter view | q quit", Style::default().fg(Color::DarkGray)),
-            ]),
-        ]))
+        let header = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::raw("Bug List ("),
+            Span::raw(format!("{}", bugs.len())),
+            Span::raw(" items) - "),
+            Span::styled(
+                "↑↓ select | Enter view | q quit",
+                Style::default().fg(Color::DarkGray),
+            ),
+        ])]))
         .block(Block::default().borders(Borders::ALL).title("ZenTao"));
 
         f.render_widget(header, chunks[0]);
 
-        let items: Vec<ListItem> = bugs.iter().map(|bug| {
-            ListItem::new(Line::from(vec![
-                Span::raw(format!("{:6}", bug.id)),
-                Span::raw(" "),
-                Span::raw(&bug.title),
-                Span::raw(" - "),
-                Span::raw(&bug.status),
-            ]))
-        }).collect();
+        let items: Vec<ListItem> = bugs
+            .iter()
+            .map(|bug| {
+                ListItem::new(Line::from(vec![
+                    Span::raw(format!("{:6}", bug.id)),
+                    Span::raw(" "),
+                    Span::raw(&bug.title),
+                    Span::raw(" - "),
+                    Span::raw(&bug.status),
+                ]))
+            })
+            .collect();
 
         let list = List::new(items)
             .block(Block::default().borders(Borders::ALL))
@@ -167,14 +176,12 @@ impl Browser {
 
         f.render_widget(list, chunks[1]);
 
-        let footer = Paragraph::new(Text::from(vec![
-            Line::from(vec![
-                Span::raw("Selected: "),
-                Span::raw(format!("{}", selected + 1)),
-                Span::raw(" / "),
-                Span::raw(format!("{}", bugs.len())),
-            ]),
-        ]));
+        let footer = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::raw("Selected: "),
+            Span::raw(format!("{}", selected + 1)),
+            Span::raw(" / "),
+            Span::raw(format!("{}", bugs.len())),
+        ])]));
 
         f.render_widget(footer, chunks[2]);
     }
@@ -190,20 +197,24 @@ impl Browser {
             ])
             .split(area);
 
-        let title = Paragraph::new(Text::from(vec![
-            Line::from(vec![
-                Span::raw(format!("Bug #{} - ", bug.id)),
-                Span::styled(&bug.title, Style::default().add_modifier(Modifier::BOLD)),
-            ]),
-        ]))
+        let title = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::raw(format!("Bug #{} - ", bug.id)),
+            Span::styled(&bug.title, Style::default().add_modifier(Modifier::BOLD)),
+        ])]))
         .block(Block::default().borders(Borders::ALL).title("Bug Detail"));
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
             Line::from(vec![Span::raw("Status: "), Span::raw(&bug.status)]),
-            Line::from(vec![Span::raw("Severity: "), Span::raw(format!("{}", bug.severity))]),
-            Line::from(vec![Span::raw("Priority: "), Span::raw(format!("{}", bug.pri))]),
+            Line::from(vec![
+                Span::raw("Severity: "),
+                Span::raw(format!("{}", bug.severity)),
+            ]),
+            Line::from(vec![
+                Span::raw("Priority: "),
+                Span::raw(format!("{}", bug.pri)),
+            ]),
             Line::from(vec![
                 Span::raw("Resolution: "),
                 Span::raw(bug.resolution.as_deref().unwrap_or("N/A")),
@@ -217,21 +228,29 @@ impl Browser {
 
         f.render_widget(details, chunks[1]);
 
-        let steps = Paragraph::new(Text::from(vec![
-            Line::from(Span::raw(bug.steps.as_deref().unwrap_or("No reproduction steps provided."))),
-        ]))
+        let steps = Paragraph::new(Text::from(vec![Line::from(Span::raw(
+            bug.steps
+                .as_deref()
+                .unwrap_or("No reproduction steps provided."),
+        ))]))
         .block(Block::default().borders(Borders::ALL).title("Steps"));
 
         f.render_widget(steps, chunks[2]);
 
-        let footer = Paragraph::new(Text::from(vec![
-            Line::from(Span::styled("q - back to list", Style::default().fg(Color::DarkGray))),
-        ]));
+        let footer = Paragraph::new(Text::from(vec![Line::from(Span::styled(
+            "q - back to list",
+            Style::default().fg(Color::DarkGray),
+        ))]));
 
         f.render_widget(footer, chunks[3]);
     }
 
-    fn render_story_list(f: &mut ratatui::Frame, area: Rect, stories: &[crate::api::Story], selected: usize) {
+    fn render_story_list(
+        f: &mut ratatui::Frame,
+        area: Rect,
+        stories: &[crate::api::Story],
+        selected: usize,
+    ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -241,27 +260,31 @@ impl Browser {
             ])
             .split(area);
 
-        let header = Paragraph::new(Text::from(vec![
-            Line::from(vec![
-                Span::raw("Story List ("),
-                Span::raw(format!("{}", stories.len())),
-                Span::raw(" items) - "),
-                Span::styled("↑↓ select | Enter view | q quit", Style::default().fg(Color::DarkGray)),
-            ]),
-        ]))
+        let header = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::raw("Story List ("),
+            Span::raw(format!("{}", stories.len())),
+            Span::raw(" items) - "),
+            Span::styled(
+                "↑↓ select | Enter view | q quit",
+                Style::default().fg(Color::DarkGray),
+            ),
+        ])]))
         .block(Block::default().borders(Borders::ALL).title("ZenTao"));
 
         f.render_widget(header, chunks[0]);
 
-        let items: Vec<ListItem> = stories.iter().map(|story| {
-            ListItem::new(Line::from(vec![
-                Span::raw(format!("{:6}", story.id)),
-                Span::raw(" "),
-                Span::raw(&story.title),
-                Span::raw(" - "),
-                Span::raw(&story.status),
-            ]))
-        }).collect();
+        let items: Vec<ListItem> = stories
+            .iter()
+            .map(|story| {
+                ListItem::new(Line::from(vec![
+                    Span::raw(format!("{:6}", story.id)),
+                    Span::raw(" "),
+                    Span::raw(&story.title),
+                    Span::raw(" - "),
+                    Span::raw(&story.status),
+                ]))
+            })
+            .collect();
 
         let list = List::new(items)
             .block(Block::default().borders(Borders::ALL))
@@ -269,14 +292,12 @@ impl Browser {
 
         f.render_widget(list, chunks[1]);
 
-        let footer = Paragraph::new(Text::from(vec![
-            Line::from(vec![
-                Span::raw("Selected: "),
-                Span::raw(format!("{}", selected + 1)),
-                Span::raw(" / "),
-                Span::raw(format!("{}", stories.len())),
-            ]),
-        ]));
+        let footer = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::raw("Selected: "),
+            Span::raw(format!("{}", selected + 1)),
+            Span::raw(" / "),
+            Span::raw(format!("{}", stories.len())),
+        ])]));
 
         f.render_widget(footer, chunks[2]);
     }
@@ -292,53 +313,72 @@ impl Browser {
             ])
             .split(area);
 
-        let title = Paragraph::new(Text::from(vec![
-            Line::from(vec![
-                Span::raw(format!("Story #{} - ", story.id)),
-                Span::styled(&story.title, Style::default().add_modifier(Modifier::BOLD)),
-            ]),
-        ]))
+        let title = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::raw(format!("Story #{} - ", story.id)),
+            Span::styled(&story.title, Style::default().add_modifier(Modifier::BOLD)),
+        ])]))
         .block(Block::default().borders(Borders::ALL).title("Story Detail"));
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
             Line::from(vec![Span::raw("Status: "), Span::raw(&story.status)]),
-            Line::from(vec![Span::raw("Priority: "), Span::raw(format!("{}", story.pri))]),
-            Line::from(vec![Span::raw("Stage: "), Span::raw(story.stage.as_deref().unwrap_or("N/A"))]),
+            Line::from(vec![
+                Span::raw("Priority: "),
+                Span::raw(format!("{}", story.pri)),
+            ]),
+            Line::from(vec![
+                Span::raw("Stage: "),
+                Span::raw(story.stage.as_deref().unwrap_or("N/A")),
+            ]),
             Line::from(vec![
                 Span::raw("Assigned: "),
                 Span::raw(story.assigned_to.as_deref().unwrap_or("Unassigned")),
             ]),
             Line::from(vec![
                 Span::raw("Estimate: "),
-                Span::raw(story.estimate.map(|e| format!("{}h", e)).unwrap_or_else(|| "N/A".to_string())),
+                Span::raw(
+                    story
+                        .estimate
+                        .map(|e| format!("{}h", e))
+                        .unwrap_or_else(|| "N/A".to_string()),
+                ),
             ]),
         ]))
         .block(Block::default().borders(Borders::ALL).title("Details"));
 
         f.render_widget(details, chunks[1]);
 
-        let desc = Paragraph::new(Text::from(vec![
-            Line::from(Span::raw(story.description.as_deref().unwrap_or("No description provided."))),
-        ]))
+        let desc = Paragraph::new(Text::from(vec![Line::from(Span::raw(
+            story
+                .description
+                .as_deref()
+                .unwrap_or("No description provided."),
+        ))]))
         .block(Block::default().borders(Borders::ALL).title("Description"));
 
         f.render_widget(desc, chunks[2]);
 
-        let footer = Paragraph::new(Text::from(vec![
-            Line::from(Span::styled("q - back to list", Style::default().fg(Color::DarkGray))),
-        ]));
+        let footer = Paragraph::new(Text::from(vec![Line::from(Span::styled(
+            "q - back to list",
+            Style::default().fg(Color::DarkGray),
+        ))]));
 
         f.render_widget(footer, chunks[3]);
     }
 
     fn render_error(f: &mut ratatui::Frame, area: Rect, message: &str) {
         let text = Paragraph::new(Text::from(vec![
-            Line::from(Span::styled("Error:", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))),
+            Line::from(Span::styled(
+                "Error:",
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+            )),
             Line::from(Span::raw(message)),
             Line::from(Span::raw("")),
-            Line::from(Span::styled("Press q to quit", Style::default().fg(Color::DarkGray))),
+            Line::from(Span::styled(
+                "Press q to quit",
+                Style::default().fg(Color::DarkGray),
+            )),
         ]))
         .block(Block::default().borders(Borders::ALL).title("Error"));
 

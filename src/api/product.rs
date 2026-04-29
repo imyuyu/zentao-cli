@@ -87,7 +87,11 @@ impl ProductApi {
     }
 
     /// 带分页的产品列表查询
-    pub async fn list_with_pagination(client: &ApiClient, page: u32, limit: u32) -> Result<Vec<Product>> {
+    pub async fn list_with_pagination(
+        client: &ApiClient,
+        page: u32,
+        limit: u32,
+    ) -> Result<Vec<Product>> {
         let path = format!("/api.php/v1/products?page={}&limit={}", page, limit);
         let resp: ProductListResponse = client.get(&path).await?;
         Ok(resp.products)

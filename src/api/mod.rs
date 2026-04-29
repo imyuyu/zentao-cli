@@ -13,34 +13,34 @@
 //! - `task`: 任务 API
 //! - `testcase`: 测试用例 API
 
-pub mod types;
 pub mod auth;
-pub mod client;
-pub mod story;
 pub mod bug;
-pub mod product;
-pub mod project;
-pub mod task;
-pub mod user;
-pub mod release;
-pub mod testcase;
+pub mod build;
+pub mod client;
 pub mod doc;
 pub mod execution;
-pub mod build;
+pub mod product;
+pub mod project;
+pub mod release;
+pub mod story;
+pub mod task;
+pub mod testcase;
+pub mod types;
+pub mod user;
 
 // 导出公共 API
-pub use types::*;
 pub use auth::Auth;
-pub use client::ApiClient;
-pub use types::{Story, Bug, User, Testcase, TestcaseListQuery};
-pub use story::{StoryApi, CreateStoryRequest, UpdateStoryRequest};
 pub use bug::{BugApi, CreateBugRequest, UpdateBugRequest};
-pub use product::{Product, ProductApi};
-pub use project::{Project, ProjectApi};
-pub use task::{Task, TaskApi, CreateTaskRequest, UpdateTaskRequest};
-pub use user::UserApi;
-pub use release::{Release, ReleaseApi};
-pub use testcase::TestcaseApi;
+pub use build::BuildApi;
+pub use client::ApiClient;
 pub use doc::{Doc, DocApi};
 pub use execution::ExecutionApi;
-pub use build::BuildApi;
+pub use product::{Product, ProductApi};
+pub use project::{Project, ProjectApi};
+pub use release::{Release, ReleaseApi};
+pub use story::{CreateStoryRequest, StoryApi, UpdateStoryRequest};
+pub use task::{CreateTaskRequest, Task, TaskApi, UpdateTaskRequest};
+pub use testcase::TestcaseApi;
+pub use types::*;
+pub use types::{Bug, Story, Testcase, TestcaseListQuery, User};
+pub use user::UserApi;

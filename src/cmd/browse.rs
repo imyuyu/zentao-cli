@@ -1,7 +1,7 @@
-use anyhow::Result;
-use crate::core::Config;
 use crate::api::{ApiClient, BugApi, StoryApi};
-use crate::tui::{Browser, App};
+use crate::core::Config;
+use crate::tui::{App, Browser};
+use anyhow::Result;
 
 pub fn bug_browse(config: &Config) -> Result<()> {
     let rt = tokio::runtime::Runtime::new()?;

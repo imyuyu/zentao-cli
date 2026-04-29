@@ -1,0 +1,438 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1777449679137,
+  "projectRoot": "D:\\WebstormProjects\\zentao-cli",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "Rust",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Cargo.toml"
+        ]
+      },
+      {
+        "name": "C/C++",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "Makefile"
+        ]
+      }
+    ],
+    "frameworks": [],
+    "packageManager": "cargo",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "cd \"D:/WebstormProjects/zentao-cli\" && cargo build --release 2>&1 | tail -3",
+    "testCommand": "cd \"D:/WebstormProjects/zentao-cli\" && cargo test 2>&1",
+    "lintCommand": "cargo clippy",
+    "devCommand": "cargo run",
+    "scripts": {
+      "preinstall": "cargo build --release --manifest-path ./Cargo.toml && node -e \"require('fs').copyFileSync('target/release/zentao-cli.exe','bin/zentao.exe')\"",
+      "build": "cargo build --release --manifest-path ./Cargo.toml && node -e \"require('fs').copyFileSync('target/release/zentao-cli.exe','bin/zentao.exe')\"",
+      "clean": "cargo clean --manifest-path ./Cargo.toml"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "bin",
+      "scripts",
+      "src",
+      "tests"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "bin": {
+      "path": "bin",
+      "purpose": "Executable scripts",
+      "fileCount": 1,
+      "lastAccessed": 1777449679089,
+      "keyFiles": [
+        "zentao.exe"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1777449679090,
+      "keyFiles": [
+        "install.js"
+      ]
+    },
+    "skills": {
+      "path": "skills",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1777449679101,
+      "keyFiles": []
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 2,
+      "lastAccessed": 1777449679101,
+      "keyFiles": [
+        "lib.rs",
+        "main.rs"
+      ]
+    },
+    "target": {
+      "path": "target",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1777449679102,
+      "keyFiles": [
+        "CACHEDIR.TAG"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 9,
+      "lastAccessed": 1777449679103,
+      "keyFiles": [
+        "api_client_test.rs",
+        "bug_api_test.rs",
+        "build_api_test.rs",
+        "product_api_test.rs",
+        "project_api_test.rs"
+      ]
+    },
+    "src\\api": {
+      "path": "src\\api",
+      "purpose": "API routes",
+      "fileCount": 15,
+      "lastAccessed": 1777449679105,
+      "keyFiles": [
+        "auth.rs",
+        "bug.rs",
+        "build.rs"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "src\\cmd\\config_cmd.rs",
+      "accessCount": 88,
+      "lastAccessed": 1777451370203,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 65,
+      "lastAccessed": 1777453784677,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\api_cmd.rs",
+      "accessCount": 57,
+      "lastAccessed": 1777451364247,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\shortcuts.rs",
+      "accessCount": 55,
+      "lastAccessed": 1777451670724,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\root.rs",
+      "accessCount": 48,
+      "lastAccessed": 1777451978057,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\client.rs",
+      "accessCount": 22,
+      "lastAccessed": 1777450641049,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\product.rs",
+      "accessCount": 20,
+      "lastAccessed": 1777451377330,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\task.rs",
+      "accessCount": 20,
+      "lastAccessed": 1777451386830,
+      "type": "file"
+    },
+    {
+      "path": "src\\core\\config.rs",
+      "accessCount": 19,
+      "lastAccessed": 1777450599238,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\bug.rs",
+      "accessCount": 17,
+      "lastAccessed": 1777451308909,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 17,
+      "lastAccessed": 1777453854856,
+      "type": "file"
+    },
+    {
+      "path": "src\\tui\\api_selector.rs",
+      "accessCount": 15,
+      "lastAccessed": 1777450669235,
+      "type": "file"
+    },
+    {
+      "path": "src\\tui\\config.rs",
+      "accessCount": 15,
+      "lastAccessed": 1777450671540,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\story.rs",
+      "accessCount": 14,
+      "lastAccessed": 1777450614479,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 14,
+      "lastAccessed": 1777450685339,
+      "type": "directory"
+    },
+    {
+      "path": "src\\cmd\\doc.rs",
+      "accessCount": 14,
+      "lastAccessed": 1777451372575,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\user.rs",
+      "accessCount": 14,
+      "lastAccessed": 1777451382171,
+      "type": "file"
+    },
+    {
+      "path": "src\\shortcuts\\bug.rs",
+      "accessCount": 12,
+      "lastAccessed": 1777450649500,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 12,
+      "lastAccessed": 1777451181130,
+      "type": "directory"
+    },
+    {
+      "path": "src\\cmd\\execution.rs",
+      "accessCount": 12,
+      "lastAccessed": 1777451374904,
+      "type": "file"
+    },
+    {
+      "path": "src\\core\\output.rs",
+      "accessCount": 11,
+      "lastAccessed": 1777450670796,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\auth.rs",
+      "accessCount": 11,
+      "lastAccessed": 1777451360689,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\project.rs",
+      "accessCount": 11,
+      "lastAccessed": 1777451379795,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\product.rs",
+      "accessCount": 10,
+      "lastAccessed": 1777450642803,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\project.rs",
+      "accessCount": 10,
+      "lastAccessed": 1777450642856,
+      "type": "file"
+    },
+    {
+      "path": "CLAUDE.md",
+      "accessCount": 10,
+      "lastAccessed": 1777452352873,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\story.rs",
+      "accessCount": 9,
+      "lastAccessed": 1777450641496,
+      "type": "file"
+    },
+    {
+      "path": "src\\shortcuts\\story.rs",
+      "accessCount": 9,
+      "lastAccessed": 1777450649219,
+      "type": "file"
+    },
+    {
+      "path": "src\\shortcuts\\mod.rs",
+      "accessCount": 9,
+      "lastAccessed": 1777450754043,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\bug.rs",
+      "accessCount": 8,
+      "lastAccessed": 1777450641263,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\browse.rs",
+      "accessCount": 7,
+      "lastAccessed": 1777451310044,
+      "type": "file"
+    },
+    {
+      "path": "Cargo.toml",
+      "accessCount": 7,
+      "lastAccessed": 1777453855739,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\auth.rs",
+      "accessCount": 6,
+      "lastAccessed": 1777450643380,
+      "type": "directory"
+    },
+    {
+      "path": "src\\cmd\\release.rs",
+      "accessCount": 6,
+      "lastAccessed": 1777451309208,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\testcase.rs",
+      "accessCount": 6,
+      "lastAccessed": 1777451309631,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\mod.rs",
+      "accessCount": 5,
+      "lastAccessed": 1777450598394,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\task.rs",
+      "accessCount": 5,
+      "lastAccessed": 1777450643529,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd",
+      "accessCount": 5,
+      "lastAccessed": 1777451571770,
+      "type": "directory"
+    },
+    {
+      "path": "src\\api",
+      "accessCount": 4,
+      "lastAccessed": 1777431702244,
+      "type": "directory"
+    },
+    {
+      "path": "src\\lib.rs",
+      "accessCount": 3,
+      "lastAccessed": 1777450598689,
+      "type": "file"
+    },
+    {
+      "path": "src\\cmd\\mod.rs",
+      "accessCount": 3,
+      "lastAccessed": 1777450599041,
+      "type": "file"
+    },
+    {
+      "path": "src\\api\\types.rs",
+      "accessCount": 3,
+      "lastAccessed": 1777450643934,
+      "type": "file"
+    },
+    {
+      "path": "src\\tui\\mod.rs",
+      "accessCount": 3,
+      "lastAccessed": 1777450669455,
+      "type": "file"
+    },
+    {
+      "path": "tests\\common\\mod.rs",
+      "accessCount": 2,
+      "lastAccessed": 1777434596181,
+      "type": "file"
+    },
+    {
+      "path": "skills\\zentao-bug\\references\\zentao-bug-list.md",
+      "accessCount": 2,
+      "lastAccessed": 1777442468752,
+      "type": "file"
+    },
+    {
+      "path": "skills\\zentao-product\\references\\zentao-product-list.md",
+      "accessCount": 2,
+      "lastAccessed": 1777442469795,
+      "type": "file"
+    },
+    {
+      "path": "skills\\zentao-story\\references\\zentao-story-list.md",
+      "accessCount": 2,
+      "lastAccessed": 1777442493466,
+      "type": "file"
+    },
+    {
+      "path": "skills\\zentao-project\\references\\zentao-project-list.md",
+      "accessCount": 2,
+      "lastAccessed": 1777442494532,
+      "type": "file"
+    },
+    {
+      "path": "src\\core\\error.rs",
+      "accessCount": 2,
+      "lastAccessed": 1777450670834,
+      "type": "file"
+    },
+    {
+      "path": ".cargo\\config.toml",
+      "accessCount": 1,
+      "lastAccessed": 1777449921740,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

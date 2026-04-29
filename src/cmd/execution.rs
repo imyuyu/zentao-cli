@@ -55,7 +55,10 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat) {
             ExecutionAction::List { project } => {
                 match ExecutionApi::list(&client, *project).await {
                     Ok(executions) => {
-                        println!("{}", serde_json::to_string_pretty(&executions).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&executions).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -64,16 +67,17 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- get 命令 --------------------
-            ExecutionAction::Get { id } => {
-                match ExecutionApi::get(&client, *id).await {
-                    Ok(execution) => {
-                        println!("{}", serde_json::to_string_pretty(&execution).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            ExecutionAction::Get { id } => match ExecutionApi::get(&client, *id).await {
+                Ok(execution) => {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&execution).unwrap_or_default()
+                    );
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
         }
     })
 }

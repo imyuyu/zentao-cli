@@ -83,7 +83,10 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat) {
                     Ok(products) => {
                         // 成功时输出格式化的 JSON
                         // serde_json::to_string_pretty 相当于 Java 的 ObjectMapper.writerWithDefaultPrettyPrinter()
-                        println!("{}", serde_json::to_string_pretty(&products).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&products).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         // 错误时输出到 stderr，格式：Error: <错误信息>
@@ -100,7 +103,10 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat) {
                 // 因为 cmd 参数是引用，id 是 &u64，需要 * 获取 u64 值
                 match ProductApi::get(&client, *id).await {
                     Ok(product) => {
-                        println!("{}", serde_json::to_string_pretty(&product).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&product).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

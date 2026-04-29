@@ -1,7 +1,7 @@
-use clap::Subcommand;
-use anyhow::Result;
 use crate::api::ApiClient;
 use crate::tui::api_selector::run_selector;
+use anyhow::Result;
+use clap::Subcommand;
 
 /// API 端点定义
 #[derive(Clone, Debug)]
@@ -16,27 +16,102 @@ impl ApiEndpoint {
     pub fn all() -> Vec<Self> {
         vec![
             // 认证
-            ApiEndpoint { name: "获取 Token", method: "POST", path: "/api.php/v1/tokens", description: "登录获取访问令牌" },
+            ApiEndpoint {
+                name: "获取 Token",
+                method: "POST",
+                path: "/api.php/v1/tokens",
+                description: "登录获取访问令牌",
+            },
             // 用户
-            ApiEndpoint { name: "当前用户", method: "GET", path: "/api.php/v1/user", description: "获取当前登录用户信息" },
+            ApiEndpoint {
+                name: "当前用户",
+                method: "GET",
+                path: "/api.php/v1/user",
+                description: "获取当前登录用户信息",
+            },
             // 产品
-            ApiEndpoint { name: "产品列表", method: "GET", path: "/api.php/v1/products", description: "获取产品列表" },
-            ApiEndpoint { name: "产品详情", method: "GET", path: "/api.php/v1/products/{id}", description: "获取单个产品详情" },
-            ApiEndpoint { name: "产品Bug列表", method: "GET", path: "/api.php/v1/products/{id}/bugs", description: "获取指定产品的Bug列表" },
-            ApiEndpoint { name: "产品故事列表", method: "GET", path: "/api.php/v1/products/{id}/stories", description: "获取指定产品的故事列表" },
+            ApiEndpoint {
+                name: "产品列表",
+                method: "GET",
+                path: "/api.php/v1/products",
+                description: "获取产品列表",
+            },
+            ApiEndpoint {
+                name: "产品详情",
+                method: "GET",
+                path: "/api.php/v1/products/{id}",
+                description: "获取单个产品详情",
+            },
+            ApiEndpoint {
+                name: "产品Bug列表",
+                method: "GET",
+                path: "/api.php/v1/products/{id}/bugs",
+                description: "获取指定产品的Bug列表",
+            },
+            ApiEndpoint {
+                name: "产品故事列表",
+                method: "GET",
+                path: "/api.php/v1/products/{id}/stories",
+                description: "获取指定产品的故事列表",
+            },
             // 项目
-            ApiEndpoint { name: "项目列表", method: "GET", path: "/api.php/v1/projects", description: "获取项目列表" },
-            ApiEndpoint { name: "项目详情", method: "GET", path: "/api.php/v1/projects/{id}", description: "获取单个项目详情" },
-            ApiEndpoint { name: "项目任务列表", method: "GET", path: "/api.php/v1/projects/{id}/tasks", description: "获取指定项目的任务列表" },
-            ApiEndpoint { name: "项目故事列表", method: "GET", path: "/api.php/v1/projects/{id}/stories", description: "获取指定项目的故事列表" },
+            ApiEndpoint {
+                name: "项目列表",
+                method: "GET",
+                path: "/api.php/v1/projects",
+                description: "获取项目列表",
+            },
+            ApiEndpoint {
+                name: "项目详情",
+                method: "GET",
+                path: "/api.php/v1/projects/{id}",
+                description: "获取单个项目详情",
+            },
+            ApiEndpoint {
+                name: "项目任务列表",
+                method: "GET",
+                path: "/api.php/v1/projects/{id}/tasks",
+                description: "获取指定项目的任务列表",
+            },
+            ApiEndpoint {
+                name: "项目故事列表",
+                method: "GET",
+                path: "/api.php/v1/projects/{id}/stories",
+                description: "获取指定项目的故事列表",
+            },
             // 任务
-            ApiEndpoint { name: "任务详情", method: "GET", path: "/api.php/v1/tasks/{id}", description: "获取单个任务详情" },
+            ApiEndpoint {
+                name: "任务详情",
+                method: "GET",
+                path: "/api.php/v1/tasks/{id}",
+                description: "获取单个任务详情",
+            },
             // 测试用例
-            ApiEndpoint { name: "用例列表", method: "GET", path: "/api.php/v1/testcases", description: "获取测试用例列表" },
-            ApiEndpoint { name: "用例详情", method: "GET", path: "/api.php/v1/testcases/{id}", description: "获取单个测试用例详情" },
+            ApiEndpoint {
+                name: "用例列表",
+                method: "GET",
+                path: "/api.php/v1/testcases",
+                description: "获取测试用例列表",
+            },
+            ApiEndpoint {
+                name: "用例详情",
+                method: "GET",
+                path: "/api.php/v1/testcases/{id}",
+                description: "获取单个测试用例详情",
+            },
             // 文档
-            ApiEndpoint { name: "文档列表", method: "GET", path: "/api.php/v1/docs", description: "获取文档列表" },
-            ApiEndpoint { name: "文档详情", method: "GET", path: "/api.php/v1/docs/{id}", description: "获取单个文档详情" },
+            ApiEndpoint {
+                name: "文档列表",
+                method: "GET",
+                path: "/api.php/v1/docs",
+                description: "获取文档列表",
+            },
+            ApiEndpoint {
+                name: "文档详情",
+                method: "GET",
+                path: "/api.php/v1/docs/{id}",
+                description: "获取单个文档详情",
+            },
         ]
     }
 }
@@ -76,7 +151,10 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
             match client.get::<serde_json::Value>("/api.php/v1/user").await {
                 Ok(data) => {
                     println!("✓ Connected successfully!");
-                    println!("Response: {}", serde_json::to_string_pretty(&data).unwrap_or_default());
+                    println!(
+                        "Response: {}",
+                        serde_json::to_string_pretty(&data).unwrap_or_default()
+                    );
                 }
                 Err(e) => {
                     println!("✗ Connection failed: {}", e);
@@ -117,7 +195,10 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
             if let Some(name) = name {
                 // 直接调用指定端点
                 let name_str = name.as_str();
-                if let Some(endpoint) = endpoints.iter().find(|e| e.name.contains(name_str) || e.path.contains(name_str)) {
+                if let Some(endpoint) = endpoints
+                    .iter()
+                    .find(|e| e.name.contains(name_str) || e.path.contains(name_str))
+                {
                     if let Err(e) = call_api_endpoint(config, endpoint).await {
                         eprintln!("✗ 调用失败: {}", e);
                     }
@@ -184,17 +265,18 @@ async fn call_api_endpoint(config: &crate::core::Config, endpoint: &ApiEndpoint)
         .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
 
     match endpoint.method {
-        "GET" => {
-            match client.get::<serde_json::Value>(endpoint.path).await {
-                Ok(data) => {
-                    println!("✓ 成功!");
-                    println!("{}", serde_json::to_string_pretty(&data).unwrap_or_default());
-                }
-                Err(e) => {
-                    return Err(e);
-                }
+        "GET" => match client.get::<serde_json::Value>(endpoint.path).await {
+            Ok(data) => {
+                println!("✓ 成功!");
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&data).unwrap_or_default()
+                );
             }
-        }
+            Err(e) => {
+                return Err(e);
+            }
+        },
         "POST" => {
             // POST 请求需要 body，这里只做示例
             println!("⚠ POST 请求需要额外参数，请使用 --data 指定请求体");

@@ -1,10 +1,13 @@
-use clap::{Parser, Subcommand};
-use anyhow::Result;
-use crate::core::{Config, load_config, OutputFormat};
-use crate::cmd::{auth, config_cmd, api_cmd, doctor, story, bug, browse, product, project, task, user, testcase, release, build, execution, doc};
 use crate::cmd::api_cmd::ApiSubcommand;
 use crate::cmd::auth::AuthSubcommand;
 use crate::cmd::config_cmd::ConfigSubcommand;
+use crate::cmd::{
+    api_cmd, auth, browse, bug, build, config_cmd, doc, doctor, execution, product, project,
+    release, story, task, testcase, user,
+};
+use crate::core::{load_config, Config, OutputFormat};
+use anyhow::Result;
+use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "zentao-cli")]
@@ -124,9 +127,7 @@ pub enum StorySubcommand {
     },
     /// 获取需求详情
     #[command(name = "+get")]
-    Get {
-        id: u64,
-    },
+    Get { id: u64 },
     /// 创建需求
     #[command(name = "+create")]
     Create {
@@ -172,9 +173,7 @@ pub enum BugSubcommand {
     },
     /// 获取 Bug 详情
     #[command(name = "+get")]
-    Get {
-        id: u64,
-    },
+    Get { id: u64 },
     /// 创建 Bug
     #[command(name = "+create")]
     Create {
@@ -224,9 +223,7 @@ pub enum TestcaseSubcommand {
     },
     /// 获取用例详情
     #[command(name = "+get")]
-    Get {
-        id: u64,
-    },
+    Get { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -236,9 +233,7 @@ pub enum ReleaseSubcommand {
     List,
     /// 获取发布详情
     #[command(name = "+get")]
-    Get {
-        id: u64,
-    },
+    Get { id: u64 },
 }
 
 pub fn run() -> Result<()> {
@@ -273,17 +268,19 @@ pub fn run() -> Result<()> {
         Commands::Auth { action } => {
             let rt = tokio::runtime::Runtime::new()
                 .expect("Failed to create Tokio runtime - system may be out of memory");
-            rt.block_on(auth::run(&action)).expect("Auth command failed");
+            rt.block_on(auth::run(&action))
+                .expect("Auth command failed");
         }
         Commands::Config { action } => {
-            let rt = tokio::runtime::Runtime::new()
-                .expect("Failed to create Tokio runtime");
-            rt.block_on(config_cmd::run(&action)).expect("Config command failed");
+            let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
+            rt.block_on(config_cmd::run(&action))
+                .expect("Config command failed");
         }
         Commands::Api { action } => {
             let rt = tokio::runtime::Runtime::new()
                 .expect("Failed to create Tokio runtime - system may be out of memory");
-            rt.block_on(api_cmd::run(&action, &config)).expect("API command failed");
+            rt.block_on(api_cmd::run(&action, &config))
+                .expect("API command failed");
         }
         Commands::Product { action } => {
             product::run(&action, &config, cli.format);
@@ -315,7 +312,8 @@ pub fn run() -> Result<()> {
         Commands::Doctor => {
             let rt = tokio::runtime::Runtime::new()
                 .expect("Failed to create Tokio runtime - system may be out of memory");
-            rt.block_on(doctor::run_doctor()).expect("Doctor command failed");
+            rt.block_on(doctor::run_doctor())
+                .expect("Doctor command failed");
         }
         Commands::BugBrowse { product } => {
             let mut cfg = config.clone();

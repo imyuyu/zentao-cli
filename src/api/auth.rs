@@ -2,10 +2,10 @@
 //!
 //! 负责与 ZenTao 服务器进行身份认证交互
 
+use crate::core::ZentaoError;
 use anyhow::Result;
 use reqwest::Client;
 use serde::Deserialize;
-use crate::core::ZentaoError;
 
 /// 禅道认证客户端
 ///
@@ -51,14 +51,15 @@ impl Auth {
         let url = format!("{}/api.php/v1/tokens", self.base_url);
 
         // 发送 POST 请求，Content-Type 为 application/json
-        let resp = self.client
+        let resp = self
+            .client
             .post(&url)
             .json(&serde_json::json!({
                 "account": account,
                 "password": password
             }))
-            .send()  // 发送请求
-            .await    // async: 等待响应
+            .send() // 发送请求
+            .await // async: 等待响应
             // 网络层错误（如连接超时、DNS 解析失败）
             .map_err(|e| ZentaoError::Network(e.to_string()))?;
 
@@ -71,12 +72,15 @@ impl Auth {
             status: Option<String>,
         }
 
-        let token_resp: TokenResp = resp.json().await
+        let token_resp: TokenResp = resp
+            .json()
+            .await
             // API 返回的 JSON 解析失败（如响应不是 JSON 格式）
             .map_err(|e| ZentaoError::Api(e.to_string()))?;
 
         // 从响应中提取 token，如果为空则返回认证失败错误
-        token_resp.token
+        token_resp
+            .token
             .ok_or_else(|| ZentaoError::Auth("Failed to get token".into()).into())
     }
 
@@ -96,7 +100,8 @@ impl Auth {
         // ZenTao API v1 获取当前用户信息接口
         let url = format!("{}/api.php/v1/users/me", self.base_url);
 
-        let resp = self.client
+        let resp = self
+            .client
             .get(&url)
             // ZenTao API 使用 Bearer Token 认证方式
             .header("Authorization", format!("Bearer {}", token))

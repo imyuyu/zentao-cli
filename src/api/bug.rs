@@ -103,7 +103,10 @@ impl BugApi {
         page: u32,
         limit: u32,
     ) -> Result<Vec<Bug>> {
-        let mut path = format!("/api.php/v1/products/{}/bugs?page={}&limit={}", product, page, limit);
+        let mut path = format!(
+            "/api.php/v1/products/{}/bugs?page={}&limit={}",
+            product, page, limit
+        );
 
         if let Some(s) = status {
             path.push_str(&format!("&browseType={}", s));

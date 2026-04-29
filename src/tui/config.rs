@@ -1,12 +1,31 @@
 #[derive(Clone, Debug)]
 pub enum ConfigWizardState {
     Url,
-    Account { url: String, account: String },
-    Password { url: String, account: String, password: String },
-    Connecting { url: String, account: String, password: String },
-    Success { url: String, token: String },
-    Saved { url: String, path: String },  // 保存成功后的确认状态
-    Error { message: String },
+    Account {
+        url: String,
+        account: String,
+    },
+    Password {
+        url: String,
+        account: String,
+        password: String,
+    },
+    Connecting {
+        url: String,
+        account: String,
+        password: String,
+    },
+    Success {
+        url: String,
+        token: String,
+    },
+    Saved {
+        url: String,
+        path: String,
+    }, // 保存成功后的确认状态
+    Error {
+        message: String,
+    },
 }
 
 impl ConfigWizardState {
@@ -27,7 +46,10 @@ impl ConfigWizard {
     }
 
     pub fn set_url(&mut self, url: String) {
-        self.state = ConfigWizardState::Account { url, account: String::new() };
+        self.state = ConfigWizardState::Account {
+            url,
+            account: String::new(),
+        };
     }
 
     pub fn set_account(&mut self, account: String) {

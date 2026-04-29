@@ -99,12 +99,18 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
 
         match cmd {
             // -------------------- list 命令 --------------------
-            TaskAction::List { project, assigned_to } => {
+            TaskAction::List {
+                project,
+                assigned_to,
+            } => {
                 // 调用任务列表 API
                 // 传入 project ID 和可选的指派人筛选
                 match TaskApi::list(&client, *project, assigned_to.clone()).await {
                     Ok(tasks) => {
-                        println!("{}", serde_json::to_string_pretty(&tasks).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&tasks).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -113,16 +119,17 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- get 命令 --------------------
-            TaskAction::Get { id } => {
-                match TaskApi::get(&client, *id).await {
-                    Ok(task) => {
-                        println!("{}", serde_json::to_string_pretty(&task).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            TaskAction::Get { id } => match TaskApi::get(&client, *id).await {
+                Ok(task) => {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&task).unwrap_or_default()
+                    );
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
 
             // -------------------- create 命令 --------------------
             TaskAction::Create {
@@ -147,7 +154,10 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
 
                 match TaskApi::create(&client, &req).await {
                     Ok(task) => {
-                        println!("{}", serde_json::to_string_pretty(&task).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -175,7 +185,10 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat) {
 
                 match TaskApi::update(&client, *id, &req).await {
                     Ok(task) => {
-                        println!("{}", serde_json::to_string_pretty(&task).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

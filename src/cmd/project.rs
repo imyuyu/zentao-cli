@@ -47,28 +47,30 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat) {
 
         match cmd {
             // -------------------- list 命令 --------------------
-            ProjectAction::List => {
-                match ProjectApi::list(&client).await {
-                    Ok(projects) => {
-                        println!("{}", serde_json::to_string_pretty(&projects).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            ProjectAction::List => match ProjectApi::list(&client).await {
+                Ok(projects) => {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&projects).unwrap_or_default()
+                    );
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
 
             // -------------------- get 命令 --------------------
-            ProjectAction::Get { id } => {
-                match ProjectApi::get(&client, *id).await {
-                    Ok(project) => {
-                        println!("{}", serde_json::to_string_pretty(&project).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            ProjectAction::Get { id } => match ProjectApi::get(&client, *id).await {
+                Ok(project) => {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&project).unwrap_or_default()
+                    );
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
         }
     })
 }

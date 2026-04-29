@@ -53,7 +53,10 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat) {
             BuildAction::List { project, product } => {
                 match BuildApi::list(&client, *project, *product).await {
                     Ok(builds) => {
-                        println!("{}", serde_json::to_string_pretty(&builds).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&builds).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -61,16 +64,17 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat) {
                 }
             }
 
-            BuildAction::Get { id } => {
-                match BuildApi::get(&client, *id).await {
-                    Ok(build) => {
-                        println!("{}", serde_json::to_string_pretty(&build).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            BuildAction::Get { id } => match BuildApi::get(&client, *id).await {
+                Ok(build) => {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&build).unwrap_or_default()
+                    );
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
         }
     })
 }

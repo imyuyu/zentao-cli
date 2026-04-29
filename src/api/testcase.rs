@@ -113,7 +113,10 @@ mod tests {
         assert_eq!(testcase.severity, 3);
         assert_eq!(testcase.pri, 2);
         assert_eq!(testcase.status, "normal");
-        assert_eq!(testcase.steps, Some("Step 1: Do something\nStep 2: Verify result".to_string()));
+        assert_eq!(
+            testcase.steps,
+            Some("Step 1: Do something\nStep 2: Verify result".to_string())
+        );
         assert_eq!(testcase.expectation, Some("Expected result".to_string()));
         assert_eq!(testcase.product, 1);
         assert_eq!(testcase.project, Some(5));
@@ -238,7 +241,11 @@ mod tests {
                 severity: None,
             };
             let json = serde_json::to_string(&query).unwrap();
-            assert!(json.contains(type_str), "Type {} should be in JSON", type_str);
+            assert!(
+                json.contains(type_str),
+                "Type {} should be in JSON",
+                type_str
+            );
         }
     }
 }

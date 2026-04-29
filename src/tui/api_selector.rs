@@ -4,12 +4,11 @@
 
 use ratatui::{
     backend::CrosstermBackend,
-    Terminal,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, List, ListItem, Clear},
-    Frame,
+    widgets::{Block, Borders, Clear, List, ListItem, Paragraph},
+    Frame, Terminal,
 };
 use std::io::stdout;
 
@@ -20,7 +19,7 @@ pub struct ApiSelector {
     endpoints: Vec<ApiEndpoint>,
     filtered: Vec<ApiEndpoint>,
     selected: usize,
-    chars: Vec<char>,  // 使用字符向量方便操作
+    chars: Vec<char>, // 使用字符向量方便操作
     cursor_pos: usize,
 }
 
@@ -41,11 +40,13 @@ impl ApiSelector {
         if query.is_empty() {
             self.filtered = self.endpoints.clone();
         } else {
-            self.filtered = self.endpoints.iter()
+            self.filtered = self
+                .endpoints
+                .iter()
                 .filter(|e| {
-                    e.name.to_lowercase().contains(&query) ||
-                    e.path.to_lowercase().contains(&query) ||
-                    e.description.to_lowercase().contains(&query)
+                    e.name.to_lowercase().contains(&query)
+                        || e.path.to_lowercase().contains(&query)
+                        || e.description.to_lowercase().contains(&query)
                 })
                 .cloned()
                 .collect();
@@ -62,17 +63,23 @@ pub fn run_selector() -> Option<ApiEndpoint> {
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout())).ok()?;
 
     // 进入 alternate screen
-    crossterm::execute!(terminal.backend_mut(), crossterm::terminal::EnterAlternateScreen).ok()?;
+    crossterm::execute!(
+        terminal.backend_mut(),
+        crossterm::terminal::EnterAlternateScreen
+    )
+    .ok()?;
     crossterm::execute!(terminal.backend_mut(), crossterm::cursor::Hide).ok()?;
 
     let endpoints = ApiEndpoint::all();
     let mut selector = ApiSelector::new(endpoints);
 
     // 渲染初始界面
-    terminal.draw(|f| {
-        let area = f.size();
-        render_selector_frame(f, area, &selector);
-    }).ok()?;
+    terminal
+        .draw(|f| {
+            let area = f.size();
+            render_selector_frame(f, area, &selector);
+        })
+        .ok()?;
 
     loop {
         // 读取事件
@@ -92,7 +99,10 @@ pub fn run_selector() -> Option<ApiEndpoint> {
                     // 退出前清理
                     let _ = crossterm::execute!(terminal.backend_mut(), crossterm::cursor::Show);
                     let _ = terminal.clear();
-                    let _ = crossterm::execute!(terminal.backend_mut(), crossterm::terminal::LeaveAlternateScreen);
+                    let _ = crossterm::execute!(
+                        terminal.backend_mut(),
+                        crossterm::terminal::LeaveAlternateScreen
+                    );
                     return Some(selected);
                 }
                 KeyCode::Up if selector.selected > 0 => {
@@ -132,16 +142,21 @@ pub fn run_selector() -> Option<ApiEndpoint> {
         }
 
         // 更新显示
-        terminal.draw(|f| {
-            let area = f.size();
-            render_selector_frame(f, area, &selector);
-        }).ok()?;
+        terminal
+            .draw(|f| {
+                let area = f.size();
+                render_selector_frame(f, area, &selector);
+            })
+            .ok()?;
     }
 
     // 退出前清理
     let _ = crossterm::execute!(terminal.backend_mut(), crossterm::cursor::Show);
     let _ = terminal.clear();
-    let _ = crossterm::execute!(terminal.backend_mut(), crossterm::terminal::LeaveAlternateScreen);
+    let _ = crossterm::execute!(
+        terminal.backend_mut(),
+        crossterm::terminal::LeaveAlternateScreen
+    );
 
     None
 }
@@ -154,18 +169,23 @@ fn render_selector_frame(f: &mut Frame, area: Rect, selector: &ApiSelector) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),   // 标题栏
-            Constraint::Length(3),   // 搜索栏
-            Constraint::Min(0),      // 列表
-            Constraint::Length(3),   // 底部提示
+            Constraint::Length(3), // 标题栏
+            Constraint::Length(3), // 搜索栏
+            Constraint::Min(0),    // 列表
+            Constraint::Length(3), // 底部提示
         ])
         .split(area);
 
     // 标题
-    let title = Paragraph::new(vec![
-        Line::from(Span::styled(" ZenTao API 选择器 ", Style::default().fg(Color::Cyan).bold())),
-    ])
-    .block(Block::default().borders(Borders::all()).title_style(Style::default().fg(Color::Cyan)));
+    let title = Paragraph::new(vec![Line::from(Span::styled(
+        " ZenTao API 选择器 ",
+        Style::default().fg(Color::Cyan).bold(),
+    ))])
+    .block(
+        Block::default()
+            .borders(Borders::all())
+            .title_style(Style::default().fg(Color::Cyan)),
+    );
     f.render_widget(title, chunks[0]);
 
     // 搜索栏 - 使用 chars 向量正确处理 UTF-8
@@ -188,10 +208,7 @@ fn render_selector_frame(f: &mut Frame, area: Rect, selector: &ApiSelector) {
 
     let search_content = Paragraph::new(vec![
         Line::from(""),
-        Line::from(vec![
-            Span::raw("搜索: "),
-            Span::raw(search_display),
-        ]),
+        Line::from(vec![Span::raw("搜索: "), Span::raw(search_display)]),
     ]);
     f.render_widget(search_content, chunks[1]);
 
@@ -199,11 +216,16 @@ fn render_selector_frame(f: &mut Frame, area: Rect, selector: &ApiSelector) {
     if selector.filtered.is_empty() {
         let no_result = Paragraph::new(vec![
             Line::from(""),
-            Line::from(Span::styled("没有找到匹配的 API 端点", Style::default().fg(Color::DarkGray))),
+            Line::from(Span::styled(
+                "没有找到匹配的 API 端点",
+                Style::default().fg(Color::DarkGray),
+            )),
         ]);
         f.render_widget(no_result, chunks[2]);
     } else {
-        let items: Vec<ListItem> = selector.filtered.iter()
+        let items: Vec<ListItem> = selector
+            .filtered
+            .iter()
             .enumerate()
             .map(|(i, endpoint)| {
                 let is_selected = i == selector.selected;
@@ -237,16 +259,17 @@ fn render_selector_frame(f: &mut Frame, area: Rect, selector: &ApiSelector) {
             })
             .collect();
 
-        let list = List::new(items)
-            .block(Block::default().borders(Borders::all()).title("API 端点"));
+        let list =
+            List::new(items).block(Block::default().borders(Borders::all()).title("API 端点"));
         f.render_widget(list, chunks[2]);
     }
 
     // 底部提示
     let help_text = "↑↓ 选择 | Enter 确认 | 退格删除 | Esc 退出";
-    let footer = Paragraph::new(vec![
-        Line::from(Span::styled(help_text, Style::default().fg(Color::DarkGray))),
-    ])
+    let footer = Paragraph::new(vec![Line::from(Span::styled(
+        help_text,
+        Style::default().fg(Color::DarkGray),
+    ))])
     .block(Block::default().borders(Borders::all()));
     f.render_widget(footer, chunks[3]);
 }

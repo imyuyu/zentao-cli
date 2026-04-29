@@ -106,7 +106,10 @@ impl StoryApi {
     ) -> Result<Vec<Story>> {
         // ZenTao API 路径：/api.php/v1/products/{productID}/stories
         let mut path = if let Some(pid) = product {
-            format!("/api.php/v1/products/{}/stories?page={}&limit={}", pid, page, limit)
+            format!(
+                "/api.php/v1/products/{}/stories?page={}&limit={}",
+                pid, page, limit
+            )
         } else {
             format!("/api.php/v1/stories?page={}&limit={}", page, limit)
         };

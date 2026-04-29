@@ -9,8 +9,8 @@
 use clap::Parser;
 
 use crate::api::{ApiClient, BugApi, ProductApi, ProjectApi, StoryApi, TaskApi};
-use crate::core::{Config, OutputFormat};
 use crate::core::output::format_output;
+use crate::core::{Config, OutputFormat};
 
 /// 默认每页数量
 const DEFAULT_PAGE_SIZE: u32 = 100;
@@ -119,8 +119,7 @@ pub fn dry_run_report(cmd: &str, params: &[(&str, String)]) {
 ///
 /// 根据子命令类型调用对应的 API 并输出结果
 pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
-    let rt = tokio::runtime::Runtime::new()
-        .expect("Failed to create Tokio runtime");
+    let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
 
     rt.block_on(async {
         let client = ApiClient::new(&config.url, config.token.clone())
@@ -134,7 +133,9 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                     let all_products = fetch_all_products(&client, pagination).await;
                     print_items(&all_products, format, columns::PRODUCT);
                 } else {
-                    match ProductApi::list_with_pagination(&client, 1, pagination.effective_limit()).await {
+                    match ProductApi::list_with_pagination(&client, 1, pagination.effective_limit())
+                        .await
+                    {
                         Ok(products) => {
                             print_items(&products, format, columns::PRODUCT);
                         }
@@ -151,7 +152,9 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                     let all_projects = fetch_all_projects(&client, pagination).await;
                     print_items(&all_projects, format, columns::PROJECT);
                 } else {
-                    match ProjectApi::list_with_pagination(&client, 1, pagination.effective_limit()).await {
+                    match ProjectApi::list_with_pagination(&client, 1, pagination.effective_limit())
+                        .await
+                    {
                         Ok(projects) => {
                             print_items(&projects, format, columns::PROJECT);
                         }
@@ -163,7 +166,10 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
             }
 
             // -------------------- +bugs --------------------
-            ShortcutCommand::Bugs { product, pagination } => {
+            ShortcutCommand::Bugs {
+                product,
+                pagination,
+            } => {
                 let product_id = product.or(config.product_id);
                 match product_id {
                     Some(pid) => {
@@ -171,7 +177,16 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                             let all_bugs = fetch_all_bugs(&client, pid, pagination).await;
                             print_items(&all_bugs, format, columns::BUG);
                         } else {
-                            match BugApi::list_with_pagination(&client, pid, None, None, 1, pagination.effective_limit()).await {
+                            match BugApi::list_with_pagination(
+                                &client,
+                                pid,
+                                None,
+                                None,
+                                1,
+                                pagination.effective_limit(),
+                            )
+                            .await
+                            {
                                 Ok(bugs) => {
                                     print_items(&bugs, format, columns::BUG);
                                 }
@@ -182,13 +197,18 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                         }
                     }
                     None => {
-                        eprintln!("Error: product ID is required. Use --product or set ZENTAO_PRODUCT_ID");
+                        eprintln!(
+                            "Error: product ID is required. Use --product or set ZENTAO_PRODUCT_ID"
+                        );
                     }
                 }
             }
 
             // -------------------- +stories --------------------
-            ShortcutCommand::Stories { product, pagination } => {
+            ShortcutCommand::Stories {
+                product,
+                pagination,
+            } => {
                 let product_id = product.or(config.product_id);
                 match product_id {
                     Some(pid) => {
@@ -196,7 +216,16 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                             let all_stories = fetch_all_stories(&client, pid, pagination).await;
                             print_items(&all_stories, format, columns::STORY);
                         } else {
-                            match StoryApi::list_with_pagination(&client, Some(pid), None, None, 1, pagination.effective_limit()).await {
+                            match StoryApi::list_with_pagination(
+                                &client,
+                                Some(pid),
+                                None,
+                                None,
+                                1,
+                                pagination.effective_limit(),
+                            )
+                            .await
+                            {
                                 Ok(stories) => {
                                     print_items(&stories, format, columns::STORY);
                                 }
@@ -207,13 +236,18 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                         }
                     }
                     None => {
-                        eprintln!("Error: product ID is required. Use --product or set ZENTAO_PRODUCT_ID");
+                        eprintln!(
+                            "Error: product ID is required. Use --product or set ZENTAO_PRODUCT_ID"
+                        );
                     }
                 }
             }
 
             // -------------------- +tasks --------------------
-            ShortcutCommand::Tasks { project, pagination } => {
+            ShortcutCommand::Tasks {
+                project,
+                pagination,
+            } => {
                 let project_id = project.or(config.project_id);
                 match project_id {
                     Some(pid) => {
@@ -232,7 +266,9 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                         }
                     }
                     None => {
-                        eprintln!("Error: project ID is required. Use --project or set ZENTAO_PROJECT_ID");
+                        eprintln!(
+                            "Error: project ID is required. Use --project or set ZENTAO_PROJECT_ID"
+                        );
                     }
                 }
             }
@@ -331,7 +367,11 @@ async fn fetch_all_projects(client: &ApiClient, pagination: &PaginationArgs) -> 
     all_projects
 }
 
-async fn fetch_all_bugs(client: &ApiClient, product_id: u64, pagination: &PaginationArgs) -> Vec<Bug> {
+async fn fetch_all_bugs(
+    client: &ApiClient,
+    product_id: u64,
+    pagination: &PaginationArgs,
+) -> Vec<Bug> {
     let mut all_bugs = Vec::new();
     let delay = pagination.page_delay;
     let limit = pagination.effective_limit();
@@ -373,14 +413,20 @@ async fn fetch_all_bugs(client: &ApiClient, product_id: u64, pagination: &Pagina
     all_bugs
 }
 
-async fn fetch_all_stories(client: &ApiClient, product_id: u64, pagination: &PaginationArgs) -> Vec<Story> {
+async fn fetch_all_stories(
+    client: &ApiClient,
+    product_id: u64,
+    pagination: &PaginationArgs,
+) -> Vec<Story> {
     let mut all_stories = Vec::new();
     let delay = pagination.page_delay;
     let limit = pagination.effective_limit();
     let mut page = 1u32;
 
     loop {
-        match StoryApi::list_with_pagination(client, Some(product_id), None, None, page, limit).await {
+        match StoryApi::list_with_pagination(client, Some(product_id), None, None, page, limit)
+            .await
+        {
             Ok(stories) => {
                 if stories.is_empty() {
                     break;
@@ -412,7 +458,11 @@ async fn fetch_all_stories(client: &ApiClient, product_id: u64, pagination: &Pag
     all_stories
 }
 
-async fn fetch_all_tasks(client: &ApiClient, project_id: u64, _pagination: &PaginationArgs) -> Vec<Task> {
+async fn fetch_all_tasks(
+    client: &ApiClient,
+    project_id: u64,
+    _pagination: &PaginationArgs,
+) -> Vec<Task> {
     let mut all_tasks = Vec::new();
 
     match TaskApi::list(client, project_id, None).await {

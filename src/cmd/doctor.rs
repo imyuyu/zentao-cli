@@ -1,6 +1,6 @@
-use anyhow::Result;
 use crate::api::Auth;
-use crate::core::{load_config, global_config_path, project_config_path};
+use crate::core::{global_config_path, load_config, project_config_path};
+use anyhow::Result;
 
 pub async fn run_doctor() -> Result<()> {
     println!("ZenTao CLI Doctor");
@@ -20,7 +20,8 @@ pub async fn run_doctor() -> Result<()> {
                 println!("  ✓ ZENTAO_URL: {}", config.url);
             }
 
-            if config.token.is_none() || config.token.as_ref().map(|t| t.is_empty()).unwrap_or(true) {
+            if config.token.is_none() || config.token.as_ref().map(|t| t.is_empty()).unwrap_or(true)
+            {
                 println!("  ✗ ZENTAO_TOKEN is not set");
                 has_errors = true;
             } else {
@@ -46,7 +47,10 @@ pub async fn run_doctor() -> Result<()> {
     if global_path.exists() {
         println!("  ✓ Global config: {}", global_path.display());
     } else {
-        println!("  - Global config: {} (not found, using defaults)", global_path.display());
+        println!(
+            "  - Global config: {} (not found, using defaults)",
+            global_path.display()
+        );
     }
 
     let project_path = project_config_path();

@@ -3,8 +3,8 @@
 //! CLI 命令入口，调用 StoryApi 处理用户请求
 
 use crate::api::{ApiClient, CreateStoryRequest, StoryApi, UpdateStoryRequest};
-use crate::core::{Config, OutputFormat};
 use crate::cmd::root::StorySubcommand;
+use crate::core::{Config, OutputFormat};
 
 /// 执行 Story 相关命令
 ///
@@ -12,8 +12,7 @@ use crate::cmd::root::StorySubcommand;
 pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
     // 创建 Tokio 异步运行时
     // CLI 命令需要手动创建运行时来执行 async 代码
-    let rt = tokio::runtime::Runtime::new()
-        .expect("Failed to create Tokio runtime");
+    let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
 
     rt.block_on(async {
         // 创建 API 客户端，传入 URL 和 Token
@@ -22,12 +21,19 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
 
         match cmd {
             // -------------------- list --------------------
-            StorySubcommand::List { product, project, status } => {
+            StorySubcommand::List {
+                product,
+                project,
+                status,
+            } => {
                 // 调用 StoryApi::list 获取需求列表
                 match StoryApi::list(&client, *product, status.clone(), *project).await {
                     Ok(stories) => {
                         // 输出 JSON 格式结果
-                        println!("{}", serde_json::to_string_pretty(&stories).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&stories).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -36,19 +42,27 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- get --------------------
-            StorySubcommand::Get { id } => {
-                match StoryApi::get(&client, *id).await {
-                    Ok(story) => {
-                        println!("{}", serde_json::to_string_pretty(&story).unwrap_or_default());
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+            StorySubcommand::Get { id } => match StoryApi::get(&client, *id).await {
+                Ok(story) => {
+                    println!(
+                        "{}",
+                        serde_json::to_string_pretty(&story).unwrap_or_default()
+                    );
                 }
-            }
+                Err(e) => {
+                    eprintln!("Error: {}", e);
+                }
+            },
 
             // -------------------- create --------------------
-            StorySubcommand::Create { title, product, pri, category, spec, estimate } => {
+            StorySubcommand::Create {
+                title,
+                product,
+                pri,
+                category,
+                spec,
+                estimate,
+            } => {
                 // 构建创建请求
                 let req = CreateStoryRequest {
                     title: title.clone(),
@@ -63,7 +77,10 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
 
                 match StoryApi::create(&client, &req).await {
                     Ok(story) => {
-                        println!("{}", serde_json::to_string_pretty(&story).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&story).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -72,7 +89,13 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
             }
 
             // -------------------- update --------------------
-            StorySubcommand::Update { id, title, status, pri, assigned_to } => {
+            StorySubcommand::Update {
+                id,
+                title,
+                status,
+                pri,
+                assigned_to,
+            } => {
                 // 构建更新请求
                 let req = UpdateStoryRequest {
                     title: title.clone(),
@@ -83,7 +106,10 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat) {
 
                 match StoryApi::update(&client, *id, &req).await {
                     Ok(story) => {
-                        println!("{}", serde_json::to_string_pretty(&story).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&story).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

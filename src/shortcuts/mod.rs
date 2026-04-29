@@ -1,5 +1,5 @@
-pub mod story;
 pub mod bug;
+pub mod story;
 
 use clap::Parser;
 
@@ -9,15 +9,11 @@ pub enum Shortcut {
     /// List stories in current project
     StoryList,
     /// Get a story by ID
-    StoryGet {
-        id: u64,
-    },
+    StoryGet { id: u64 },
     /// List bugs in current project
     BugList,
     /// Get a bug by ID
-    BugGet {
-        id: u64,
-    },
+    BugGet { id: u64 },
     /// List all open bugs assigned to current user
     MyBugs,
 }

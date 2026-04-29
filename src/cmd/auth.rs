@@ -3,10 +3,10 @@
 //! 提供登录、登出、状态查看功能
 //! 类似 Java 的 @Service 层，封装认证业务逻辑
 
-use clap::Subcommand;  // clap: 命令行参数解析库，类似 Java 的 JCommander 或 Python 的 argparse
-use anyhow::Result;     // anyhow: 错误处理库，类似 Go 的 error 但更灵活
-use crate::core::{load_config, update_config};  // 导入配置模块
-use crate::api::Auth;   // 导入 API 认证客户端
+use crate::api::Auth;
+use crate::core::{load_config, update_config}; // 导入配置模块
+use anyhow::Result; // anyhow: 错误处理库，类似 Go 的 error 但更灵活
+use clap::Subcommand; // clap: 命令行参数解析库，类似 Java 的 JCommander 或 Python 的 argparse // 导入 API 认证客户端
 
 // ============================================================
 // 命令定义 - 类似 Java 的枚举类或 TypeScript 的 union type

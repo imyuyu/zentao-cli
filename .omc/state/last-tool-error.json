@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd \\\"D:/WebstormProjects/zentao-cli\\\" && cargo fmt --all -- --check 2>&1\",\"description\":\"Check formatting locally\"}",
+  "error": "Exit code 1\nDiff in \\\\?\\D:\\WebstormProjects\\zentao-cli\\src\\api\\auth.rs:2:\n //!\n //! 负责与 ZenTao 服务器进行身份认证交互\n \n\u001b[32m+use crate::core::ZentaoError;\n\u001b[0m use anyhow::Result;\n use reqwest::Client;\n use serde::Deserialize;\nDiff in \\\\?\\D:\\WebstormProjects\\zentao-cli\\src\\api\\auth.rs:8:\n\u001b[31m-use crate::core::ZentaoError;\n\u001b[0m \n /// 禅道认证客户端\n ///\nDiff in \\\\?\\D:\\WebstormProjects\\zentao-cli\\src\\api\\auth.rs:51:\n         let url = format!(\"{}/api.php/v1/tokens\", self.base_url);\n \n         // 发送 POST 请求，Conten...",
+  "timestamp": "2026-04-29T09:28:52.010Z",
+  "retry_count": 1
+}

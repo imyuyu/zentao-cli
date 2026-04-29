@@ -8,9 +8,9 @@
 //! 2. 项目配置: ./.zentao/config.toml
 //! 3. 全局配置: ~/.config/zentao-cli/config.toml (Linux/Mac) 或 %APPDATA%/zentao-cli/config.toml (Windows)
 
-use anyhow::Result;  // 错误处理，类似 Go 的 error 包装
-use serde::{Deserialize, Serialize};  // serde: 序列化/反序列化库，类似 Java 的 Jackson 或 Python 的 pydantic
-use std::path::PathBuf;  // PathBuf: 可变路径，类似 Java 的 Path 或 Python 的 pathlib.Path
+use anyhow::Result; // 错误处理，类似 Go 的 error 包装
+use serde::{Deserialize, Serialize}; // serde: 序列化/反序列化库，类似 Java 的 Jackson 或 Python 的 pydantic
+use std::path::PathBuf; // PathBuf: 可变路径，类似 Java 的 Path 或 Python 的 pathlib.Path
 
 // ============================================================
 // 数据结构定义 - 类似 TypeScript 的 interface 或 Java 的 POJO
@@ -121,8 +121,8 @@ pub fn global_config_path() -> PathBuf {
     // Linux/Mac: ~/.zentao-cli/config.toml
     // Windows: C:\Users\username\.zentao-cli\config.toml
     dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("."))  // 兜底当前目录
-        .join(".zentao-cli")   // join 类似 Path / ".zentao-cli"
+        .unwrap_or_else(|| PathBuf::from(".")) // 兜底当前目录
+        .join(".zentao-cli") // join 类似 Path / ".zentao-cli"
         .join("config.toml")
 }
 
@@ -131,8 +131,7 @@ pub fn global_config_path() -> PathBuf {
 /// # 返回
 /// ./.zentao-cli/config.toml (当前目录下的 .zentao-cli 子目录)
 pub fn project_config_path() -> PathBuf {
-    PathBuf::from(".zentao-cli")
-        .join("config.toml")
+    PathBuf::from(".zentao-cli").join("config.toml")
 }
 
 // ============================================================
@@ -257,7 +256,7 @@ pub fn load_config() -> Result<Config> {
         token: std::env::var("ZENTAO_TOKEN").ok(),
         product_id: std::env::var("ZENTAO_PRODUCT_ID")
             .ok()
-            .and_then(|s| s.parse().ok()),  // parse().ok() 类似 Python 的 int(s) try-catch
+            .and_then(|s| s.parse().ok()), // parse().ok() 类似 Python 的 int(s) try-catch
         project_id: std::env::var("ZENTAO_PROJECT_ID")
             .ok()
             .and_then(|s| s.parse().ok()),
@@ -266,7 +265,8 @@ pub fn load_config() -> Result<Config> {
 
     // 第2步：加载全局配置并合并
     let global_path = global_config_path();
-    if global_path.exists() {  // 类似 Python 的 Path.exists()
+    if global_path.exists() {
+        // 类似 Python 的 Path.exists()
         if let Ok(global_config) = load_toml_config(&global_path) {
             config = merge_config(config, global_config);
         }
@@ -307,7 +307,7 @@ pub fn save_config(config: &Config) -> Result<()> {
 
     // 包装成 GlobalConfig 格式
     let global = GlobalConfig {
-        default: config.clone(),  // clone 类似 Python 的 copy.deepcopy
+        default: config.clone(), // clone 类似 Python 的 copy.deepcopy
     };
 
     // 序列化为 TOML 字符串，类似 JSON.stringify 但输出 TOML 格式
@@ -363,7 +363,7 @@ pub fn update_config(key: &str, value: &str) -> Result<Config> {
             config.api_version = Some(value.to_string());
         }
         _ => {
-            anyhow::bail!("Unknown config key: {}", key);  // 类似 Go 的 errors.New()
+            anyhow::bail!("Unknown config key: {}", key); // 类似 Go 的 errors.New()
         }
     }
 
@@ -392,10 +392,10 @@ pub fn unset_config(key: &str) -> Result<Config> {
 
     match key {
         "url" => {
-            config.url = String::new();  // 空字符串
+            config.url = String::new(); // 空字符串
         }
         "token" => {
-            config.token = None;  // None 类似 null 或 undefined
+            config.token = None; // None 类似 null 或 undefined
         }
         "product_id" => {
             config.product_id = None;
@@ -436,7 +436,7 @@ mod tests {
 
         let override_config = Config {
             url: "http://override".to_string(),
-            token: None,  // None 表示不覆盖
+            token: None, // None 表示不覆盖
             product_id: Some(2),
             project_id: Some(10),
             api_version: None,

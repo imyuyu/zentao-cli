@@ -77,7 +77,11 @@ impl ProjectApi {
     }
 
     /// 带分页的项目列表查询
-    pub async fn list_with_pagination(client: &ApiClient, page: u32, limit: u32) -> Result<Vec<Project>> {
+    pub async fn list_with_pagination(
+        client: &ApiClient,
+        page: u32,
+        limit: u32,
+    ) -> Result<Vec<Project>> {
         let path = format!("/api.php/v1/projects?page={}&limit={}", page, limit);
         let resp: ProjectListResponse = client.get(&path).await?;
         Ok(resp.projects)

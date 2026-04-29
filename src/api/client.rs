@@ -2,10 +2,10 @@
 //!
 //! 封装所有与 ZenTao API 的 HTTP 通信
 
+use crate::core::ZentaoError;
 use anyhow::Result;
 use reqwest::Client;
 use std::time::Duration;
-use crate::core::ZentaoError;
 
 /// API 客户端
 ///
@@ -104,7 +104,9 @@ impl ApiClient {
             req = req.header(self.auth_header_name(), token.as_str());
         }
 
-        let resp = req.send().await
+        let resp = req
+            .send()
+            .await
             .map_err(|e| ZentaoError::Network(e.to_string()))?;
 
         // 处理 404 错误，返回专门的 NotFound 错误
@@ -120,7 +122,8 @@ impl ApiClient {
         }
 
         // 解析响应 JSON
-        resp.json().await
+        resp.json()
+            .await
             .map_err(|e| ZentaoError::Api(e.to_string()).into())
     }
 
@@ -129,7 +132,11 @@ impl ApiClient {
     /// # 参数
     /// - path: API 路径
     /// - body: 请求体（会自动序列化为 JSON）
-    pub async fn post<T: serde::de::DeserializeOwned, B: serde::Serialize>(&self, path: &str, body: &B) -> Result<T> {
+    pub async fn post<T: serde::de::DeserializeOwned, B: serde::Serialize>(
+        &self,
+        path: &str,
+        body: &B,
+    ) -> Result<T> {
         let url = self.get_url(path);
 
         let mut req = self.client.post(&url).json(body);
@@ -138,7 +145,9 @@ impl ApiClient {
             req = req.header(self.auth_header_name(), token.as_str());
         }
 
-        let resp = req.send().await
+        let resp = req
+            .send()
+            .await
             .map_err(|e| ZentaoError::Network(e.to_string()))?;
 
         if !resp.status().is_success() {
@@ -147,7 +156,8 @@ impl ApiClient {
             return Err(ZentaoError::Api(format!("API error {}: {}", status, msg)).into());
         }
 
-        resp.json().await
+        resp.json()
+            .await
             .map_err(|e| ZentaoError::Api(e.to_string()).into())
     }
 
@@ -156,7 +166,11 @@ impl ApiClient {
     /// # 参数
     /// - path: API 路径
     /// - body: 请求体
-    pub async fn put<T: serde::de::DeserializeOwned, B: serde::Serialize>(&self, path: &str, body: &B) -> Result<T> {
+    pub async fn put<T: serde::de::DeserializeOwned, B: serde::Serialize>(
+        &self,
+        path: &str,
+        body: &B,
+    ) -> Result<T> {
         let url = self.get_url(path);
 
         let mut req = self.client.put(&url).json(body);
@@ -165,7 +179,9 @@ impl ApiClient {
             req = req.header(self.auth_header_name(), token.as_str());
         }
 
-        let resp = req.send().await
+        let resp = req
+            .send()
+            .await
             .map_err(|e| ZentaoError::Network(e.to_string()))?;
 
         if !resp.status().is_success() {
@@ -174,7 +190,8 @@ impl ApiClient {
             return Err(ZentaoError::Api(format!("API error {}: {}", status, msg)).into());
         }
 
-        resp.json().await
+        resp.json()
+            .await
             .map_err(|e| ZentaoError::Api(e.to_string()).into())
     }
 }

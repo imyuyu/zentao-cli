@@ -2,29 +2,23 @@
 //!
 //! 提供交互式配置向导和配置管理功能
 
-use clap::Subcommand;
 use anyhow::Result;
+use clap::Subcommand;
 use ratatui::{
     backend::CrosstermBackend,
-    Terminal,
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Clear},
-    Frame,
+    widgets::{Block, Borders, Clear, Paragraph},
+    Frame, Terminal,
 };
 use std::io::stdout;
 
+use crate::api::Auth;
 use crate::core::{
-    load_config,
-    update_config,
-    unset_config,
-    global_config_path,
-    project_config_path,
-    Config,
+    global_config_path, load_config, project_config_path, unset_config, update_config, Config,
     GlobalConfig,
 };
-use crate::api::Auth;
 use crate::tui::config::{ConfigWizard, ConfigWizardState};
 
 #[derive(Subcommand, Clone, Debug)]
@@ -40,20 +34,13 @@ pub enum ConfigSubcommand {
     Show,
     /// 设置配置项
     #[command(name = "set")]
-    Set {
-        key: String,
-        value: String,
-    },
+    Set { key: String, value: String },
     /// 获取配置项
     #[command(name = "get")]
-    Get {
-        key: String,
-    },
+    Get { key: String },
     /// 取消设置配置项
     #[command(name = "unset")]
-    Unset {
-        key: String,
-    },
+    Unset { key: String },
 }
 
 /// 运行 TUI 配置向导
@@ -61,12 +48,15 @@ pub async fn run_tui_wizard(global: bool) -> Result<()> {
     let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
 
     // 进入alternate screen
-    crossterm::execute!(terminal.backend_mut(), crossterm::terminal::EnterAlternateScreen)?;
+    crossterm::execute!(
+        terminal.backend_mut(),
+        crossterm::terminal::EnterAlternateScreen
+    )?;
     crossterm::execute!(terminal.backend_mut(), crossterm::cursor::Hide)?;
 
     let mut wizard = ConfigWizard::new();
     let mut input_buffer = String::new();
-    let mut cursor_pos: usize = 0;  // 光标位置
+    let mut cursor_pos: usize = 0; // 光标位置
 
     // 渲染初始界面
     terminal.draw(|f| {
@@ -134,7 +124,10 @@ pub async fn run_tui_wizard(global: bool) -> Result<()> {
     // 退出前清理：显示光标、清除屏幕、离开alternate screen
     let _ = crossterm::execute!(terminal.backend_mut(), crossterm::cursor::Show);
     let _ = terminal.clear();
-    let _ = crossterm::execute!(terminal.backend_mut(), crossterm::terminal::LeaveAlternateScreen);
+    let _ = crossterm::execute!(
+        terminal.backend_mut(),
+        crossterm::terminal::LeaveAlternateScreen
+    );
 
     Ok(())
 }
@@ -161,7 +154,12 @@ async fn handle_enter(wizard: &mut ConfigWizard, input_buffer: &str, global: boo
             wizard.set_password(input_buffer.to_string());
 
             // 开始登录
-            if let ConfigWizardState::Connecting { url, account, password } = &wizard.state {
+            if let ConfigWizardState::Connecting {
+                url,
+                account,
+                password,
+            } = &wizard.state
+            {
                 let auth = Auth::new(url);
                 match auth.login(account, password).await {
                     Ok(token) => {
@@ -207,9 +205,7 @@ async fn save_config(url: &str, token: &str, global: bool) -> Result<String> {
         api_version: None,
     };
 
-    let global = GlobalConfig {
-        default: config,
-    };
+    let global = GlobalConfig { default: config };
 
     let content = toml::to_string_pretty(&global)?;
     std::fs::write(&scope, &content)?;
@@ -231,23 +227,30 @@ fn render_wizard_frame(
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(3),  // 标题栏
+            Constraint::Length(3), // 标题栏
             Constraint::Min(0),    // 内容
-            Constraint::Length(3),  // 底部提示
+            Constraint::Length(3), // 底部提示
         ])
         .split(area);
 
     // 标题
-    let title = Paragraph::new(vec![
-        Line::from(Span::styled(" ZenTao CLI 配置向导 ", Style::default().fg(Color::Cyan).bold())),
-    ])
-    .block(Block::default().borders(Borders::all()).title_style(Style::default().fg(Color::Cyan)));
+    let title = Paragraph::new(vec![Line::from(Span::styled(
+        " ZenTao CLI 配置向导 ",
+        Style::default().fg(Color::Cyan).bold(),
+    ))])
+    .block(
+        Block::default()
+            .borders(Borders::all())
+            .title_style(Style::default().fg(Color::Cyan)),
+    );
 
     f.render_widget(title, chunks[0]);
 
     // 内容区
     match state {
-        ConfigWizardState::Url | ConfigWizardState::Account { .. } | ConfigWizardState::Password { .. } => {
+        ConfigWizardState::Url
+        | ConfigWizardState::Account { .. }
+        | ConfigWizardState::Password { .. } => {
             let (buffer, prompt, is_password) = match state {
                 ConfigWizardState::Url => (input_buffer, "请输入 ZenTao 服务器地址：", false),
                 ConfigWizardState::Account { .. } => (input_buffer, "请输入账号：", false),
@@ -263,16 +266,26 @@ fn render_wizard_frame(
 
             // 构建输入行：before + [光标位置字符] + after
             let mut spans = vec![Span::raw("> ")];
-            spans.push(Span::raw(display.chars().take(cursor_pos).collect::<String>()));
+            spans.push(Span::raw(
+                display.chars().take(cursor_pos).collect::<String>(),
+            ));
 
             // 光标位置的字符（下划线样式）
             if let Some(c) = display.chars().nth(cursor_pos) {
-                spans.push(Span::styled(c.to_string(), Style::default().fg(Color::Black).on_yellow().bold()));
+                spans.push(Span::styled(
+                    c.to_string(),
+                    Style::default().fg(Color::Black).on_yellow().bold(),
+                ));
             } else {
-                spans.push(Span::styled(" ", Style::default().fg(Color::Black).on_yellow()));
+                spans.push(Span::styled(
+                    " ",
+                    Style::default().fg(Color::Black).on_yellow(),
+                ));
             }
 
-            spans.push(Span::raw(display.chars().skip(cursor_pos + 1).collect::<String>()));
+            spans.push(Span::raw(
+                display.chars().skip(cursor_pos + 1).collect::<String>(),
+            ));
 
             let content = Paragraph::new(vec![
                 Line::from(""),
@@ -287,7 +300,10 @@ fn render_wizard_frame(
             let content = Paragraph::new(vec![
                 Line::from(""),
                 Line::from(""),
-                Line::from(Span::styled("正在连接...", Style::default().fg(Color::Yellow))),
+                Line::from(Span::styled(
+                    "正在连接...",
+                    Style::default().fg(Color::Yellow),
+                )),
                 Line::from("请稍候..."),
             ]);
             f.render_widget(content, chunks[1]);
@@ -301,7 +317,10 @@ fn render_wizard_frame(
             let content = Paragraph::new(vec![
                 Line::from(""),
                 Line::from(""),
-                Line::from(Span::styled("✓ 配置成功！", Style::default().fg(Color::Green))),
+                Line::from(Span::styled(
+                    "✓ 配置成功！",
+                    Style::default().fg(Color::Green),
+                )),
                 Line::from(""),
                 Line::from(format!("URL: {}", url)),
                 Line::from(format!("Token: {}", masked)),
@@ -312,7 +331,10 @@ fn render_wizard_frame(
             let content = Paragraph::new(vec![
                 Line::from(""),
                 Line::from(""),
-                Line::from(Span::styled("✓ 配置已保存！", Style::default().fg(Color::Green))),
+                Line::from(Span::styled(
+                    "✓ 配置已保存！",
+                    Style::default().fg(Color::Green),
+                )),
                 Line::from(""),
                 Line::from(format!("URL: {}", url)),
                 Line::from(format!("保存路径: {}", path)),
@@ -335,18 +357,19 @@ fn render_wizard_frame(
 
     // 底部提示
     let help_text = match state {
-        ConfigWizardState::Url | ConfigWizardState::Account { .. } | ConfigWizardState::Password { .. } => {
-            "Enter 确认 | Esc 退出 | 退格删除"
-        }
+        ConfigWizardState::Url
+        | ConfigWizardState::Account { .. }
+        | ConfigWizardState::Password { .. } => "Enter 确认 | Esc 退出 | 退格删除",
         ConfigWizardState::Connecting { .. } => "请稍候...",
         ConfigWizardState::Success { .. } => "按 Enter 保存配置",
         ConfigWizardState::Saved { .. } => "按 Enter 退出",
         ConfigWizardState::Error { .. } => "按任意键重试",
     };
 
-    let footer = Paragraph::new(vec![
-        Line::from(Span::styled(help_text, Style::default().fg(Color::DarkGray))),
-    ])
+    let footer = Paragraph::new(vec![Line::from(Span::styled(
+        help_text,
+        Style::default().fg(Color::DarkGray),
+    ))])
     .block(Block::default().borders(Borders::all()));
 
     f.render_widget(footer, chunks[2]);
@@ -373,13 +396,18 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
             println!();
             println!("Current values:");
             println!("  url: {}", config.url);
-            println!("  token: {}", config.token.as_ref()
-                .map(|t| if t.is_empty() {
-                    "(empty)".to_string()
-                } else {
-                    format!("{}...", &t[..t.len().min(8)])
-                })
-                .unwrap_or_else(|| "(not set)".to_string()));
+            println!(
+                "  token: {}",
+                config
+                    .token
+                    .as_ref()
+                    .map(|t| if t.is_empty() {
+                        "(empty)".to_string()
+                    } else {
+                        format!("{}...", &t[..t.len().min(8)])
+                    })
+                    .unwrap_or_else(|| "(not set)".to_string())
+            );
             println!("  product_id: {:?}", config.product_id);
             println!("  project_id: {:?}", config.project_id);
             Ok(())
@@ -398,13 +426,18 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
             let config = load_config()?;
             match key.as_str() {
                 "url" => println!("{}", config.url),
-                "token" => println!("{}", config.token.as_ref()
-                    .map(|t| if t.is_empty() {
-                        "(empty)".to_string()
-                    } else {
-                        format!("{}...", &t[..t.len().min(8)])
-                    })
-                    .unwrap_or_else(|| "(not set)".to_string())),
+                "token" => println!(
+                    "{}",
+                    config
+                        .token
+                        .as_ref()
+                        .map(|t| if t.is_empty() {
+                            "(empty)".to_string()
+                        } else {
+                            format!("{}...", &t[..t.len().min(8)])
+                        })
+                        .unwrap_or_else(|| "(not set)".to_string())
+                ),
                 "product_id" => println!("{:?}", config.product_id),
                 "project_id" => println!("{:?}", config.project_id),
                 _ => println!("Unknown key: {}", key),

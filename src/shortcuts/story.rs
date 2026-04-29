@@ -1,6 +1,6 @@
-use anyhow::Result;
-use crate::core::Config;
 use crate::api::{ApiClient, StoryApi};
+use crate::core::Config;
+use anyhow::Result;
 
 pub struct StoryShortcut;
 
@@ -9,7 +9,8 @@ impl StoryShortcut {
         let rt = tokio::runtime::Runtime::new()?;
         let api_version = config.api_version.as_deref().unwrap_or("v1");
         rt.block_on(async {
-            let client = ApiClient::new(&config.url, config.token.clone()).with_api_version(api_version);
+            let client =
+                ApiClient::new(&config.url, config.token.clone()).with_api_version(api_version);
             match StoryApi::list(&client, config.product_id, status, config.project_id).await {
                 Ok(stories) => {
                     println!("Stories:");
@@ -27,7 +28,8 @@ impl StoryShortcut {
         let rt = tokio::runtime::Runtime::new()?;
         let api_version = config.api_version.as_deref().unwrap_or("v1");
         rt.block_on(async {
-            let client = ApiClient::new(&config.url, config.token.clone()).with_api_version(api_version);
+            let client =
+                ApiClient::new(&config.url, config.token.clone()).with_api_version(api_version);
             match StoryApi::get(&client, id).await {
                 Ok(story) => {
                     println!("Story #{}", story.id);

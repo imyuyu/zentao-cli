@@ -34,7 +34,11 @@ impl BuildApi {
     ///
     /// # 返回值
     /// 返回所有有权限访问的版本列表
-    pub async fn list(client: &ApiClient, project: Option<u64>, product: Option<u64>) -> Result<Vec<Build>> {
+    pub async fn list(
+        client: &ApiClient,
+        project: Option<u64>,
+        product: Option<u64>,
+    ) -> Result<Vec<Build>> {
         let mut path = String::from("/api.php/v1/builds?");
 
         if let Some(pid) = project {
