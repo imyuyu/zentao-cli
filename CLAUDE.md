@@ -78,19 +78,18 @@ build +get 1
 doc +list
 doc +get 10
 
-auth +login --account admin --password 123456
-auth +logout
-auth +status
+auth login --account admin --password 123456
+auth status
+auth logout
 
-config +init
-config +show
-config +set url https://...
-config +get url
-config +unset url
+config init
+config show
+config set url https://...
+config get url
+config unset url
 
-api +test
-api +endpoints
-api +list
+api test
+api endpoints
 
 doctor              # 诊断配置和网络
 story-browse --product 1  # TUI 浏览需求
@@ -102,22 +101,6 @@ bug-browse --product 1    # TUI 浏览缺陷
 1. Environment variables: `ZENTAO_URL`, `ZENTAO_TOKEN`, `ZENTAO_PRODUCT_ID`, `ZENTAO_PROJECT_ID`, `ZENTAO_API_VERSION`
 2. Project config: `.zentao-cli/config.toml`
 3. Global config: `~/.zentao-cli/config.toml` (Windows: `%APPDATA%/zentao-cli`)
-
-## Shortcuts
-
-Shortcuts 层提供最简洁的快速访问方式，`shortcuts` 是独立顶级命令：
-
-```bash
-zentao-cli shortcuts +products
-zentao-cli shortcuts +projects
-zentao-cli shortcuts +bugs --product 1
-zentao-cli shortcuts +stories --product 1
-zentao-cli shortcuts +tasks --project 1
-# 支持分页
-zentao-cli shortcuts +stories --product 1 --page-all --page-delay 200
-# 支持多种格式
-zentao-cli shortcuts +products --format json
-```
 
 ## Key Patterns
 
