@@ -1,10 +1,15 @@
 [package]
 name = "zentao-cli"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "ZenTao CLI - Command line tool for ZenTao project management"
 license = "MIT"
 repository = "https://github.com/zentao-cli/cli"
+authors = ["imyuyu"]
+readme = "README.md"
+keywords = ["zentao", "cli", "project-management", "devops"]
+categories = ["command-line-utilities", "project-management"]
+rust-version = "1.70"
 
 [[bin]]
 name = "zentao-cli"

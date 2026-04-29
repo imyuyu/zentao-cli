@@ -1,11 +1,20 @@
 {
   "name": "@imyuyu/zentao-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "ZenTao CLI - Command line tool for ZenTao project management",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/zentao-cli/cli"
+  },
+  "homepage": "https://github.com/zentao-cli/cli#readme",
+  "bugs": {
+    "url": "https://github.com/zentao-cli/cli/issues"
+  },
+  "author": "imyuyu",
+  "engines": {
+    "node": ">=16",
+    "cargo": ">=1.70"
   },
   "keywords": [
     "zentao",

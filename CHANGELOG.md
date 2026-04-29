@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.0] - 2026-04-29
+
+### Changed
+- Rust 1.70 minimum version requirement
+- Updated dependencies for security and compatibility
+
+### Fixed
+- cargo clippy warnings resolved
+- Test suite passes (103 tests)
+- Repository configuration improvements
+- Updated .gitignore for proper Rust project coverage
+
+### Added
+- New package metadata and keywords
+
 ## [0.1.0] - 2026-04-27
 
 ### Added
