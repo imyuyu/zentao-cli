@@ -158,3 +158,46 @@ jobs:
 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-npm:
+    name: Publish to npm
+    needs: [release, package-skills]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Extract binaries for npm
+        run: |
+          mkdir -p bin
+          tar xzf artifacts/zentao-cli-linux-x86_64.tar.gz -C bin
+          mv bin/zentao-cli bin/zentao-cli-linux-x86_64
+          tar xzf artifacts/zentao-cli-darwin-x86_64.tar.gz -C bin
+          mv bin/zentao-cli bin/zentao-cli-darwin-x86_64
+          tar xzf artifacts/zentao-cli-darwin-arm64.tar.gz -C bin
+          mv bin/zentao-cli bin/zentao-cli-darwin-arm64
+          cp artifacts/zentao-cli-windows-x86_64.exe bin/
+
+      - name: Package for npm
+        run: |
+          cp package.json bin/
+          cp README.md bin/
+          cp LICENSE bin/
+
+      - name: Publish to npm
+        working-directory: bin
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
