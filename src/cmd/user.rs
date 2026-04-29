@@ -9,7 +9,7 @@ use crate::core::{Config, OutputFormat};
 #[derive(Subcommand, Clone, Debug)]
 pub enum UserAction {
     /// 列出用户
-    #[command(name = "+list", visible_alias = "+list")]
+    #[command(name = "list")]
     List {
         #[arg(long)]
         dept: Option<u64>,
@@ -17,7 +17,7 @@ pub enum UserAction {
         role: Option<String>,
     },
     /// 获取用户详情
-    #[command(name = "+get", visible_alias = "+get")]
+    #[command(name = "get")]
     Get {
         id: u64,
     },

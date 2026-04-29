@@ -48,21 +48,21 @@ impl PaginationArgs {
 #[derive(Parser, Clone, Debug)]
 pub enum ShortcutCommand {
     /// 获取产品列表
-    #[command(name = "+products", visible_alias = "+products")]
+    #[command(name = "+products")]
     Products {
         /// 分页参数
         #[command(flatten)]
         pagination: PaginationArgs,
     },
     /// 获取项目列表
-    #[command(name = "+projects", visible_alias = "+projects")]
+    #[command(name = "+projects")]
     Projects {
         /// 分页参数
         #[command(flatten)]
         pagination: PaginationArgs,
     },
     /// 获取 Bug 列表
-    #[command(name = "+bugs", visible_alias = "+bugs")]
+    #[command(name = "+bugs")]
     Bugs {
         /// 产品 ID
         #[arg(long)]
@@ -72,7 +72,7 @@ pub enum ShortcutCommand {
         pagination: PaginationArgs,
     },
     /// 获取故事列表
-    #[command(name = "+stories", visible_alias = "+stories")]
+    #[command(name = "+stories")]
     Stories {
         /// 产品 ID
         #[arg(long)]
@@ -82,7 +82,7 @@ pub enum ShortcutCommand {
         pagination: PaginationArgs,
     },
     /// 获取任务列表
-    #[command(name = "+tasks", visible_alias = "+tasks")]
+    #[command(name = "+tasks")]
     Tasks {
         /// 项目 ID
         #[arg(long)]

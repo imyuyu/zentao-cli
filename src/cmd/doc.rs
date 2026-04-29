@@ -23,10 +23,10 @@ use crate::core::{Config, OutputFormat};
 #[derive(Subcommand, Clone, Debug)]
 pub enum DocAction {
     /// 列出所有文档
-    #[command(name = "+list", visible_alias = "+list")]
+    #[command(name = "list")]
     List,
     /// 获取指定文档的详细信息
-    #[command(name = "+get", visible_alias = "+get")]
+    #[command(name = "get")]
     Get {
         /// 文档 ID
         id: u64,

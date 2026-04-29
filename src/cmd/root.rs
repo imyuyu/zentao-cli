@@ -118,7 +118,7 @@ enum Commands {
 #[derive(Subcommand, Clone, Debug)]
 pub enum StorySubcommand {
     /// 列出需求列表
-    #[command(name = "+list", visible_alias = "+list")]
+    #[command(name = "list")]
     List {
         #[arg(long)]
         product: Option<u64>,
@@ -128,12 +128,12 @@ pub enum StorySubcommand {
         status: Option<String>,
     },
     /// 获取需求详情
-    #[command(name = "+get", visible_alias = "+get")]
+    #[command(name = "get")]
     Get {
         id: u64,
     },
     /// 创建需求
-    #[command(name = "+create", visible_alias = "+create")]
+    #[command(name = "create")]
     Create {
         #[arg(long)]
         title: String,
@@ -149,7 +149,7 @@ pub enum StorySubcommand {
         estimate: Option<f64>,
     },
     /// 更新需求
-    #[command(name = "+update", visible_alias = "+update")]
+    #[command(name = "update")]
     Update {
         id: u64,
         #[arg(long)]
@@ -166,7 +166,7 @@ pub enum StorySubcommand {
 #[derive(Subcommand, Clone, Debug)]
 pub enum BugSubcommand {
     /// 列出 Bug 列表
-    #[command(name = "+list", visible_alias = "+list")]
+    #[command(name = "list")]
     List {
         #[arg(long)]
         product: u64,
@@ -176,12 +176,12 @@ pub enum BugSubcommand {
         assigned_to: Option<String>,
     },
     /// 获取 Bug 详情
-    #[command(name = "+get", visible_alias = "+get")]
+    #[command(name = "get")]
     Get {
         id: u64,
     },
     /// 创建 Bug
-    #[command(name = "+create", visible_alias = "+create")]
+    #[command(name = "create")]
     Create {
         #[arg(long)]
         title: String,
@@ -199,7 +199,7 @@ pub enum BugSubcommand {
         story: Option<u64>,
     },
     /// 更新 Bug
-    #[command(name = "+update", visible_alias = "+update")]
+    #[command(name = "update")]
     Update {
         id: u64,
         #[arg(long)]
@@ -216,7 +216,7 @@ pub enum BugSubcommand {
 #[derive(Subcommand, Clone, Debug)]
 pub enum TestcaseSubcommand {
     /// 列出测试用例
-    #[command(name = "+list", visible_alias = "+list")]
+    #[command(name = "list")]
     List {
         #[arg(long)]
         product: Option<u64>,
@@ -228,7 +228,7 @@ pub enum TestcaseSubcommand {
         status: Option<String>,
     },
     /// 获取用例详情
-    #[command(name = "+get", visible_alias = "+get")]
+    #[command(name = "get")]
     Get {
         id: u64,
     },
@@ -237,10 +237,10 @@ pub enum TestcaseSubcommand {
 #[derive(Subcommand, Clone, Debug)]
 pub enum ReleaseSubcommand {
     /// 列出发布
-    #[command(name = "+list", visible_alias = "+list")]
+    #[command(name = "list")]
     List,
     /// 获取发布详情
-    #[command(name = "+get", visible_alias = "+get")]
+    #[command(name = "get")]
     Get {
         id: u64,
     },
