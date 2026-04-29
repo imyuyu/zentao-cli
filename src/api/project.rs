@@ -85,7 +85,7 @@ impl ProjectApi {
 
     /// 获取项目总数
     pub async fn count(client: &ApiClient) -> Result<u64> {
-        let path = format!("/api.php/v1/projects?page=1&limit=1");
+        let path = "/api.php/v1/projects?page=1&limit=1".to_string();
         let resp: ProjectListResponse = client.get(&path).await?;
         Ok(resp.total.unwrap_or(0))
     }

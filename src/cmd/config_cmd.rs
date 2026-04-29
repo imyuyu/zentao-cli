@@ -78,62 +78,50 @@ pub async fn run_tui_wizard(global: bool) -> Result<()> {
         // 读取事件
         let event = crossterm::event::read()?;
 
-        match event {
-            crossterm::event::Event::Key(key) => {
-                // 只处理press事件
-                match key.kind {
-                    crossterm::event::KeyEventKind::Press => {}
-                    _ => continue,
+        if let crossterm::event::Event::Key(key) = event {
+            // 只处理press事件
+            if !matches!(key.kind, crossterm::event::KeyEventKind::Press) {
+                continue;
+            }
+            use crossterm::event::KeyCode;
+            match key.code {
+                KeyCode::Esc => {
+                    break;
                 }
-                use crossterm::event::KeyCode;
-                match key.code {
-                    KeyCode::Esc => {
+                KeyCode::Enter => {
+                    handle_enter(&mut wizard, &input_buffer, global).await?;
+                    input_buffer.clear();
+                    cursor_pos = 0;
+                    // 只有 Saved 状态才退出（按 Enter 确认后）
+                    if matches!(wizard.state, ConfigWizardState::Saved { .. }) {
                         break;
                     }
-                    KeyCode::Enter => {
-                        handle_enter(&mut wizard, &input_buffer, global).await?;
-                        input_buffer.clear();
-                        cursor_pos = 0;
-                        // 只有 Saved 状态才退出（按 Enter 确认后）
-                        if matches!(wizard.state, ConfigWizardState::Saved { .. }) {
-                            break;
-                        }
-                    }
-                    KeyCode::Left => {
-                        if cursor_pos > 0 {
-                            cursor_pos -= 1;
-                        }
-                    }
-                    KeyCode::Right => {
-                        if cursor_pos < input_buffer.len() {
-                            cursor_pos += 1;
-                        }
-                    }
-                    KeyCode::Home => {
-                        cursor_pos = 0;
-                    }
-                    KeyCode::End => {
-                        cursor_pos = input_buffer.len();
-                    }
-                    KeyCode::Backspace => {
-                        if cursor_pos > 0 {
-                            input_buffer.remove(cursor_pos - 1);
-                            cursor_pos -= 1;
-                        }
-                    }
-                    KeyCode::Char(c) => {
-                        input_buffer.insert(cursor_pos, c);
-                        cursor_pos += 1;
-                    }
-                    KeyCode::Delete => {
-                        if cursor_pos < input_buffer.len() {
-                            input_buffer.remove(cursor_pos);
-                        }
-                    }
-                    _ => {}
                 }
+                KeyCode::Left if cursor_pos > 0 => {
+                    cursor_pos -= 1;
+                }
+                KeyCode::Right if cursor_pos < input_buffer.len() => {
+                    cursor_pos += 1;
+                }
+                KeyCode::Home => {
+                    cursor_pos = 0;
+                }
+                KeyCode::End => {
+                    cursor_pos = input_buffer.len();
+                }
+                KeyCode::Backspace if cursor_pos > 0 => {
+                    input_buffer.remove(cursor_pos - 1);
+                    cursor_pos -= 1;
+                }
+                KeyCode::Char(c) => {
+                    input_buffer.insert(cursor_pos, c);
+                    cursor_pos += 1;
+                }
+                KeyCode::Delete if cursor_pos < input_buffer.len() => {
+                    input_buffer.remove(cursor_pos);
+                }
+                _ => {}
             }
-            _ => {}
         }
 
         // 更新显示

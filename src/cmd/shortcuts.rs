@@ -131,7 +131,7 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
             ShortcutCommand::Products { pagination } => {
                 if pagination.page_all {
                     // 分页获取所有产品
-                    let all_products = fetch_all_products(&client, &pagination).await;
+                    let all_products = fetch_all_products(&client, pagination).await;
                     print_items(&all_products, format, columns::PRODUCT);
                 } else {
                     match ProductApi::list_with_pagination(&client, 1, pagination.effective_limit()).await {
@@ -148,7 +148,7 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
             // -------------------- +projects --------------------
             ShortcutCommand::Projects { pagination } => {
                 if pagination.page_all {
-                    let all_projects = fetch_all_projects(&client, &pagination).await;
+                    let all_projects = fetch_all_projects(&client, pagination).await;
                     print_items(&all_projects, format, columns::PROJECT);
                 } else {
                     match ProjectApi::list_with_pagination(&client, 1, pagination.effective_limit()).await {
@@ -168,7 +168,7 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                 match product_id {
                     Some(pid) => {
                         if pagination.page_all {
-                            let all_bugs = fetch_all_bugs(&client, pid, &pagination).await;
+                            let all_bugs = fetch_all_bugs(&client, pid, pagination).await;
                             print_items(&all_bugs, format, columns::BUG);
                         } else {
                             match BugApi::list_with_pagination(&client, pid, None, None, 1, pagination.effective_limit()).await {
@@ -193,7 +193,7 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                 match product_id {
                     Some(pid) => {
                         if pagination.page_all {
-                            let all_stories = fetch_all_stories(&client, pid, &pagination).await;
+                            let all_stories = fetch_all_stories(&client, pid, pagination).await;
                             print_items(&all_stories, format, columns::STORY);
                         } else {
                             match StoryApi::list_with_pagination(&client, Some(pid), None, None, 1, pagination.effective_limit()).await {
@@ -218,7 +218,7 @@ pub fn run(cmd: &ShortcutCommand, config: &Config, format: OutputFormat) {
                 match project_id {
                     Some(pid) => {
                         if pagination.page_all {
-                            let all_tasks = fetch_all_tasks(&client, pid, &pagination).await;
+                            let all_tasks = fetch_all_tasks(&client, pid, pagination).await;
                             print_items(&all_tasks, format, columns::TASK);
                         } else {
                             match TaskApi::list(&client, pid, None).await {

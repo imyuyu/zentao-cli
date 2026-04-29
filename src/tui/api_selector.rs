@@ -78,75 +78,57 @@ pub fn run_selector() -> Option<ApiEndpoint> {
         // 读取事件
         let event = crossterm::event::read().ok()?;
 
-        match event {
-            crossterm::event::Event::Key(key) => {
-                match key.kind {
-                    crossterm::event::KeyEventKind::Press => {}
-                    _ => continue,
-                }
-                use crossterm::event::KeyCode;
-                match key.code {
-                    KeyCode::Esc => {
-                        break;
-                    }
-                    KeyCode::Enter => {
-                        if !selector.filtered.is_empty() {
-                            let selected = selector.filtered[selector.selected].clone();
-                            // 退出前清理
-                            let _ = crossterm::execute!(terminal.backend_mut(), crossterm::cursor::Show);
-                            let _ = terminal.clear();
-                            let _ = crossterm::execute!(terminal.backend_mut(), crossterm::terminal::LeaveAlternateScreen);
-                            return Some(selected);
-                        }
-                    }
-                    KeyCode::Up => {
-                        if selector.selected > 0 {
-                            selector.selected -= 1;
-                        }
-                    }
-                    KeyCode::Down => {
-                        if selector.selected < selector.filtered.len().saturating_sub(1) {
-                            selector.selected += 1;
-                        }
-                    }
-                    KeyCode::Left => {
-                        if selector.cursor_pos > 0 {
-                            selector.cursor_pos -= 1;
-                        }
-                    }
-                    KeyCode::Right => {
-                        if selector.cursor_pos < selector.chars.len() {
-                            selector.cursor_pos += 1;
-                        }
-                    }
-                    KeyCode::Home => {
-                        selector.cursor_pos = 0;
-                    }
-                    KeyCode::End => {
-                        selector.cursor_pos = selector.chars.len();
-                    }
-                    KeyCode::Backspace => {
-                        if selector.cursor_pos > 0 {
-                            selector.cursor_pos -= 1;
-                            selector.chars.remove(selector.cursor_pos);
-                            selector.filter();
-                        }
-                    }
-                    KeyCode::Char(c) => {
-                        selector.chars.insert(selector.cursor_pos, c);
-                        selector.cursor_pos += 1;
-                        selector.filter();
-                    }
-                    KeyCode::Delete => {
-                        if selector.cursor_pos < selector.chars.len() {
-                            selector.chars.remove(selector.cursor_pos);
-                            selector.filter();
-                        }
-                    }
-                    _ => {}
-                }
+        if let crossterm::event::Event::Key(key) = event {
+            if !matches!(key.kind, crossterm::event::KeyEventKind::Press) {
+                continue;
             }
-            _ => {}
+            use crossterm::event::KeyCode;
+            match key.code {
+                KeyCode::Esc => {
+                    break;
+                }
+                KeyCode::Enter if !selector.filtered.is_empty() => {
+                    let selected = selector.filtered[selector.selected].clone();
+                    // 退出前清理
+                    let _ = crossterm::execute!(terminal.backend_mut(), crossterm::cursor::Show);
+                    let _ = terminal.clear();
+                    let _ = crossterm::execute!(terminal.backend_mut(), crossterm::terminal::LeaveAlternateScreen);
+                    return Some(selected);
+                }
+                KeyCode::Up if selector.selected > 0 => {
+                    selector.selected -= 1;
+                }
+                KeyCode::Down if selector.selected < selector.filtered.len().saturating_sub(1) => {
+                    selector.selected += 1;
+                }
+                KeyCode::Left if selector.cursor_pos > 0 => {
+                    selector.cursor_pos -= 1;
+                }
+                KeyCode::Right if selector.cursor_pos < selector.chars.len() => {
+                    selector.cursor_pos += 1;
+                }
+                KeyCode::Home => {
+                    selector.cursor_pos = 0;
+                }
+                KeyCode::End => {
+                    selector.cursor_pos = selector.chars.len();
+                }
+                KeyCode::Backspace if selector.cursor_pos > 0 => {
+                    selector.cursor_pos -= 1;
+                    selector.chars.remove(selector.cursor_pos);
+                    selector.filter();
+                }
+                KeyCode::Char(c) => {
+                    selector.chars.insert(selector.cursor_pos, c);
+                    selector.cursor_pos += 1;
+                    selector.filter();
+                }
+                KeyCode::Delete if selector.cursor_pos < selector.chars.len() => {
+                    selector.chars.remove(selector.cursor_pos);
+                    selector.filter();
+                }
+                _ => {}
+            }
         }
 
         // 更新显示

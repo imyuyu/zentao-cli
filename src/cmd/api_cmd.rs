@@ -118,7 +118,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
                 // 直接调用指定端点
                 let name_str = name.as_str();
                 if let Some(endpoint) = endpoints.iter().find(|e| e.name.contains(name_str) || e.path.contains(name_str)) {
-                    if let Err(e) = call_api_endpoint(&config, endpoint).await {
+                    if let Err(e) = call_api_endpoint(config, endpoint).await {
                         eprintln!("✗ 调用失败: {}", e);
                     }
                 } else {
@@ -138,7 +138,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
                     }
                 };
 
-                match call_api_endpoint(&config, &endpoint).await {
+                match call_api_endpoint(config, &endpoint).await {
                     Ok(_) => {
                         // 调用成功，退出循环
                         break;
@@ -152,7 +152,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
                         eprint!("请选择 (1-2): ");
 
                         let mut input = String::new();
-                        if let Ok(_) = std::io::stdin().read_line(&mut input) {
+                        if std::io::stdin().read_line(&mut input).is_ok() {
                             let input = input.trim();
                             if input != "1" {
                                 // 选择 2 或其他，退出循环
@@ -191,7 +191,7 @@ async fn call_api_endpoint(config: &crate::core::Config, endpoint: &ApiEndpoint)
                     println!("{}", serde_json::to_string_pretty(&data).unwrap_or_default());
                 }
                 Err(e) => {
-                    return Err(e.into());
+                    return Err(e);
                 }
             }
         }
