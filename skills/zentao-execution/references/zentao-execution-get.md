@@ -1,0 +1,37 @@
+# execution get
+
+获取执行详情。
+
+## Command
+```bash
+zentao execution get <id>
+```
+
+## Options
+
+| Option | Required | Description |
+|--------|----------|-------------|
+| `<id>` | Yes | 执行 ID |
+
+## Examples
+
+```bash
+# Get execution details
+zentao execution get 100
+```
+
+## Output Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | u64 | 执行 ID |
+| name | string | 执行名称 |
+| project | u64 | 所属项目 ID |
+| status | string | 执行状态：wait / doing / suspended / closed |
+| type | string | 执行类型：iteration（迭代）/ milestone（里程碑） |
+| begin | string | 开始日期（可选） |
+| end | string | 结束日期（可选） |
+| days | u32 | 持续天数（可选） |
+| desc | string | 执行描述（可选） |
+| opened_by | string | 创建人（可选） |
+| opened_date | string | 创建时间（可选） |

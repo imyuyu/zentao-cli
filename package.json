@@ -1,0 +1,38 @@
+{
+  "name": "@imyuyu/zentao-cli",
+  "version": "0.1.0",
+  "description": "ZenTao CLI - Command line tool for ZenTao project management",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zentao-cli/cli"
+  },
+  "keywords": [
+    "zentao",
+    "cli",
+    "project-management",
+    "devops"
+  ],
+  "bin": {
+    "zentao-cli": "./bin/zentao.exe"
+  },
+  "os": [
+    "win32",
+    "linux",
+    "darwin"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "scripts": {
+    "preinstall": "cargo build --release --manifest-path ./Cargo.toml && node -e \"require('fs').copyFileSync('target/release/zentao-cli.exe','bin/zentao.exe')\"",
+    "build": "cargo build --release --manifest-path ./Cargo.toml && node -e \"require('fs').copyFileSync('target/release/zentao-cli.exe','bin/zentao.exe')\"",
+    "clean": "cargo clean --manifest-path ./Cargo.toml"
+  },
+  "files": [
+    "bin/",
+    "skills/",
+    "README.md"
+  ]
+}

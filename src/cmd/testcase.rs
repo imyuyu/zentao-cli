@@ -1,0 +1,46 @@
+//! ZenTao Testcase(测试用例)命令模块
+//!
+//! CLI 命令入口，调用 TestcaseApi 处理用户请求
+
+use crate::api::{ApiClient, TestcaseApi};
+use crate::core::{Config, OutputFormat};
+use crate::cmd::root::TestcaseSubcommand;
+
+/// 执行测试用例相关命令
+///
+/// 根据子命令类型调用对应的 API 并输出结果
+pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat) {
+    let rt = tokio::runtime::Runtime::new()
+        .expect("Failed to create Tokio runtime");
+
+    rt.block_on(async {
+        let client = ApiClient::new(&config.url, config.token.clone())
+            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
+
+        match cmd {
+            // -------------------- list --------------------
+            TestcaseSubcommand::List { product, project, type_, status } => {
+                match TestcaseApi::list(&client, *product, *project, type_.clone(), status.clone()).await {
+                    Ok(testcases) => {
+                        println!("{}", serde_json::to_string_pretty(&testcases).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- get --------------------
+            TestcaseSubcommand::Get { id } => {
+                match TestcaseApi::get(&client, *id).await {
+                    Ok(testcase) => {
+                        println!("{}", serde_json::to_string_pretty(&testcase).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+        }
+    });
+}

@@ -1,0 +1,56 @@
+---
+name: zentao-release
+version: 0.1.0
+description: ZenTao Release (发布) management - list and get product releases
+---
+
+# Release (发布) Management
+
+**MUST** - 在使用此模块前，先阅读 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md) 了解认证和环境变量配置。
+
+## Core Concepts
+
+- **Release**: A product release in ZenTao, associated with a specific build/version
+- **Release ID**: Unique identifier for a release
+- **Build**: The build/version ID that the release references
+
+## Shortcuts (推荐优先使用)
+
+| Shortcut | 说明 |
+|----------|------|
+| `+release-list` | List all releases |
+| `+release-get` | Get release details |
+
+## Commands
+
+### List Releases
+```bash
+zentao release list
+```
+
+### Get Release
+```bash
+zentao release get 1
+```
+
+## Output Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | u64 | Release ID |
+| name | string | Release name (e.g., "v1.0.0") |
+| product | u64 | Product ID |
+| build | u64 | Associated Build ID |
+| status | string | Release status (normal/closed) |
+| marker | string | Release marker (e.g., "stable", "beta") |
+| date | string | Release date |
+
+## Examples
+
+```bash
+# List all releases
+zentao release list
+
+# Get release details
+zentao release get 1
+```

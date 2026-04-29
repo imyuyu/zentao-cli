@@ -1,0 +1,207 @@
+//! ZenTao Product(产品) API 模块
+//!
+//! 提供产品的查询操作（禅道产品）
+//!
+//! # 与其他模块的区别
+//! - Product（产品）：ZenTao 中的产品概念，对应一个业务产品线
+//! - Project（项目）：具体的开发项目，一个产品下可以有多个项目
+//! - Story（需求）：产品需求，一个产品下可以有多个需求
+//! - Bug（缺陷）：产品缺陷
+//! - Task（任务）：具体的开发任务
+
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
+
+use super::ApiClient;
+
+// ============================================================
+// 数据结构体
+// ============================================================
+
+/// 产品数据结构
+///
+/// 对应 ZenTao 系统的产品实体
+///
+/// # JSON 示例
+/// ```json
+/// {
+///     "id": 1,
+///     "name": "主产品",
+///     "code": "MAIN_PRODUCT",
+///     "status": "normal",
+///     "desc": "产品描述（可选）"
+/// }
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Product {
+    /// 产品 ID（ZenTao 中的唯一标识）
+    pub id: u64,
+    /// 产品名称
+    pub name: String,
+    /// 产品代号（英文标识）
+    pub code: String,
+    /// 产品状态：normal（正常）/closed（关闭）
+    pub status: String,
+    /// 产品描述（可选字段）
+    /// 使用 `skip_serializing_if` 优化：None 时不序列化到 JSON
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
+
+// ============================================================
+// Product API
+// ============================================================
+
+/// 产品 API 操作类
+///
+/// 提供产品的列表查询和详情查询
+///
+/// # 使用示例
+/// ```rust,ignore
+/// let products = ProductApi::list(&client).await?;
+/// let product = ProductApi::get(&client, 1).await?;
+/// ```
+pub struct ProductApi;
+
+/// 产品列表响应（ZenTao API 返回格式）
+#[derive(Debug, Deserialize)]
+pub struct ProductListResponse {
+    #[serde(default)]
+    pub limit: Option<u64>,
+    #[serde(default)]
+    pub page: Option<u64>,
+    #[serde(default)]
+    pub total: Option<u64>,
+    pub products: Vec<Product>,
+}
+
+impl ProductApi {
+    /// 查询产品列表
+    ///
+    /// GET /api.php/v1/products
+    ///
+    /// # 返回值
+    /// 返回所有有权限访问的产品列表
+    pub async fn list(client: &ApiClient) -> Result<Vec<Product>> {
+        Self::list_with_pagination(client, 1, 100).await
+    }
+
+    /// 带分页的产品列表查询
+    pub async fn list_with_pagination(client: &ApiClient, page: u32, limit: u32) -> Result<Vec<Product>> {
+        let path = format!("/api.php/v1/products?page={}&limit={}", page, limit);
+        let resp: ProductListResponse = client.get(&path).await?;
+        Ok(resp.products)
+    }
+
+    /// 获取产品总数
+    pub async fn count(client: &ApiClient) -> Result<u64> {
+        let path = format!("/api.php/v1/products?page=1&limit=1");
+        let resp: ProductListResponse = client.get(&path).await?;
+        Ok(resp.total.unwrap_or(0))
+    }
+
+    /// 获取单个产品详情
+    ///
+    /// GET /api.php/v1/products/{id}
+    ///
+    /// # 参数
+    /// - `client`: API 客户端实例
+    /// - `id`: 产品 ID
+    ///
+    /// # 返回值
+    /// 返回指定产品的完整信息
+    pub async fn get(client: &ApiClient, id: u64) -> Result<Product> {
+        let path = format!("/api.php/v1/products/{}", id);
+        // 产品详情接口返回的是直接的产品对象，不需要 ApiResponse 包装
+        let resp: Product = client.get(&path).await?;
+        Ok(resp)
+    }
+}
+
+// ============================================================
+// 单元测试
+// ============================================================
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // ==================== 序列化测试 ====================
+
+    /// 测试产品结构序列化
+    ///
+    /// 验证 Product 结构能正确序列化为 JSON 字符串
+    #[test]
+    fn test_product_serialization() {
+        let product = Product {
+            id: 1,
+            name: "Test Product".to_string(),
+            code: "TEST".to_string(),
+            status: "normal".to_string(),
+            desc: None,
+        };
+        let json = serde_json::to_string(&product).unwrap();
+        // 验证基本字段存在
+        assert!(json.contains("Test Product"));
+        assert!(json.contains("TEST"));
+        assert!(json.contains("normal"));
+        // 验证 None 的 desc 字段被跳过（不包含在 JSON 中）
+        assert!(!json.contains("desc"));
+    }
+
+    // ==================== 反序列化测试 ====================
+
+    /// 测试产品 JSON 反序列化
+    ///
+    /// 验证 JSON 字符串能正确解析为 Product 结构
+    #[test]
+    fn test_product_deserialization() {
+        let product_json = r#"{
+            "id": 10,
+            "name": "My Product",
+            "code": "MYPROD",
+            "status": "active"
+        }"#;
+        let product: Product = serde_json::from_str(product_json).unwrap();
+        assert_eq!(product.id, 10);
+        assert_eq!(product.name, "My Product");
+        assert_eq!(product.code, "MYPROD");
+        assert_eq!(product.status, "active");
+    }
+
+    /// 测试带描述字段的产品反序列化
+    ///
+    /// 验证可选字段 desc 能正确解析
+    #[test]
+    fn test_product_deserialization_with_desc() {
+        let product_json = r#"{
+            "id": 11,
+            "name": "Product With Desc",
+            "code": "DESCPROD",
+            "status": "normal",
+            "desc": "Product description here"
+        }"#;
+        let product: Product = serde_json::from_str(product_json).unwrap();
+        assert_eq!(product.id, 11);
+        assert_eq!(product.desc, Some("Product description here".to_string()));
+    }
+
+    // ==================== 可选字段跳过测试 ====================
+
+    /// 测试序列化时跳过 None 的 desc 字段
+    ///
+    /// 验证 `skip_serializing_if = "Option::is_none"` 生效
+    #[test]
+    fn test_product_skips_none_desc() {
+        let product = Product {
+            id: 1,
+            name: "No Desc".to_string(),
+            code: "NODESC".to_string(),
+            status: "normal".to_string(),
+            desc: None,
+        };
+        let json = serde_json::to_string(&product).unwrap();
+        // desc 为 None 时，不应该出现在 JSON 中
+        assert!(!json.contains("desc"));
+    }
+}

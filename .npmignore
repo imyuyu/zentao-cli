@@ -1,0 +1,42 @@
+# Source code
+src/
+tests/
+scripts/
+
+# Rust build artifacts
+target/
+Cargo.toml
+Cargo.lock
+
+# IDE and editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github/
+.travis.yml
+appveyor.yml
+
+# Development files
+.env
+.env.*
+*.log
+
+# Claude Code
+.claude/
+.omc/
+
