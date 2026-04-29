@@ -24,17 +24,17 @@ zentao-cli - A CLI tool for both humans and AI Agents to operate ZenTao. Covers 
 
 | Category      | Capabilities                                              |
 | ------------ | --------------------------------------------------------|
-| Story        | Story management - create, query, update stories          |
-| Bug          | Bug management - create, query, update bugs              |
-| Task         | Task management - view and manage tasks                 |
-| Product      | Product management - view and manage products           |
-| Project      | Project management - view and manage projects           |
-| User         | User management - view user information                |
-| Testcase     | Testcase management - view testcases                    |
-| Execution    | Execution management - view execution progress          |
-| Release      | Release management - view release information          |
-| Build        | Build management - view build information              |
-| Doc          | Doc management - view and manage documents            |
+| 📝 Story     | Story management - create, query, update stories          |
+| 🐛 Bug       | Bug management - create, query, update bugs              |
+| ✅ Task      | Task management - view and manage tasks                 |
+| 📦 Product   | Product management - view and manage products           |
+| 🏗️ Project  | Project management - view and manage projects           |
+| 👤 User      | User management - view user information                |
+| 🧪 Testcase | Testcase management - view testcases                    |
+| ▶️ Execution | Execution management - view execution progress          |
+| 🎉 Release   | Release management - view release information          |
+| 🔨 Build     | Build management - view build information              |
+| 📄 Doc       | Doc management - view and manage documents            |
 
 ## Installation & Quick Start
 
