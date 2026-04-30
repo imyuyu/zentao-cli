@@ -25,9 +25,9 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 assigned_to,
             } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::list()"));
+                    safe_println("[DRY-RUN] Would call BugApi::list()");
                     println!("  URL: {}/api.php/v1/bugs", config.url);
-                    safe_println(&format!("  Params:"));
+                    safe_println("  Params:");
                     println!("    product: {:?}", product);
                     if let Some(s) = status {
                         println!("    status: {}", s);
@@ -56,7 +56,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- get --------------------
             BugSubcommand::Get { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::get()"));
+                    safe_println("[DRY-RUN] Would call BugApi::get()");
                     println!("  URL: {}/api.php/v1/bugs/{}", config.url, id);
                     return;
                 }
@@ -96,7 +96,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 };
 
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::create()"));
+                    safe_println("[DRY-RUN] Would call BugApi::create()");
                     println!("  URL: {}/api.php/v1/bugs", config.url);
                     println!(
                         "  Body: {}",
@@ -133,7 +133,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 };
 
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::update()"));
+                    safe_println("[DRY-RUN] Would call BugApi::update()");
                     println!("  URL: {}/api.php/v1/bugs/{}", config.url, id);
                     println!(
                         "  Body: {}",
@@ -159,7 +159,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 resolved_build,
             } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::resolve()"));
+                    safe_println("[DRY-RUN] Would call BugApi::resolve()");
                     println!("  URL: {}/api.php/v1/bugs/{}/resolve", config.url, id);
                     println!(
                         "  Body: {{ resolution: {}, resolved_build: {} }}",
@@ -181,7 +181,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- confirm --------------------
             BugSubcommand::Confirm { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::confirm()"));
+                    safe_println("[DRY-RUN] Would call BugApi::confirm()");
                     println!("  URL: {}/api.php/v1/bugs/{}/confirm", config.url, id);
                     return;
                 }
@@ -199,7 +199,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- close --------------------
             BugSubcommand::Close { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::close()"));
+                    safe_println("[DRY-RUN] Would call BugApi::close()");
                     println!("  URL: {}/api.php/v1/bugs/{}/close", config.url, id);
                     return;
                 }
@@ -217,7 +217,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- activate --------------------
             BugSubcommand::Activate { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::activate()"));
+                    safe_println("[DRY-RUN] Would call BugApi::activate()");
                     println!("  URL: {}/api.php/v1/bugs/{}/activate", config.url, id);
                     return;
                 }
@@ -235,7 +235,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- delete --------------------
             BugSubcommand::Delete { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BugApi::delete()"));
+                    safe_println("[DRY-RUN] Would call BugApi::delete()");
                     println!("  URL: {}/api.php/v1/bugs/{}", config.url, id);
                     return;
                 }

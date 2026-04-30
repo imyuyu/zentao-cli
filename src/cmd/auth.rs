@@ -93,9 +93,7 @@ pub async fn run(
 
             // URL 为空，启动完整配置向导
             if url.is_empty() {
-                safe_println(&format!(
-                    "ZenTao URL not configured. Starting interactive setup..."
-                ));
+                safe_println("ZenTao URL not configured. Starting interactive setup...");
                 crate::cmd::config_cmd::run(&crate::cmd::config_cmd::ConfigSubcommand::Init {
                     global: false,
                 })
@@ -109,13 +107,13 @@ pub async fn run(
                 let auth = Auth::new(&url);
                 match auth.login(&account, &password).await {
                     Ok(token) => {
-                        safe_println(&format!("✓ Login successful"));
+                        safe_println("✓ Login successful");
                         update_config("token", &token, *global)?;
-                        safe_println(&format!("✓ Token saved to config"));
+                        safe_println("✓ Token saved to config");
                         println!("  Token: {}...", &token[..token.len().min(8)]);
                         match auth.verify_token(&token).await {
-                            Ok(true) => safe_println(&format!("✓ Token verified")),
-                            Ok(false) => safe_println(&format!("⚠ Token verification failed")),
+                            Ok(true) => safe_println("✓ Token verified"),
+                            Ok(false) => safe_println("⚠ Token verification failed"),
                             Err(e) => println!("⚠ Token verification error: {}", e),
                         }
                         Ok(())
@@ -131,13 +129,13 @@ pub async fn run(
                 let auth = Auth::new(&url);
                 match auth.login(&account, &password).await {
                     Ok(token) => {
-                        safe_println(&format!("✓ Login successful"));
+                        safe_println("✓ Login successful");
                         update_config("token", &token, *global)?;
-                        safe_println(&format!("✓ Token saved to config"));
+                        safe_println("✓ Token saved to config");
                         println!("  Token: {}...", &token[..token.len().min(8)]);
                         match auth.verify_token(&token).await {
-                            Ok(true) => safe_println(&format!("✓ Token verified")),
-                            Ok(false) => safe_println(&format!("⚠ Token verification failed")),
+                            Ok(true) => safe_println("✓ Token verified"),
+                            Ok(false) => safe_println("⚠ Token verification failed"),
                             Err(e) => println!("⚠ Token verification error: {}", e),
                         }
                         Ok(())
@@ -158,9 +156,9 @@ pub async fn run(
             if config.token.is_some() {
                 // 使用空字符串清空 token，update_config 会处理 None 的情况
                 update_config("token", "", false)?;
-                safe_println(&format!("✓ Logged out (token cleared)"));
+                safe_println("✓ Logged out (token cleared)");
             } else {
-                safe_println(&format!("Not logged in"));
+                safe_println("Not logged in");
             }
             Ok(())
         }
@@ -172,23 +170,23 @@ pub async fn run(
             // 检查是否有 token
             if let Some(token) = &config.token {
                 if !token.is_empty() {
-                    safe_println(&format!("✓ Authenticated"));
+                    safe_println("✓ Authenticated");
                     println!("  URL: {}", config.url);
                     println!("  Token: {}...", &token[..token.len().min(8)]);
 
                     // 验证 token
                     let auth = Auth::new(&config.url);
                     match auth.verify_token(token).await {
-                        Ok(true) => safe_println(&format!("  Status: Valid")),
-                        Ok(false) => safe_println(&format!("  Status: Invalid")),
+                        Ok(true) => safe_println("  Status: Valid"),
+                        Ok(false) => safe_println("  Status: Invalid"),
                         Err(e) => println!("  Status: Could not verify ({})", e),
                     }
                 } else {
-                    safe_println(&format!("✗ Not authenticated (empty token)"));
+                    safe_println("✗ Not authenticated (empty token)");
                 }
             } else {
-                safe_println(&format!("✗ Not authenticated (no token)"));
-                safe_println(&format!("  Set ZENTAO_TOKEN or run 'zentao auth login'"));
+                safe_println("✗ Not authenticated (no token)");
+                safe_println("  Set ZENTAO_TOKEN or run 'zentao auth login'");
             }
             Ok(())
         }

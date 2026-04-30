@@ -25,17 +25,13 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
 
                 if dry_run {
                     if let Some(pid) = product_id {
-                        safe_println(&format!(
-                            "[DRY-RUN] Would call ReleaseApi::list_by_product()"
-                        ));
+                        safe_println("[DRY-RUN] Would call ReleaseApi::list_by_product()");
                         println!("  URL: {}/api.php/v1/products/{}/releases", config.url, pid);
                     } else if let Some(pid) = project_id {
-                        safe_println(&format!(
-                            "[DRY-RUN] Would call ReleaseApi::list_by_project()"
-                        ));
+                        safe_println("[DRY-RUN] Would call ReleaseApi::list_by_project()");
                         println!("  URL: {}/api.php/v1/projects/{}/releases", config.url, pid);
                     } else {
-                        safe_println(&format!("[DRY-RUN] Would call ReleaseApi::list()"));
+                        safe_println("[DRY-RUN] Would call ReleaseApi::list()");
                         println!("  URL: {}/api.php/v1/releases", config.url);
                     }
                     return;
@@ -65,7 +61,7 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
             // -------------------- get --------------------
             ReleaseSubcommand::Get { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call ReleaseApi::get()"));
+                    safe_println("[DRY-RUN] Would call ReleaseApi::get()");
                     println!("  URL: {}/api.php/v1/releases/{}", config.url, id);
                     return;
                 }

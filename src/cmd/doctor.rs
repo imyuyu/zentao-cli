@@ -4,18 +4,18 @@ use crate::safe_println;
 use anyhow::Result;
 
 pub async fn run_doctor() -> Result<()> {
-    safe_println(&format!("ZenTao CLI Doctor"));
-    safe_println(&format!("================="));
+    safe_println("ZenTao CLI Doctor");
+    safe_println("=================");
     println!();
 
     let mut has_errors = false;
 
     // Check configuration
-    safe_println(&format!("[1/4] Checking configuration..."));
+    safe_println("[1/4] Checking configuration...");
     match load_config() {
         Ok(config) => {
             if config.url.is_empty() {
-                safe_println(&format!("  ✗ ZENTAO_URL is not set"));
+                safe_println("  ✗ ZENTAO_URL is not set");
                 has_errors = true;
             } else {
                 println!("  ✓ ZENTAO_URL: {}", config.url);
@@ -23,14 +23,14 @@ pub async fn run_doctor() -> Result<()> {
 
             if config.token.is_none() || config.token.as_ref().map(|t| t.is_empty()).unwrap_or(true)
             {
-                safe_println(&format!("  ✗ ZENTAO_TOKEN is not set"));
+                safe_println("  ✗ ZENTAO_TOKEN is not set");
                 has_errors = true;
             } else {
-                safe_println(&format!("  ✓ Token is configured"));
+                safe_println("  ✓ Token is configured");
             }
 
             if config.product_id.is_none() {
-                safe_println(&format!("  ! ZENTAO_PRODUCT_ID not set (optional)"));
+                safe_println("  ! ZENTAO_PRODUCT_ID not set (optional)");
             } else {
                 println!("  ✓ Product ID: {:?}", config.product_id);
             }
@@ -43,7 +43,7 @@ pub async fn run_doctor() -> Result<()> {
 
     // Check config files
     println!();
-    safe_println(&format!("[2/4] Checking config files..."));
+    safe_println("[2/4] Checking config files...");
     let global_path = global_config_path();
     if global_path.exists() {
         println!("  ✓ Global config: {}", global_path.display());
@@ -63,16 +63,16 @@ pub async fn run_doctor() -> Result<()> {
 
     // Check network
     println!();
-    safe_println(&format!("[3/4] Checking network connectivity..."));
+    safe_println("[3/4] Checking network connectivity...");
     let config = load_config()?;
     if !config.url.is_empty() {
         let auth = Auth::new(&config.url);
         if let Some(token) = &config.token {
             if !token.is_empty() {
                 match auth.verify_token(token).await {
-                    Ok(true) => safe_println(&format!("  ✓ API connection successful")),
+                    Ok(true) => safe_println("  ✓ API connection successful"),
                     Ok(false) => {
-                        safe_println(&format!("  ✗ Token verification failed"));
+                        safe_println("  ✗ Token verification failed");
                         has_errors = true;
                     }
                     Err(e) => {
@@ -86,19 +86,15 @@ pub async fn run_doctor() -> Result<()> {
 
     // Summary
     println!();
-    safe_println(&format!("[4/4] Summary"));
+    safe_println("[4/4] Summary");
     if has_errors {
-        safe_println(&format!(
-            "  Some checks failed. Please fix the issues above."
-        ));
+        safe_println("  Some checks failed. Please fix the issues above.");
     } else {
-        safe_println(&format!("  ✓ All checks passed!"));
+        safe_println("  ✓ All checks passed!");
     }
 
     println!();
-    safe_println(&format!(
-        "For help, see: https://github.com/yourusername/zentao-cli#configuration"
-    ));
+    safe_println("For help, see: https://github.com/yourusername/zentao-cli#configuration");
 
     Ok(())
 }

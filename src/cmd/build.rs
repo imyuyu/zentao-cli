@@ -113,12 +113,12 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
 
                 if dry_run {
                     if let Some(eid) = execution {
-                        safe_println(&format!("[DRY-RUN] Would call BuildApi::list_by_execution()"));
+                        safe_println("[DRY-RUN] Would call BuildApi::list_by_execution()");
                         println!("  URL: {}/api.php/v1/executions/{}/builds", config.url, eid);
                     } else {
-                        safe_println(&format!("[DRY-RUN] Would call BuildApi::list()"));
+                        safe_println("[DRY-RUN] Would call BuildApi::list()");
                         println!("  URL: {}/api.php/v1/builds", config.url);
-                        safe_println(&format!("  Params:"));
+                        safe_println("  Params:");
                         if let Some(p) = project_id {
                             println!("    project: {}", p);
                         }
@@ -150,7 +150,7 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
 
             BuildAction::Get { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BuildApi::get()"));
+                    safe_println("[DRY-RUN] Would call BuildApi::get()");
                     println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
                     return;
                 }
@@ -186,12 +186,12 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                 });
 
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BuildApi::create()"));
+                    safe_println("[DRY-RUN] Would call BuildApi::create()");
                     println!(
                         "  URL: {}/api.php/v1/projects/{}/builds",
                         config.url, project_id
                     );
-                    safe_println(&format!("  Body: {{"));
+                    safe_println("  Body: {{");
                     println!("    name: {}", name);
                     println!("    project: {}", project_id);
                     println!("    product: {}", product_id);
@@ -207,7 +207,7 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                     if let Some(ref p) = pkg {
                         println!("    pkg: {}", p);
                     }
-                    safe_println(&format!("  }}"));
+                    safe_println("  }}");
                     return;
                 }
 
@@ -242,9 +242,9 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                 pkg,
             } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BuildApi::update()"));
+                    safe_println("[DRY-RUN] Would call BuildApi::update()");
                     println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
-                    safe_println(&format!("  Body: {{"));
+                    safe_println("  Body: {{");
                     if let Some(ref n) = name {
                         println!("    name: {}", n);
                     }
@@ -257,7 +257,7 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                     if let Some(ref p) = pkg {
                         println!("    pkg: {}", p);
                     }
-                    safe_println(&format!("  }}"));
+                    safe_println("  }}");
                     return;
                 }
 
@@ -285,7 +285,7 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
 
             BuildAction::Delete { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call BuildApi::delete()"));
+                    safe_println("[DRY-RUN] Would call BuildApi::delete()");
                     println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
                     return;
                 }

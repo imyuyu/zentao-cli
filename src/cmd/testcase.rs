@@ -32,9 +32,9 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 let project_id = config.project_id(*project);
 
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::list()"));
+                    safe_println("[DRY-RUN] Would call TestcaseApi::list()");
                     println!("  URL: {}/api.php/v1/testcases", config.url);
-                    safe_println(&format!("  Params:"));
+                    safe_println("  Params:");
                     if let Some(p) = product_id {
                         println!("    product: {}", p);
                     }
@@ -67,7 +67,7 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
             // -------------------- get --------------------
             TestcaseSubcommand::Get { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::get()"));
+                    safe_println("[DRY-RUN] Would call TestcaseApi::get()");
                     println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
                     return;
                 }
@@ -103,12 +103,12 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 let project_id = config.project_id(*project);
 
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::create()"));
+                    safe_println("[DRY-RUN] Would call TestcaseApi::create()");
                     println!(
                         "  URL: {}/api.php/v1/products/{}/testcases",
                         config.url, product_id
                     );
-                    safe_println(&format!("  Body:"));
+                    safe_println("  Body:");
                     println!("    title: {}", title);
                     println!("    product: {}", product_id);
                     if let Some(t) = type_ {
@@ -170,9 +170,9 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 expectation,
             } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::update()"));
+                    safe_println("[DRY-RUN] Would call TestcaseApi::update()");
                     println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
-                    safe_println(&format!("  Body:"));
+                    safe_println("  Body:");
                     if let Some(t) = title {
                         println!("    title: {}", t);
                     }
@@ -221,7 +221,7 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
             // -------------------- delete --------------------
             TestcaseSubcommand::Delete { id } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::delete()"));
+                    safe_println("[DRY-RUN] Would call TestcaseApi::delete()");
                     println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
                     return;
                 }
@@ -244,9 +244,9 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 build,
             } => {
                 if dry_run {
-                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::create_result()"));
+                    safe_println("[DRY-RUN] Would call TestcaseApi::create_result()");
                     println!("  URL: {}/api.php/v1/testcases/{}/results", config.url, id);
-                    safe_println(&format!("  Body:"));
+                    safe_println("  Body:");
                     println!("    result: {}", result);
                     if let Some(c) = consumed {
                         println!("    consumed: {}", c);

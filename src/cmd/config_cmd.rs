@@ -614,12 +614,12 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
         ConfigSubcommand::Show => {
             let config = load_config()?;
 
-            safe_println(&format!("ZenTao CLI Configuration"));
-            safe_println(&format!("======================"));
+            safe_println("ZenTao CLI Configuration");
+            safe_println("======================");
             println!("Global config: {}", global_config_path().display());
             println!("Project config: {}", project_config_path().display());
             println!();
-            safe_println(&format!("Current values:"));
+            safe_println("Current values:");
             println!("  url: {}", config.url);
             println!(
                 "  token: {}",
