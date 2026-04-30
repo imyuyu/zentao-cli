@@ -30,10 +30,10 @@ metadata:
 ## API Resources
 
 ```bash
-zentao-cli task list <filters>    # 列出任务
-zentao-cli task get <task_id>    # 获取任务详情
-zentao-cli task create [flags]   # 创建任务
-zentao-cli task update <task_id> [flags]  # 更新任务
+zentao-cli task +list --project <id>    # 列出任务
+zentao-cli task +get <task_id>    # 获取任务详情
+zentao-cli task +create --name <name> --project <id> --pri <priority>  # 创建任务
+zentao-cli task +update <task_id> [flags]  # 更新任务
 ```
 
 ## Common Use Cases
@@ -42,42 +42,42 @@ zentao-cli task update <task_id> [flags]  # 更新任务
 
 ```bash
 # 列出项目所有任务
-zentao-cli task list --project 1
+zentao-cli task +list --project 1
 
 # 只看我被指派的任务
-zentao-cli task list --project 1 --assigned-to me
+zentao-cli task +list --project 1 --assigned-to me
 
 # 查看某个执行（ sprint ）下的任务
-zentao-cli task list --project 1 --execution 1
+zentao-cli task +list --project 1 --execution 1
 ```
 
 ### 获取任务详情
 
 ```bash
-zentao-cli task get 456
+zentao-cli task +get 456
 ```
 
 ### 创建任务
 
 ```bash
 # 创建简单任务
-zentao-cli task create --name "实现登录功能" --project 1 --pri 3
+zentao-cli task +create --name "实现登录功能" --project 1 --pri 3
 
 # 创建任务并指定负责人、预估工时
-zentao-cli task create --name "代码评审" --project 1 --pri 2 --assigned-to developer-name --estimate 4
+zentao-cli task +create --name "代码评审" --project 1 --pri 2 --assigned-to developer-name --estimate 4
 ```
 
 ### 更新任务
 
 ```bash
 # 更新任务状态
-zentao-cli task update 456 --status done
+zentao-cli task +update 456 --status done
 
 # 更新任务负责人
-zentao-cli task update 456 --assigned-to another-user
+zentao-cli task +update 456 --assigned-to another-user
 
 # 更新任务状态为进行中
-zentao-cli task update 456 --status doing
+zentao-cli task +update 456 --status doing
 ```
 
 ## 任务状态值

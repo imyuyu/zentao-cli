@@ -1,12 +1,11 @@
-# bug list
+# bug +list
 
 列出产品下的缺陷列表，支持分页和多种输出格式。
 
 ## Command
 
 ```bash
-zentao-cli bug list --product <id> [--status <status>] [--assigned-to <user>]
-zentao-cli shortcuts bugs --product <id> [--page-limit <n>] [--page-delay <ms>] [--page-all]
+zentao-cli bug +list --product <id> [--status <status>] [--assigned-to <user>]
 ```
 
 ## Shortcuts (AI Agent Friendly)
@@ -33,7 +32,7 @@ zentao-cli shortcuts +bugs --product 1 --page-all
 
 ```bash
 # List bugs for product 1 (default: table format, 100 per page)
-zentao-cli bug list --product 1
+zentao-cli bug +list --product 1
 
 # List bugs with JSON output
 zentao-cli shortcuts +bugs --product 1 --format json

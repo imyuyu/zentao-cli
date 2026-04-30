@@ -1,26 +1,10 @@
-# release list
+# release +list
 
-列出某个产品下的发布列表。
+列出所有发布。
 
 ## Command
 ```bash
-zentao-cli release list [--product <id>]
-```
-
-## Options
-
-| Option | Required | Description |
-|--------|----------|-------------|
-| `--product` | No | Product ID |
-
-## Examples
-
-```bash
-# List all releases
-zentao-cli release list
-
-# List releases for product 1
-zentao-cli release list --product 1
+zentao-cli release +list
 ```
 
 ## Output Fields

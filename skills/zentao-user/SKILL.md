@@ -40,10 +40,10 @@ metadata:
 ## API Resources
 
 ```bash
-zentao-cli user list                 # 列出所有用户
-zentao-cli user list --dept <id>     # 按部门筛选
-zentao-cli user list --role <role>   # 按角色筛选
-zentao-cli user get <id>             # 获取用户详情
+zentao-cli user +list                 # 列出所有用户
+zentao-cli user +list --dept <id>    # 按部门筛选
+zentao-cli user +list --role <role>  # 按角色筛选
+zentao-cli user +get <id>            # 获取用户详情
 ```
 
 ## Common Use Cases
@@ -52,34 +52,34 @@ zentao-cli user get <id>             # 获取用户详情
 
 ```bash
 # 列出系统中的所有用户
-zentao-cli user list
+zentao-cli user +list
 ```
 
 ### 场景 2：按部门查询用户
 
 ```bash
 # 查看某部门下的所有用户
-zentao-cli user list --dept 1
+zentao-cli user +list --dept 1
 
 # 组合筛选：某部门的开发人员
-zentao-cli user list --dept 1 --role dev
+zentao-cli user +list --dept 1 --role dev
 ```
 
 ### 场景 3：按角色查询用户
 
 ```bash
 # 查看所有开发人员
-zentao-cli user list --role dev
+zentao-cli user +list --role dev
 
 # 查看所有测试人员
-zentao-cli user list --role qa
+zentao-cli user +list --role qa
 ```
 
 ### 场景 4：获取用户详情
 
 ```bash
 # 通过用户 ID 获取详细信息
-zentao-cli user get 123
+zentao-cli user +get 123
 
 # 输出包括：账号、姓名、邮箱、部门、角色等
 ```

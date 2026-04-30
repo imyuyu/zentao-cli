@@ -1,10 +1,10 @@
-# execution list
+# execution +list
 
 列出执行（迭代/里程碑）列表。
 
 ## Command
 ```bash
-zentao-cli execution list [--project <id>]
+zentao-cli execution +list [--project <id>]
 ```
 
 ## Options
@@ -17,10 +17,10 @@ zentao-cli execution list [--project <id>]
 
 ```bash
 # List all executions
-zentao-cli execution list
+zentao-cli execution +list
 
 # List executions for a specific project
-zentao-cli execution list --project 1
+zentao-cli execution +list --project 1
 ```
 
 ## Output Fields

@@ -1,10 +1,10 @@
-# task update
+# task +update
 
 更新任务信息。
 
 ## Command
 ```bash
-zentao-cli task update <id> [--name <name>] [--status <status>] [--pri <priority>] [--assigned-to <user>]
+zentao-cli task +update <id> [--name <name>] [--status <status>] [--pri <priority>] [--assigned-to <user>]
 ```
 
 ## Options
@@ -21,11 +21,11 @@ zentao-cli task update <id> [--name <name>] [--status <status>] [--pri <priority
 
 ```bash
 # Mark task as done
-zentao-cli task update 456 --status done
+zentao-cli task +update 456 --status done
 
 # Start working on task
-zentao-cli task update 456 --status doing
+zentao-cli task +update 456 --status doing
 
 # Reassign task
-zentao-cli task update 456 --assigned-to another-developer
+zentao-cli task +update 456 --assigned-to another-developer
 ```

@@ -1,20 +1,11 @@
-# story list
+# story +list
 
 列出某个产品下的需求列表，支持分页和多种输出格式。
 
 ## Command
 
 ```bash
-zentao-cli story list --product <id> [--status <status>] [--project <id>]
-zentao-cli shortcuts stories --product <id> [--page-limit <n>] [--page-delay <ms>] [--page-all]
-```
-
-## Shortcuts (AI Agent Friendly)
-
-```bash
-zentao-cli shortcuts +stories --product 1
-zentao-cli shortcuts +stories --product 1 --page-limit 50
-zentao-cli shortcuts +stories --product 1 --page-all
+zentao-cli story +list --product <id> [--status <status>] [--project <id>]
 ```
 
 ## Options
@@ -33,22 +24,22 @@ zentao-cli shortcuts +stories --product 1 --page-all
 
 ```bash
 # List stories for product 1 (default: table format)
-zentao-cli story list --product 1
+zentao-cli story +list --product 1
 
 # List stories with JSON output
-zentao-cli shortcuts +stories --product 1 --format json
+zentao-cli story +list --product 1 --format json
 
 # List stories in CSV format (for Excel)
-zentao-cli shortcuts +stories --product 1 --format csv
+zentao-cli story +list --product 1 --format csv
 
 # List stories in NDJSON format (for pipeline processing)
-zentao-cli shortcuts +stories --product 1 --format ndjson
+zentao-cli story +list --product 1 --format ndjson
 
 # List first 50 stories
-zentao-cli shortcuts +stories --product 1 --page-limit 50
+zentao-cli story +list --product 1 --page-limit 50
 
 # Get all stories (paginated, with 200ms delay between requests)
-zentao-cli shortcuts +stories --product 1 --page-all --page-delay 200
+zentao-cli story +list --product 1 --page-all --page-delay 200
 ```
 
 ## Output Fields

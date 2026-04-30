@@ -1,10 +1,10 @@
-# testcase list
+# testcase +list
 
 列出某个产品或项目下的测试用例列表。
 
 ## Command
 ```bash
-zentao-cli testcase list --product <id> [--project <id>] [--type <type>] [--status <status>] [--severity <level>]
+zentao-cli testcase +list --product <id> [--project <id>] [--type <type>] [--status <status>]
 ```
 
 ## Options
@@ -15,22 +15,18 @@ zentao-cli testcase list --product <id> [--project <id>] [--type <type>] [--stat
 | `--project` | No | Project ID |
 | `--type` | No | Filter by type: feature/performance/interface/security/concurrency/destructive/install/others |
 | `--status` | No | Filter by status: wait/normal/blocked/bypass |
-| `--severity` | No | Filter by severity (1-4) |
 
 ## Examples
 
 ```bash
 # List all testcases for product 1
-zentao-cli testcase list --product 1
+zentao-cli testcase +list --product 1
 
 # List normal status testcases
-zentao-cli testcase list --product 1 --status normal
+zentao-cli testcase +list --product 1 --status normal
 
 # List testcases by project
-zentao-cli testcase list --product 1 --project 5
-
-# List critical severity testcases
-zentao-cli testcase list --product 1 --severity 1
+zentao-cli testcase +list --product 1 --project 5
 ```
 
 ## Output Fields

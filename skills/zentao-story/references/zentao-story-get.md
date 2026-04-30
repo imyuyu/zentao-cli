@@ -1,10 +1,10 @@
-# story get
+# story +get
 
 获取需求详情。
 
 ## Command
 ```bash
-zentao-cli story get <id>
+zentao-cli story +get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli story get <id>
 
 ```bash
 # Get story details
-zentao-cli story get 123
+zentao-cli story +get 123
 ```
 
 ## Output Fields

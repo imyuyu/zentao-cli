@@ -43,9 +43,8 @@ metadata:
 ## API Resources
 
 ```bash
-zentao-cli project list           # 列出所有项目
-zentao-cli project list --status <status>  # 按状态筛选
-zentao-cli project get <id>       # 获取项目详情
+zentao-cli project +list           # 列出所有项目
+zentao-cli project +get <id>      # 获取项目详情
 ```
 
 > **重要**：使用原生命令时，可以先运行 `zentao-cli project --help` 查看完整选项。
@@ -56,24 +55,14 @@ zentao-cli project get <id>       # 获取项目详情
 
 ```bash
 # 列出所有项目
-zentao-cli project list
+zentao-cli project +list
 ```
 
-### 2. 按状态筛选项目
-
-```bash
-# 只看正在进行中的项目
-zentao-cli project list --status doing
-
-# 查看已关闭的项目
-zentao-cli project list --status closed
-```
-
-### 3. 查看特定项目详情
+### 2. 查看特定项目详情
 
 ```bash
 # 获取项目详情
-zentao-cli project get 1
+zentao-cli project +get 1
 ```
 
 ### 4. 结合 Story 和 Task 使用

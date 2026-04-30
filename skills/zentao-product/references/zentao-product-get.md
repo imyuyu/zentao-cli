@@ -1,10 +1,10 @@
-# product get
+# product +get
 
 获取产品详情。
 
 ## Command
 ```bash
-zentao-cli product get <id>
+zentao-cli product +get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli product get <id>
 
 ```bash
 # Get product details
-zentao-cli product get 1
+zentao-cli product +get 1
 ```
 
 ## Output Fields

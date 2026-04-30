@@ -82,10 +82,10 @@ draft → active → changed → closed
 ## API Resources
 
 ```bash
-zentao-cli story list --product <id>    # 列出需求
-zentao-cli story get <id>                # 获取需求详情
-zentao-cli story create --title <title>  # 创建需求
-zentao-cli story update <id>             # 更新需求
+zentao-cli story +list --product <id>    # 列出需求
+zentao-cli story +get <id>                # 获取需求详情
+zentao-cli story +create --title <title>  # 创建需求
+zentao-cli story +update <id>             # 更新需求
 ```
 
 > **重要**：使用原生命令时，可以先运行 `zentao-cli story --help` 查看完整选项。
@@ -96,47 +96,47 @@ zentao-cli story update <id>             # 更新需求
 
 ```bash
 # 列出产品 1 下的所有需求
-zentao-cli story list --product 1
+zentao-cli story +list --product 1
 
 # 只看活跃的需求
-zentao-cli story list --product 1 --status active
+zentao-cli story +list --product 1 --status active
 ```
 
 ### 2. 查看特定需求详情
 
 ```bash
 # 获取需求详情（包含描述、预估工时、阶段等）
-zentao-cli story get 123
+zentao-cli story +get 123
 ```
 
 ### 3. 创建新需求
 
 ```bash
 # 基础创建
-zentao-cli story create --title "用户登录功能" --product 1 --pri 1
+zentao-cli story +create --title "用户登录功能" --product 1 --pri 1
 
 # 完整创建（带类型和预估工时）
-zentao-cli story create --title "用户注册功能" --product 1 --pri 1 --type feature --estimate 8
+zentao-cli story +create --title "用户注册功能" --product 1 --pri 1 --type feature --estimate 8
 ```
 
 ### 4. 更新需求状态
 
 ```bash
 # 关闭需求
-zentao-cli story update 123 --status closed
+zentao-cli story +update 123 --status closed
 
 # 更新优先级
-zentao-cli story update 123 --pri 2
+zentao-cli story +update 123 --pri 2
 
 # 变更需求状态并指派
-zentao-cli story update 123 --status changed --assigned-to developer-name
+zentao-cli story +update 123 --status changed --assigned-to developer-name
 ```
 
 ### 5. 按项目筛选需求
 
 ```bash
 # 查看项目 1 下的所有需求
-zentao-cli story list --product 1 --project 1
+zentao-cli story +list --product 1 --project 1
 ```
 
 ## Output Fields

@@ -32,12 +32,12 @@ metadata:
 
 ### List Releases
 ```bash
-zentao-cli release list
+zentao-cli release +list
 ```
 
 ### Get Release
 ```bash
-zentao-cli release get 1
+zentao-cli release +get 1
 ```
 
 ## Output Fields
@@ -56,8 +56,8 @@ zentao-cli release get 1
 
 ```bash
 # List all releases
-zentao-cli release list
+zentao-cli release +list
 
 # Get release details
-zentao-cli release get 1
+zentao-cli release +get 1
 ```

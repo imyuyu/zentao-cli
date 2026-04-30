@@ -31,13 +31,13 @@ metadata:
 
 ### List Executions
 ```bash
-zentao-cli execution list --project 1
-zentao-cli execution list
+zentao-cli execution +list --project 1
+zentao-cli execution +list
 ```
 
 ### Get Execution
 ```bash
-zentao-cli execution get 100
+zentao-cli execution +get 100
 ```
 
 详细命令参考见 references/ 目录。

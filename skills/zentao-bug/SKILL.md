@@ -66,10 +66,10 @@ active (激活) ──[修复]──> resolved (已解决) ──[确认]──>
 ## API Resources
 
 ```bash
-zentao-cli bug list --product <id>        # 列出产品下的 Bug
-zentao-cli bug get <id>                  # 获取 Bug 详情
-zentao-cli bug create --title <title>... # 创建 Bug
-zentao-cli bug update <id> --status ...  # 更新 Bug
+zentao-cli bug +list --product <id>        # 列出产品下的 Bug
+zentao-cli bug +get <id>                  # 获取 Bug 详情
+zentao-cli bug +create --title <title>... # 创建 Bug
+zentao-cli bug +update <id> --status ...  # 更新 Bug
 ```
 
 ## Common Use Cases
@@ -78,17 +78,17 @@ zentao-cli bug update <id> --status ...  # 更新 Bug
 
 ```bash
 # 按产品 ID 列出所有激活状态的 Bug
-zentao-cli bug list --product 1 --status active
+zentao-cli bug +list --product 1 --status active
 ```
 
 ### 场景 2：创建新 Bug
 
 ```bash
 # 创建严重性为 1 的紧急 Bug
-zentao-cli bug create --title "用户登录页面崩溃" --product 1 --severity 1 --pri 1
+zentao-cli bug +create --title "用户登录页面崩溃" --product 1 --severity 1 --pri 1
 
 # 创建带有详细复现步骤的 Bug
-zentao-cli bug create \
+zentao-cli bug +create \
   --title "上传头像失败" \
   --product 1 \
   --severity 2 \
@@ -100,20 +100,20 @@ zentao-cli bug create \
 
 ```bash
 # 标记 Bug 为已修复
-zentao-cli bug update 123 --status resolved --resolution fixed
+zentao-cli bug +update 123 --status resolved --resolution fixed
 
 # 指派给开发人员
-zentao-cli bug update 123 --assignedTo developer-name
+zentao-cli bug +update 123 --assigned-to developer-name
 
 # 重打开 Bug
-zentao-cli bug update 123 --status active
+zentao-cli bug +update 123 --status active
 ```
 
 ### 场景 4：按指派人筛选 Bug
 
 ```bash
 # 查看指定人员的待办 Bug
-zentao-cli bug list --product 1 --assignedTo developer-name
+zentao-cli bug +list --product 1 --assigned-to developer-name
 ```
 
 ## Error Handling

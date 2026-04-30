@@ -1,10 +1,10 @@
-# release get
+# release +get
 
 获取单个发布的详细信息。
 
 ## Command
 ```bash
-zentao-cli release get <id>
+zentao-cli release +get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli release get <id>
 
 ```bash
 # Get release details
-zentao-cli release get 1
+zentao-cli release +get 1
 ```
 
 ## Output Fields

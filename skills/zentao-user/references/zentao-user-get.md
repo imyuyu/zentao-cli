@@ -1,10 +1,10 @@
-# user get
+# user +get
 
 获取用户详情。
 
 ## Command
 ```bash
-zentao-cli user get <id>
+zentao-cli user +get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli user get <id>
 
 ```bash
 # Get user details
-zentao-cli user get 1
+zentao-cli user +get 1
 ```
 
 ## Output Fields

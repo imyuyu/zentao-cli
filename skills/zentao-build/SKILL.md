@@ -34,26 +34,26 @@ zentao-cli build +get <build_id>    # 获取版本详情
 
 ```bash
 # 列出所有版本
-zentao-cli build list
+zentao-cli build +list
 
 # 列出某项目的版本
-zentao-cli build list --project 1
+zentao-cli build +list --project 1
 
 # 列出某产品的版本
-zentao-cli build list --product 1
+zentao-cli build +list --product 1
 
 # 同时按项目和产品筛选
-zentao-cli build list --project 1 --product 1
+zentao-cli build +list --project 1 --product 1
 ```
 
 ### 获取版本详情
 
 ```bash
 # 获取版本详情
-zentao-cli build get 10
+zentao-cli build +get 10
 
 # 获取版本详情（JSON 格式）
-zentao-cli build get 10 --format json
+zentao-cli build +get 10 --format json
 ```
 
 ## Output Fields
@@ -109,5 +109,5 @@ echo $ZENTAO_TOKEN
 
 | 操作 | 所需权限 |
 |------|----------|
-| `build list` | 项目/产品查看权限 |
-| `build get` | 项目/产品查看权限 |
+| `build +list` | 项目/产品查看权限 |
+| `build +get` | 项目/产品查看权限 |

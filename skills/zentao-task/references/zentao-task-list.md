@@ -1,10 +1,10 @@
-# task list
+# task +list
 
 列出项目下的任务列表。
 
 ## Command
 ```bash
-zentao-cli task list --project <id> [--assigned-to <user>]
+zentao-cli task +list --project <id> [--assigned-to <user>]
 ```
 
 ## Options
@@ -18,10 +18,10 @@ zentao-cli task list --project <id> [--assigned-to <user>]
 
 ```bash
 # List all tasks for project 1
-zentao-cli task list --project 1
+zentao-cli task +list --project 1
 
 # List tasks assigned to a specific user
-zentao-cli task list --project 1 --assigned-to developer-name
+zentao-cli task +list --project 1 --assigned-to developer-name
 ```
 
 ## Output Fields

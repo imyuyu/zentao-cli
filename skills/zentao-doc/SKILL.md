@@ -21,12 +21,12 @@ metadata:
 
 ### List Documents
 ```bash
-zentao-cli doc list
+zentao-cli doc +list
 ```
 
 ### Get Document
 ```bash
-zentao-cli doc get 1
+zentao-cli doc +get 1
 ```
 
 ## Output Fields
@@ -49,8 +49,8 @@ zentao-cli doc get 1
 
 ```bash
 # 列出所有文档
-zentao-cli doc list
+zentao-cli doc +list
 
 # 根据 ID 获取文档详情
-zentao-cli doc get 10
+zentao-cli doc +get 10
 ```

@@ -1,10 +1,10 @@
-# task get
+# task +get
 
 获取任务详情。
 
 ## Command
 ```bash
-zentao-cli task get <id>
+zentao-cli task +get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli task get <id>
 
 ```bash
 # Get task details
-zentao-cli task get 100
+zentao-cli task +get 100
 ```
 
 ## Output Fields

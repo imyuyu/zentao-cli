@@ -62,9 +62,9 @@ metadata:
 ## API Resources
 
 ```bash
-zentao-cli testcase list --product <id>         # 列出产品的测试用例
-zentao-cli testcase list --product <id> --project <id>  # 列出产品+项目的测试用例
-zentao-cli testcase get <id>                   # 获取测试用例详情
+zentao-cli testcase +list --product <id>         # 列出产品的测试用例
+zentao-cli testcase +list --product <id> --project <id>  # 列出产品+项目的测试用例
+zentao-cli testcase +get <id>                   # 获取测试用例详情
 ```
 
 ## Common Use Cases
@@ -73,34 +73,27 @@ zentao-cli testcase get <id>                   # 获取测试用例详情
 
 ```bash
 # 列出产品 1 下的所有测试用例
-zentao-cli testcase list --product 1
+zentao-cli testcase +list --product 1
 
 # 列出产品 1 下状态为正常的测试用例
-zentao-cli testcase list --product 1 --status normal
+zentao-cli testcase +list --product 1 --status normal
 ```
 
 ### 场景 2：按项目查询测试用例
 
 ```bash
 # 列出产品 1 下项目 5 的所有测试用例
-zentao-cli testcase list --product 1 --project 5
+zentao-cli testcase +list --product 1 --project 5
 
 # 列出项目 5 的所有功能测试用例
-zentao-cli testcase list --product 1 --project 5 --type feature
+zentao-cli testcase +list --product 1 --project 5 --type feature
 ```
 
-### 场景 3：按严重性筛选
-
-```bash
-# 列出最严重的测试用例（severity=1）
-zentao-cli testcase list --product 1 --severity 1
-```
-
-### 场景 4：获取测试用例详情
+### 场景 3：获取测试用例详情
 
 ```bash
 # 获取测试用例详细信息
-zentao-cli testcase get 123
+zentao-cli testcase +get 123
 ```
 
 ## Output Fields

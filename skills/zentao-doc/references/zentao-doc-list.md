@@ -1,31 +1,21 @@
-# doc list
+# doc +list
 
 列出文档库中的文档列表。
 
 ## Command
 ```bash
-zentao-cli doc list [--lib <id>] [--product <id>] [--project <id>]
+zentao-cli doc +list
 ```
 
 ## Options
 
-| Option | Required | Description |
-|--------|----------|-------------|
-| `--lib` | No | Document library ID |
-| `--product` | No | Associated product ID |
-| `--project` | No | Associated project ID |
+无参数（列出所有文档）
 
 ## Examples
 
 ```bash
 # List all documents
-zentao-cli doc list
-
-# List documents in a specific library
-zentao-cli doc list --lib 1
-
-# List documents for a product
-zentao-cli doc list --product 1
+zentao-cli doc +list
 ```
 
 ## Output Fields

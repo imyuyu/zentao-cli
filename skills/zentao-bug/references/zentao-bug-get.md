@@ -1,10 +1,10 @@
-# bug get
+# bug +get
 
 获取缺陷详情。
 
 ## Command
 ```bash
-zentao-cli bug get <id>
+zentao-cli bug +get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli bug get <id>
 
 ```bash
 # Get bug details
-zentao-cli bug get 123
+zentao-cli bug +get 123
 ```
 
 ## Output Fields
