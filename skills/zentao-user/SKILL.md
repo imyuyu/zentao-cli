@@ -1,7 +1,7 @@
 ---
 name: zentao-user
-version: 1.1.0
-description: ZenTao User (用户) management - list and get users, query users by department or role. When user needs to find team members, look up user information, query users by department/role, or get user details in ZenTao.
+version: 1.2.0
+description: "ZenTao 用户（User）管理 — 列出用户、查看用户详情、按部门/角色查询用户。当用户说：'查询用户'、'用户列表'、'user 列表'、'查看用户'、'用户详情'、'团队成员'、'成员列表'、'谁负责'、'开发者'、'测试人员' 时触发。"
 metadata:
   requires:
     bins: ["zentao-cli"]

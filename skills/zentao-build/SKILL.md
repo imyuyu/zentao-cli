@@ -1,7 +1,7 @@
 ---
 name: zentao-build
-version: 1.1.0
-description: "ZenTao 版本：管理产品版本/Build。列出版本、获取版本详情、查看版本关联的Story和Bug。当用户需要查看产品的发布版本、获取Build详情、或查看某个版本关联的需求和Bug时使用。"
+version: 1.2.0
+description: "ZenTao 版本/Build 管理 — 列出版本、获取版本详情、创建版本、关联 Story 和 Bug。当用户说：'查询版本'、'版本列表'、'build 列表'、'查看版本'、'版本详情'、'创建版本'、'新建 build'、'发布版本'、'版本信息'、'CI 版本' 时触发。"
 metadata:
   requires:
     bins: ["zentao-cli"]

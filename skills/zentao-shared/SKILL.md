@@ -1,7 +1,7 @@
 ---
 name: zentao-shared
-version: 1.1.0
-description: "ZenTao CLI 共享基础：配置初始化、认证（token-based）、配置优先级、权限错误处理、更新检查、安全规则。当用户需要第一次配置(`zentao-cli config init`)、使用 token 认证、遇到权限不足、查看配置状态、或首次使用 zentao-cli 时触发。"
+version: 1.2.0
+description: "ZenTao CLI 共享基础：配置初始化、认证（token-based）、配置优先级、权限错误处理、更新检查、安全规则。当用户说：'配置 zentao'、'初始化配置'、'config init'、'认证'、'登录 zentao'、'token'、'查看配置'、'config show'、'config set'、'环境变量'、'ZENTAO_URL'、'ZENTAO_TOKEN'、'权限不足'、'auth status' 时触发。"
 ---
 
 # zentao-cli 共享规则

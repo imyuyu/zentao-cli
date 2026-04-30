@@ -1,7 +1,7 @@
 ---
 name: zentao-execution
-version: 0.2.0
-description: ZenTao Execution (执行/迭代) management - list and get executions
+version: 0.3.0
+description: "ZenTao 执行/迭代（Execution）管理 — 列出执行、获取执行详情、创建执行。当用户说：'查询执行'、'执行列表'、'execution 列表'、'查看执行'、'执行详情'、'创建执行'、'新建 execution'、'迭代'、'Sprint'、'里程碑' 时触发。"
 metadata:
   requires:
     bins: ["zentao-cli"]

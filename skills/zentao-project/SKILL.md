@@ -1,7 +1,7 @@
 ---
 name: zentao-project
-version: 2.1.0
-description: "ZenTao 项目（Project）管理 — 列出项目、获取项目详情。项目是一组关联的任务和团队成员。当用户需要查看项目列表、了解某个项目的详细信息、或查看项目下的任务时使用。"
+version: 2.2.0
+description: "ZenTao 项目（Project）管理 — 列出项目、获取项目详情、创建项目、更新项目、删除项目。当用户说：'查询项目'、'项目列表'、'有哪些项目'、'project 列表'、'查看项目'、'project 详情'、'创建项目'、'新建 project'、'项目信息'、'项目成员' 时触发。"
 metadata:
   requires:
     bins: ["zentao-cli"]

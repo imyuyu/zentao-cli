@@ -1,7 +1,7 @@
 ---
 name: zentao-release
-version: 0.2.0
-description: ZenTao Release (发布) management - list and get product releases
+version: 0.3.0
+description: "ZenTao 发布（Release）管理 — 列出发布、获取发布详情、创建发布。当用户说：'查询发布'、'发布列表'、'release 列表'、'查看发布'、'发布详情'、'创建发布'、'新建 release'、'版本发布'、'发布信息' 时触发。"
 metadata:
   bins:
     - zentao-cli

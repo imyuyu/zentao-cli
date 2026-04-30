@@ -1,7 +1,7 @@
 ---
 name: zentao-product
-version: 2.1.0
-description: "ZenTao 产品（Product）管理 — 列出产品、获取产品详情。产品是 ZenTao 中包含需求和 Bug 的顶层实体。当用户需要查看产品列表、了解某个产品的详细信息、或筛选特定产品下的需求时使用。"
+version: 2.2.0
+description: "ZenTao 产品（Product）管理 — 列出产品、获取产品详情、创建产品、更新产品、关闭产品。当用户说：'查询产品'、'产品列表'、'有哪些产品'、'product 列表'、'查看产品'、'product 详情'、'创建产品'、'新建 product'、'产品信息'、'产品线' 时触发。"
 metadata:
   requires:
     bins: ["zentao-cli"]
