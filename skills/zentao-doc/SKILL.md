@@ -1,7 +1,7 @@
 ---
 name: zentao-doc
 version: 0.3.0
-description: "ZenTao 文档（Doc）管理 — 列出文档、查看文档详情。当用户说：'查询文档'、'文档列表'、'doc 列表'、'查看文档'、'文档详情'、'文档库'、'wiki' 时触发。"
+description: "禅道(ZenTao) 文档（Doc）管理 — 列出文档、查看文档详情。当用户说：'查询文档'、'文档列表'、'doc 列表'、'查看文档'、'文档详情'、'文档库'、'wiki'、'禅道文档' 时触发。"
 metadata:
   requires:
     bins: ["zentao-cli"]
