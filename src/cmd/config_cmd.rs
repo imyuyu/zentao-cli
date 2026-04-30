@@ -9,12 +9,12 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
     text::{Line, Span},
-    widgets::{Block, Borders, Clear, Paragraph},
+    widgets::{Block, Borders, Clear, ListItem, Paragraph},
     Frame, Terminal,
 };
 use std::io::stdout;
 
-use crate::api::Auth;
+use crate::api::{ApiClient, Auth, ProductApi, ProjectApi};
 use crate::core::{
     global_config_path, load_config, project_config_path, unset_config, update_config, Config,
     GlobalConfig,
@@ -87,7 +87,38 @@ pub async fn run_tui_wizard(global: bool) -> Result<()> {
             use crossterm::event::KeyCode;
             match key.code {
                 KeyCode::Esc => {
-                    break;
+                    // 在选择状态下，Esc 跳过选择
+                    if matches!(wizard.state, ConfigWizardState::SelectProduct { .. }) {
+                        // 跳过产品选择，transition to SelectProject
+                        if let ConfigWizardState::SelectProduct { url, token, .. } = &wizard.state {
+                            wizard.state = ConfigWizardState::SelectProject {
+                                url: url.clone(),
+                                token: token.clone(),
+                                product_id: None,
+                                projects: Vec::new(),
+                                selected: 0,
+                                loading: false,
+                                error: None,
+                            };
+                        }
+                    } else if matches!(wizard.state, ConfigWizardState::SelectProject { .. }) {
+                        // 跳过项目选择，直接保存
+                        if let ConfigWizardState::SelectProject {
+                            url,
+                            token,
+                            product_id,
+                            projects: _,
+                            ..
+                        } = &wizard.state
+                        {
+                            let path = save_config(url, token, *product_id, None, global)
+                                .await
+                                .unwrap_or_default();
+                            wizard.set_saved(url.clone(), path);
+                        }
+                    } else {
+                        break;
+                    }
                 }
                 KeyCode::Enter => {
                     handle_enter(&mut wizard, &input_buffer, global).await?;
@@ -120,6 +151,12 @@ pub async fn run_tui_wizard(global: bool) -> Result<()> {
                 }
                 KeyCode::Delete if cursor_pos < input_buffer.len() => {
                     input_buffer.remove(cursor_pos);
+                }
+                KeyCode::Up => {
+                    wizard.move_up();
+                }
+                KeyCode::Down => {
+                    wizard.move_down();
                 }
                 _ => {}
             }
@@ -183,8 +220,49 @@ async fn handle_enter(wizard: &mut ConfigWizard, input_buffer: &str, global: boo
             }
         }
         ConfigWizardState::Success { url, token } => {
-            // 保存配置并进入 Saved 状态
-            let path = save_config(url, token, global).await?;
+            // 登录成功后，进入产品选择
+            let url = url.clone();
+            let token = token.clone();
+            wizard.set_select_product(url.clone(), token.clone());
+            // 同步加载产品列表
+            let client = ApiClient::new(&url, Some(token));
+            match ProductApi::list(&client).await {
+                Ok(products) => wizard.set_products(products),
+                Err(e) => wizard.set_load_error(e.to_string()),
+            }
+        }
+        ConfigWizardState::SelectProduct { .. } => {
+            // 用户选择产品后，进入项目选择
+            wizard.set_product_selected();
+            // 同步加载项目列表
+            if let ConfigWizardState::SelectProject { url, token, .. } = &wizard.state {
+                let url = url.clone();
+                let token = token.clone();
+                let client = ApiClient::new(&url, Some(token));
+                match ProjectApi::list(&client).await {
+                    Ok(projects) => wizard.set_projects(projects),
+                    Err(e) => wizard.set_load_error(e.to_string()),
+                }
+            }
+        }
+        ConfigWizardState::SelectProject {
+            url,
+            token,
+            product_id,
+            projects,
+            ..
+        } => {
+            // 用户选择项目后，保存配置
+            let selected_project = if !projects.is_empty() {
+                if let ConfigWizardState::SelectProject { selected, .. } = &wizard.state {
+                    Some(projects[*selected].id)
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+            let path = save_config(url, token, *product_id, selected_project, global).await?;
             wizard.set_saved(url.clone(), path);
         }
         ConfigWizardState::Error { .. } => {
@@ -197,7 +275,13 @@ async fn handle_enter(wizard: &mut ConfigWizard, input_buffer: &str, global: boo
 }
 
 /// 保存配置到文件
-async fn save_config(url: &str, token: &str, global: bool) -> Result<String> {
+async fn save_config(
+    url: &str,
+    token: &str,
+    product_id: Option<u64>,
+    project_id: Option<u64>,
+    global: bool,
+) -> Result<String> {
     let scope = if global {
         if let Some(parent) = global_config_path().parent() {
             std::fs::create_dir_all(parent)?;
@@ -211,8 +295,8 @@ async fn save_config(url: &str, token: &str, global: bool) -> Result<String> {
     let config = Config {
         url: url.to_string(),
         token: Some(token.to_string()),
-        product_id: None,
-        project_id: None,
+        product_id,
+        project_id,
         api_version: None,
     };
 
@@ -329,13 +413,146 @@ fn render_wizard_frame(
                 Line::from(""),
                 Line::from(""),
                 Line::from(Span::styled(
-                    "✓ 配置成功！",
+                    "✓ 登录成功！",
                     Style::default().fg(Color::Green),
                 )),
                 Line::from(""),
                 Line::from(format!("URL: {}", url)),
                 Line::from(format!("Token: {}", masked)),
             ]);
+            f.render_widget(content, chunks[1]);
+        }
+        ConfigWizardState::SelectProduct {
+            products,
+            selected,
+            loading,
+            error,
+            ..
+        } => {
+            let content = if *loading {
+                Paragraph::new(vec![
+                    Line::from(""),
+                    Line::from(""),
+                    Line::from(Span::styled(
+                        "正在加载产品列表...",
+                        Style::default().fg(Color::Yellow),
+                    )),
+                ])
+            } else if let Some(err) = error {
+                Paragraph::new(vec![
+                    Line::from(""),
+                    Line::from(Span::styled("✗ 加载失败", Style::default().fg(Color::Red))),
+                    Line::from(Span::raw(err.clone())),
+                    Line::from(""),
+                    Line::from("按 Enter 跳过，或 Esc 退出"),
+                ])
+            } else if products.is_empty() {
+                Paragraph::new(vec![
+                    Line::from(""),
+                    Line::from("未找到产品"),
+                    Line::from(""),
+                    Line::from("按 Enter 跳过，或 Esc 退出"),
+                ])
+            } else {
+                let items: Vec<ListItem> = products
+                    .iter()
+                    .enumerate()
+                    .map(|(i, p)| {
+                        let style = if i == *selected {
+                            Style::default().bg(Color::Blue).fg(Color::White)
+                        } else {
+                            Style::default()
+                        };
+                        ListItem::new(Line::from(vec![
+                            Span::raw(format!("{:3}", p.id)),
+                            Span::raw(" "),
+                            Span::raw(&p.name),
+                            Span::raw(" ("),
+                            Span::raw(&p.code),
+                            Span::raw(")"),
+                        ]))
+                        .style(style)
+                    })
+                    .collect();
+                let list = ratatui::widgets::List::new(items)
+                    .block(Block::default().borders(Borders::ALL).title("选择产品"))
+                    .highlight_style(Style::default().bg(Color::Blue).fg(Color::White));
+                f.render_widget(list, chunks[1]);
+                f.render_widget(
+                    Paragraph::new(vec![Line::from("↑/↓ 选择 | Enter 确认 | Esc 跳过")]),
+                    chunks[2],
+                );
+                return;
+            };
+            f.render_widget(content, chunks[1]);
+        }
+        ConfigWizardState::SelectProject {
+            projects,
+            selected,
+            loading,
+            error,
+            product_id,
+            ..
+        } => {
+            let content = if *loading {
+                Paragraph::new(vec![
+                    Line::from(""),
+                    Line::from(""),
+                    Line::from(Span::styled(
+                        "正在加载项目列表...",
+                        Style::default().fg(Color::Yellow),
+                    )),
+                ])
+            } else if let Some(err) = error {
+                Paragraph::new(vec![
+                    Line::from(""),
+                    Line::from(Span::styled("✗ 加载失败", Style::default().fg(Color::Red))),
+                    Line::from(Span::raw(err.clone())),
+                    Line::from(""),
+                    Line::from("按 Enter 跳过，或 Esc 退出"),
+                ])
+            } else if projects.is_empty() {
+                Paragraph::new(vec![
+                    Line::from(""),
+                    Line::from("未找到项目"),
+                    Line::from(format!("产品ID: {:?}", product_id)),
+                    Line::from(""),
+                    Line::from("按 Enter 完成配置，或 Esc 退出"),
+                ])
+            } else {
+                let items: Vec<ListItem> = projects
+                    .iter()
+                    .enumerate()
+                    .map(|(i, p)| {
+                        let style = if i == *selected {
+                            Style::default().bg(Color::Blue).fg(Color::White)
+                        } else {
+                            Style::default()
+                        };
+                        ListItem::new(Line::from(vec![
+                            Span::raw(format!("{:3}", p.id)),
+                            Span::raw(" "),
+                            Span::raw(&p.name),
+                            Span::raw(" ("),
+                            Span::raw(&p.code),
+                            Span::raw(")"),
+                        ]))
+                        .style(style)
+                    })
+                    .collect();
+                let list = ratatui::widgets::List::new(items)
+                    .block(Block::default().borders(Borders::ALL).title("选择项目"))
+                    .highlight_style(Style::default().bg(Color::Blue).fg(Color::White));
+                f.render_widget(list, chunks[1]);
+                f.render_widget(
+                    Paragraph::new(vec![
+                        Line::from(""),
+                        Line::from("↑/↓ 选择 | Enter 确认 | Esc 跳过"),
+                    ]),
+                    chunks[2],
+                );
+                return;
+            };
             f.render_widget(content, chunks[1]);
         }
         ConfigWizardState::Saved { url, path } => {
@@ -372,7 +589,9 @@ fn render_wizard_frame(
         | ConfigWizardState::Account { .. }
         | ConfigWizardState::Password { .. } => "Enter 确认 | Esc 退出 | 退格删除",
         ConfigWizardState::Connecting { .. } => "请稍候...",
-        ConfigWizardState::Success { .. } => "按 Enter 保存配置",
+        ConfigWizardState::Success { .. } => "按 Enter 选择产品",
+        ConfigWizardState::SelectProduct { .. } => "↑/↓ 选择 | Enter 确认 | Esc 跳过",
+        ConfigWizardState::SelectProject { .. } => "↑/↓ 选择 | Enter 确认 | Esc 跳过",
         ConfigWizardState::Saved { .. } => "按 Enter 退出",
         ConfigWizardState::Error { .. } => "按任意键重试",
     };
