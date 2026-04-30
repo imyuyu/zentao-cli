@@ -24,8 +24,8 @@ metadata:
 ## API Resources
 
 ```bash
-zentao-cli build list [filters]   # 列出版本
-zentao-cli build get <build_id>    # 获取版本详情
+zentao-cli build +list [filters]   # 列出版本
+zentao-cli build +get <build_id>    # 获取版本详情
 ```
 
 ## Common Use Cases

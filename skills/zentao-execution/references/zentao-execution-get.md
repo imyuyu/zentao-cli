@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao execution get <id>
+zentao-cli execution get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao execution get <id>
 
 ```bash
 # Get execution details
-zentao execution get 100
+zentao-cli execution get 100
 ```
 
 ## Output Fields

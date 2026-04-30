@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao task create --name <name> --project <id> --pri <priority> [--assigned-to <user>] [--estimate <hours>]
+zentao-cli task create --name <name> --project <id> --pri <priority> [--assigned-to <user>] [--estimate <hours>]
 ```
 
 ## Options
@@ -22,10 +22,10 @@ zentao task create --name <name> --project <id> --pri <priority> [--assigned-to 
 
 ```bash
 # Basic task creation
-zentao task create --name "实现用户注册接口" --project 1 --pri 2
+zentao-cli task create --name "实现用户注册接口" --project 1 --pri 2
 
 # Full task creation
-zentao task create \
+zentao-cli task create \
   --name "代码评审" \
   --project 1 \
   --pri 2 \

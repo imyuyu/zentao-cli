@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao story get <id>
+zentao-cli story get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao story get <id>
 
 ```bash
 # Get story details
-zentao story get 123
+zentao-cli story get 123
 ```
 
 ## Output Fields

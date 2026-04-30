@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao bug update <id> [--title <title>] [--status <status>] [--resolution <resolution>] [--assigned-to <user>]
+zentao-cli bug update <id> [--title <title>] [--status <status>] [--resolution <resolution>] [--assigned-to <user>]
 ```
 
 ## Options
@@ -22,11 +22,11 @@ zentao bug update <id> [--title <title>] [--status <status>] [--resolution <reso
 
 ```bash
 # Resolve a bug
-zentao bug update 123 --status resolved --resolution fixed
+zentao-cli bug update 123 --status resolved --resolution fixed
 
 # Assign bug
-zentao bug update 123 --assigned-to developer-name
+zentao-cli bug update 123 --assigned-to developer-name
 
 # Close a bug
-zentao bug update 123 --status closed
+zentao-cli bug update 123 --status closed
 ```

@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao product get <id>
+zentao-cli product get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao product get <id>
 
 ```bash
 # Get product details
-zentao product get 1
+zentao-cli product get 1
 ```
 
 ## Output Fields

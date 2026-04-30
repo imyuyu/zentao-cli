@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao testcase get <id>
+zentao-cli testcase get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao testcase get <id>
 
 ```bash
 # Get testcase details
-zentao testcase get 123
+zentao-cli testcase get 123
 ```
 
 ## Output Fields

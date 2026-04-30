@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao doc list [--lib <id>] [--product <id>] [--project <id>]
+zentao-cli doc list [--lib <id>] [--product <id>] [--project <id>]
 ```
 
 ## Options
@@ -19,13 +19,13 @@ zentao doc list [--lib <id>] [--product <id>] [--project <id>]
 
 ```bash
 # List all documents
-zentao doc list
+zentao-cli doc list
 
 # List documents in a specific library
-zentao doc list --lib 1
+zentao-cli doc list --lib 1
 
 # List documents for a product
-zentao doc list --product 1
+zentao-cli doc list --product 1
 ```
 
 ## Output Fields

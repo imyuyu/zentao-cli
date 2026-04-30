@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao story create --title <title> --product <id> --pri <priority> [--type <type>] [--estimate <hours>]
+zentao-cli story create --title <title> --product <id> --pri <priority> [--type <type>] [--estimate <hours>]
 ```
 
 ## Options
@@ -22,10 +22,10 @@ zentao story create --title <title> --product <id> --pri <priority> [--type <typ
 
 ```bash
 # Basic story creation
-zentao story create --title "用户登录功能" --product 1 --pri 1
+zentao-cli story create --title "用户登录功能" --product 1 --pri 1
 
 # Full story creation
-zentao story create \
+zentao-cli story create \
   --title "用户注册功能" \
   --product 1 \
   --pri 1 \

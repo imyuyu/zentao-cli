@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao release get <id>
+zentao-cli release get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao release get <id>
 
 ```bash
 # Get release details
-zentao release get 1
+zentao-cli release get 1
 ```
 
 ## Output Fields

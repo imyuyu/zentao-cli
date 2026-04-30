@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao user get <id>
+zentao-cli user get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao user get <id>
 
 ```bash
 # Get user details
-zentao user get 1
+zentao-cli user get 1
 ```
 
 ## Output Fields

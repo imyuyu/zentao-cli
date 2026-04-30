@@ -5,16 +5,16 @@
 ## Command
 
 ```bash
-zentao project list
-zentao shortcuts projects [--page-limit <n>] [--page-delay <ms>] [--page-all]
+zentao-cli project list
+zentao-cli shortcuts projects [--page-limit <n>] [--page-delay <ms>] [--page-all]
 ```
 
 ## Shortcuts (AI Agent Friendly)
 
 ```bash
-zentao shortcuts +projects
-zentao shortcuts +projects --page-limit 50
-zentao shortcuts +projects --page-all
+zentao-cli shortcuts +projects
+zentao-cli shortcuts +projects --page-limit 50
+zentao-cli shortcuts +projects --page-all
 ```
 
 ## Options
@@ -30,22 +30,22 @@ zentao shortcuts +projects --page-all
 
 ```bash
 # List all projects (default: table format)
-zentao project list
+zentao-cli project list
 
 # List projects with JSON output
-zentao shortcuts +projects --format json
+zentao-cli shortcuts +projects --format json
 
 # List projects in CSV format (for Excel)
-zentao shortcuts +projects --format csv
+zentao-cli shortcuts +projects --format csv
 
 # List projects in NDJSON format (for pipeline processing)
-zentao shortcuts +projects --format ndjson
+zentao-cli shortcuts +projects --format ndjson
 
 # List first 50 projects
-zentao shortcuts +projects --page-limit 50
+zentao-cli shortcuts +projects --page-limit 50
 
 # Get all projects (paginated, with 200ms delay between requests)
-zentao shortcuts +projects --page-all --page-delay 200
+zentao-cli shortcuts +projects --page-all --page-delay 200
 ```
 
 ## Output Fields

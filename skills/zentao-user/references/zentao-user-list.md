@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao user list [--dept <id>] [--role <role>]
+zentao-cli user list [--dept <id>] [--role <role>]
 ```
 
 ## Options
@@ -18,13 +18,13 @@ zentao user list [--dept <id>] [--role <role>]
 
 ```bash
 # List all users
-zentao user list
+zentao-cli user list
 
 # List users in a specific department
-zentao user list --dept 1
+zentao-cli user list --dept 1
 
 # List users with a specific role
-zentao user list --role dev
+zentao-cli user list --role dev
 ```
 
 ## Output Fields

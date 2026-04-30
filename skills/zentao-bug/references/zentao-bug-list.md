@@ -5,16 +5,16 @@
 ## Command
 
 ```bash
-zentao bug list --product <id> [--status <status>] [--assigned-to <user>]
-zentao shortcuts bugs --product <id> [--page-limit <n>] [--page-delay <ms>] [--page-all]
+zentao-cli bug list --product <id> [--status <status>] [--assigned-to <user>]
+zentao-cli shortcuts bugs --product <id> [--page-limit <n>] [--page-delay <ms>] [--page-all]
 ```
 
 ## Shortcuts (AI Agent Friendly)
 
 ```bash
-zentao shortcuts +bugs --product 1
-zentao shortcuts +bugs --product 1 --page-limit 50
-zentao shortcuts +bugs --product 1 --page-all
+zentao-cli shortcuts +bugs --product 1
+zentao-cli shortcuts +bugs --product 1 --page-limit 50
+zentao-cli shortcuts +bugs --product 1 --page-all
 ```
 
 ## Options
@@ -33,22 +33,22 @@ zentao shortcuts +bugs --product 1 --page-all
 
 ```bash
 # List bugs for product 1 (default: table format, 100 per page)
-zentao bug list --product 1
+zentao-cli bug list --product 1
 
 # List bugs with JSON output
-zentao shortcuts +bugs --product 1 --format json
+zentao-cli shortcuts +bugs --product 1 --format json
 
 # List bugs in CSV format (for Excel)
-zentao shortcuts +bugs --product 1 --format csv
+zentao-cli shortcuts +bugs --product 1 --format csv
 
 # List bugs in NDJSON format (for pipeline processing)
-zentao shortcuts +bugs --product 1 --format ndjson
+zentao-cli shortcuts +bugs --product 1 --format ndjson
 
 # List first 50 bugs
-zentao shortcuts +bugs --product 1 --page-limit 50
+zentao-cli shortcuts +bugs --product 1 --page-limit 50
 
 # Get all bugs (paginated, with 200ms delay between requests)
-zentao shortcuts +bugs --product 1 --page-all --page-delay 200
+zentao-cli shortcuts +bugs --product 1 --page-all --page-delay 200
 ```
 
 ## Output Fields

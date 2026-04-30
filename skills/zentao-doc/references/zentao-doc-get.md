@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao doc get <id>
+zentao-cli doc get <id>
 ```
 
 ## Options
@@ -16,7 +16,7 @@ zentao doc get <id>
 ## Examples
 
 ```bash
-zentao doc get 10
+zentao-cli doc get 10
 ```
 
 ## Output Fields

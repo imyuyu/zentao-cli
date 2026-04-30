@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao testcase list --product <id> [--project <id>] [--type <type>] [--status <status>] [--severity <level>]
+zentao-cli testcase list --product <id> [--project <id>] [--type <type>] [--status <status>] [--severity <level>]
 ```
 
 ## Options
@@ -21,16 +21,16 @@ zentao testcase list --product <id> [--project <id>] [--type <type>] [--status <
 
 ```bash
 # List all testcases for product 1
-zentao testcase list --product 1
+zentao-cli testcase list --product 1
 
 # List normal status testcases
-zentao testcase list --product 1 --status normal
+zentao-cli testcase list --product 1 --status normal
 
 # List testcases by project
-zentao testcase list --product 1 --project 5
+zentao-cli testcase list --product 1 --project 5
 
 # List critical severity testcases
-zentao testcase list --product 1 --severity 1
+zentao-cli testcase list --product 1 --severity 1
 ```
 
 ## Output Fields

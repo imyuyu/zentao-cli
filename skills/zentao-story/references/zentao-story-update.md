@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao story update <id> [--title <title>] [--status <status>] [--pri <priority>] [--assigned-to <user>]
+zentao-cli story update <id> [--title <title>] [--status <status>] [--pri <priority>] [--assigned-to <user>]
 ```
 
 ## Options
@@ -21,13 +21,13 @@ zentao story update <id> [--title <title>] [--status <status>] [--pri <priority>
 
 ```bash
 # Close a story
-zentao story update 123 --status closed
+zentao-cli story update 123 --status closed
 
 # Update priority
-zentao story update 123 --pri 2
+zentao-cli story update 123 --pri 2
 
 # Change status and assignee
-zentao story update 123 --status changed --assigned-to developer-name
+zentao-cli story update 123 --status changed --assigned-to developer-name
 ```
 
 ## Valid Status Transitions

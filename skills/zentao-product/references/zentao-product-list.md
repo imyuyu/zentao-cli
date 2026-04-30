@@ -5,16 +5,16 @@
 ## Command
 
 ```bash
-zentao product list
-zentao shortcuts products [--page-limit <n>] [--page-delay <ms>] [--page-all]
+zentao-cli product list
+zentao-cli shortcuts products [--page-limit <n>] [--page-delay <ms>] [--page-all]
 ```
 
 ## Shortcuts (AI Agent Friendly)
 
 ```bash
-zentao shortcuts +products
-zentao shortcuts +products --page-limit 50
-zentao shortcuts +products --page-all
+zentao-cli shortcuts +products
+zentao-cli shortcuts +products --page-limit 50
+zentao-cli shortcuts +products --page-all
 ```
 
 ## Options
@@ -30,22 +30,22 @@ zentao shortcuts +products --page-all
 
 ```bash
 # List all products (default: table format)
-zentao product list
+zentao-cli product list
 
 # List products with JSON output
-zentao shortcuts +products --format json
+zentao-cli shortcuts +products --format json
 
 # List products in CSV format (for Excel)
-zentao shortcuts +products --format csv
+zentao-cli shortcuts +products --format csv
 
 # List products in NDJSON format (for pipeline processing)
-zentao shortcuts +products --format ndjson
+zentao-cli shortcuts +products --format ndjson
 
 # List first 50 products
-zentao shortcuts +products --page-limit 50
+zentao-cli shortcuts +products --page-limit 50
 
 # Get all products (paginated, with 200ms delay between requests)
-zentao shortcuts +products --page-all --page-delay 200
+zentao-cli shortcuts +products --page-all --page-delay 200
 ```
 
 ## Output Fields

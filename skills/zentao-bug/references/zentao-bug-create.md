@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao bug create --title <title> --product <id> --severity <level> [--pri <priority>] [--steps <steps>]
+zentao-cli bug create --title <title> --product <id> --severity <level> [--pri <priority>] [--steps <steps>]
 ```
 
 ## Options
@@ -23,10 +23,10 @@ zentao bug create --title <title> --product <id> --severity <level> [--pri <prio
 
 ```bash
 # Basic bug creation
-zentao bug create --title "页面崩溃" --product 1 --severity 1
+zentao-cli bug create --title "页面崩溃" --product 1 --severity 1
 
 # Full bug creation
-zentao bug create \
+zentao-cli bug create \
   --title "用户头像上传失败" \
   --product 1 \
   --severity 2 \

@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao release list [--product <id>]
+zentao-cli release list [--product <id>]
 ```
 
 ## Options
@@ -17,10 +17,10 @@ zentao release list [--product <id>]
 
 ```bash
 # List all releases
-zentao release list
+zentao-cli release list
 
 # List releases for product 1
-zentao release list --product 1
+zentao-cli release list --product 1
 ```
 
 ## Output Fields

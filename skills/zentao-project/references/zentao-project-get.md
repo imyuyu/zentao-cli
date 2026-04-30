@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao project get <id>
+zentao-cli project get <id>
 ```
 
 ## Options
@@ -16,7 +16,7 @@ zentao project get <id>
 ## Examples
 
 ```bash
-zentao project get 1
+zentao-cli project get 1
 ```
 
 ## Output Fields

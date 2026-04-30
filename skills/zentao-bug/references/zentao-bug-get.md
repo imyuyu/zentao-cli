@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao bug get <id>
+zentao-cli bug get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao bug get <id>
 
 ```bash
 # Get bug details
-zentao bug get 123
+zentao-cli bug get 123
 ```
 
 ## Output Fields
