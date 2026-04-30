@@ -10,7 +10,52 @@ description: "禅道(ZenTao) CLI 共享基础：配置初始化、认证（token
 
 ## 配置初始化
 
-首次使用需配置 `ZENTAO_URL` 和 `ZENTAO_TOKEN` 环境变量。
+### 自动引导配置流程
+
+**当用户未配置或认证失败时：**
+
+1. **检测配置状态**
+   ```bash
+   zentao-cli auth status
+   ```
+   如果返回 `ZEN_AUTH_FAILED` 或 `ZEN_CONFIG_INVALID`，说明未配置或配置无效。
+
+2. **询问用户配置信息和保存位置**
+   
+   **必须明确询问保存位置：全局还是当前项目？**
+   
+   向用户询问以下内容：
+   - ZenTao 服务地址（例如 `http://172.168.80.30:8001/zentao`）
+   - ZenTao 账号
+   - ZenTao 密码
+   - **保存位置**：全局（`~/.zentao-cli/config.toml`）还是当前项目（`.zentao-cli/config.toml`）？
+
+   > ⚠️ **重要**：必须等用户明确回答保存位置后，才能执行配置命令。禁止在用户未选择的情况下默认使用全局配置。
+
+3. **执行配置**
+
+   **根据用户选择的保存位置执行：**
+
+   **全局保存（用户选择全局）：**
+   ```bash
+   zentao-cli config set -g url "用户提供的地址"
+   zentao-cli auth login -g --account 账号 --password 密码
+   ```
+
+   **当前项目保存（用户选择当前项目）：**
+   ```bash
+   zentao-cli config set url "用户提供的地址"
+   zentao-cli auth login --account 账号 --password 密码
+   ```
+
+   > 注意：`config set` 只支持 `url`、`token`、`product_id`、`project_id`，不支持直接设置账号密码。必须分两步：先设置 URL，再用 `auth login` 通过账号密码获取 token。
+
+4. **验证配置成功**
+   ```bash
+   zentao-cli auth status
+   ```
+
+### 快速检查
 
 ```bash
 # 检查认证状态
@@ -21,7 +66,7 @@ echo $ZENTAO_URL
 echo $ZENTAO_TOKEN
 ```
 
-### 获取 Token
+### 获取 Token（手动）
 
 1. 登录 ZenTao Web 界面
 2. 进入个人设置 → API Token

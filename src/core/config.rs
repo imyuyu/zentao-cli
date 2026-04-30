@@ -332,14 +332,12 @@ pub fn load_config() -> Result<Config> {
 /// ```
 /// 保存配置到配置文件
 /// - global=true: 保存到全局配置
-/// - global=false: 保存到项目配置（如果存在），否则保存到全局配置
+/// - global=false: 保存到项目配置（自动创建目录如果不存在）
 fn save_config_to_file(config: &Config, global: bool) -> Result<PathBuf> {
     let path = if global {
         global_config_path()
-    } else if project_config_path().exists() {
-        project_config_path()
     } else {
-        global_config_path()
+        project_config_path()
     };
 
     // 确保目录存在，create_dir_all 类似 Go 的 os.MkdirAll 或 Python 的 mkdir -p
