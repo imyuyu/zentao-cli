@@ -243,6 +243,10 @@ pub enum ReleaseSubcommand {
 pub fn run() -> Result<()> {
     let cli = Cli::parse();
 
+    // Extract CLI args first (before they get moved)
+    let cli_url = cli.url.as_deref();
+    let cli_token = cli.token.as_deref();
+
     // Build config from args and env
     // 先加载配置文件/环境变量，然后合并 CLI 参数（CLI 参数优先级最高）
     let file_config = load_config().unwrap_or_else(|_| Config {
@@ -255,8 +259,10 @@ pub fn run() -> Result<()> {
 
     // CLI 参数始终覆盖文件配置
     let config = Config {
-        url: cli.url.unwrap_or_else(|| file_config.url.clone()),
-        token: cli.token.clone().or(file_config.token),
+        url: cli_url
+            .map(String::from)
+            .unwrap_or_else(|| file_config.url.clone()),
+        token: cli_token.map(String::from).or(file_config.token),
         product_id: file_config.product_id,
         project_id: file_config.project_id,
         api_version: file_config.api_version.clone(),
@@ -272,7 +278,7 @@ pub fn run() -> Result<()> {
         Commands::Auth { action } => {
             let rt = tokio::runtime::Runtime::new()
                 .expect("Failed to create Tokio runtime - system may be out of memory");
-            rt.block_on(auth::run(&action))
+            rt.block_on(auth::run(&action, cli_url, cli_token))
                 .expect("Auth command failed");
         }
         Commands::Config { action } => {

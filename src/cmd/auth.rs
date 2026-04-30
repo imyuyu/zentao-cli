@@ -43,64 +43,81 @@ pub enum AuthSubcommand {
 ///
 /// # 参数
 /// * `auth_cmd` - 命令类型 (Login/Logout/Status)
+/// * `cli_url` - CLI 传入的 URL 参数 (优先级最高)
+/// * `cli_token` - CLI 传入的 token 参数 (优先级最高)
 ///
 /// # 返回
 /// * `Result<()>` - 类似 Go 的 error，anyhow::Result 是更友好的封装
-///
-/// # 示例 (类比 Java):
-/// ```java
-/// // Java
-/// @Service
-/// public class AuthService {
-///     public Result<Void> run(AuthCommand cmd) {
-///         switch(cmd) {
-///             case LOGIN: return login(cmd);
-///             case LOGOUT: return logout();
-///             case STATUS: return status();
-///         }
-///     }
-/// }
-/// ```
-pub async fn run(auth_cmd: &AuthSubcommand) -> Result<()> {
+pub async fn run(
+    auth_cmd: &AuthSubcommand,
+    cli_url: Option<&str>,
+    _cli_token: Option<&str>,
+) -> Result<()> {
     match auth_cmd {
         // -------------------- 登录 --------------------
         AuthSubcommand::Login { account, password } => {
-            // 1. 加载配置 (URL 从环境变量或配置文件读取)
+            // 1. 优先使用 CLI 参数，否则从配置文件读取
             let config = load_config()?;
+            let url = cli_url
+                .map(String::from)
+                .unwrap_or_else(|| config.url.clone());
 
-            // 2. 校验 URL 必须配置
-            if config.url.is_empty() {
-                anyhow::bail!("ZenTao URL not configured. Set ZENTAO_URL or run: zentao-cli config set url <your-zentao-url>");
-            }
-
-            println!("Logging in to {}", config.url);
-
-            // 3. 调用 ZenTao API 获取 token
-            //    Auth::new 创建客户端，类似 Java 的 DI 注入
-            //    auth.login() 是 async 方法，类似 JavaScript 的 Promise 或 Go 的 goroutine
-            let auth = Auth::new(&config.url);
-            match auth.login(account, password).await {
-                Ok(token) => {
-                    println!("✓ Login successful");
-
-                    // 4. 保存 token 到配置文件
-                    //    update_config 内部会调用 save_config
-                    update_config("token", &token)?;
-                    println!("✓ Token saved to config");
-                    println!("  Token: {}...", &token[..token.len().min(8)]);
-
-                    // 5. 验证 token 是否有效
-                    match auth.verify_token(&token).await {
-                        Ok(true) => println!("✓ Token verified"),
-                        Ok(false) => println!("⚠ Token verification failed"),
-                        Err(e) => println!("⚠ Token verification error: {}", e),
-                    }
-
-                    Ok(())
+            // 2. 如果 URL 为空，启动交互式配置向导
+            if url.is_empty() {
+                println!("ZenTao URL not configured. Starting interactive setup...");
+                // 调用交互式配置向导
+                crate::cmd::config_cmd::run(&crate::cmd::config_cmd::ConfigSubcommand::Init {
+                    global: false,
+                })
+                .await?;
+                // 向导结束后重新加载配置
+                let config = load_config()?;
+                if config.url.is_empty() {
+                    anyhow::bail!("Setup cancelled or failed. Please configure URL manually.");
                 }
-                Err(e) => {
-                    println!("✗ Login failed: {}", e);
-                    Err(e)
+                // 使用新的 URL 登录
+                let url = config.url;
+                println!("Logging in to {}", url);
+                let auth = Auth::new(&url);
+                match auth.login(account, password).await {
+                    Ok(token) => {
+                        println!("✓ Login successful");
+                        update_config("token", &token)?;
+                        println!("✓ Token saved to config");
+                        println!("  Token: {}...", &token[..token.len().min(8)]);
+                        match auth.verify_token(&token).await {
+                            Ok(true) => println!("✓ Token verified"),
+                            Ok(false) => println!("⚠ Token verification failed"),
+                            Err(e) => println!("⚠ Token verification error: {}", e),
+                        }
+                        Ok(())
+                    }
+                    Err(e) => {
+                        println!("✗ Login failed: {}", e);
+                        Err(e)
+                    }
+                }
+            } else {
+                // URL 已配置，直接登录
+                println!("Logging in to {}", url);
+                let auth = Auth::new(&url);
+                match auth.login(account, password).await {
+                    Ok(token) => {
+                        println!("✓ Login successful");
+                        update_config("token", &token)?;
+                        println!("✓ Token saved to config");
+                        println!("  Token: {}...", &token[..token.len().min(8)]);
+                        match auth.verify_token(&token).await {
+                            Ok(true) => println!("✓ Token verified"),
+                            Ok(false) => println!("⚠ Token verification failed"),
+                            Err(e) => println!("⚠ Token verification error: {}", e),
+                        }
+                        Ok(())
+                    }
+                    Err(e) => {
+                        println!("✗ Login failed: {}", e);
+                        Err(e)
+                    }
                 }
             }
         }
