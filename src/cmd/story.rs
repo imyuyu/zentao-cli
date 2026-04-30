@@ -93,9 +93,13 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                 estimate,
             } => {
                 // 构建创建请求
+                let product_id = config.product_id(*product).unwrap_or_else(|| {
+                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
+                    std::process::exit(1);
+                });
                 let req = CreateStoryRequest {
                     title: title.clone(),
-                    product: *product,
+                    product: product_id,
                     pri: *pri,
                     category: category.clone(),
                     spec: spec.clone(),

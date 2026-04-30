@@ -138,7 +138,7 @@ pub enum StorySubcommand {
         #[arg(long)]
         title: String,
         #[arg(long)]
-        product: u64,
+        product: Option<u64>,
         #[arg(long)]
         pri: u8,
         #[arg(long)]
@@ -203,7 +203,7 @@ pub enum BugSubcommand {
         #[arg(long)]
         title: String,
         #[arg(long)]
-        product: u64,
+        product: Option<u64>,
         #[arg(long)]
         severity: u8,
         #[arg(long)]
@@ -275,7 +275,7 @@ pub enum TestcaseSubcommand {
     Create {
         /// 产品 ID（必填）
         #[arg(long)]
-        product: u64,
+        product: Option<u64>,
         /// 用例标题（必填）
         #[arg(long)]
         title: String,

@@ -259,36 +259,57 @@ fn load_toml_config(path: &PathBuf) -> Result<Config> {
 /// }
 /// ```
 pub fn load_config() -> Result<Config> {
-    // 第1步：先从环境变量加载（最高优先级）
-    // std::env::var("KEY") 类似 Python 的 os.environ["KEY"]
-    // .ok() 把 Result 转为 Option（错误时返回 None）
-    // .unwrap_or_default() 类似 TypeScript 的 ?? 默认值
+    // 配置优先级：环境变量 > 项目配置 > 全局配置
+    // 先加载全局配置（最低优先级），然后项目配置覆盖，最后环境变量覆盖（最高优先级）
+
+    // 第1步：加载全局配置（最低优先级）
     let mut config = Config {
-        url: std::env::var("ZENTAO_URL").unwrap_or_default(),
-        token: std::env::var("ZENTAO_TOKEN").ok().filter(|s| !s.is_empty()),
-        product_id: std::env::var("ZENTAO_PRODUCT_ID")
-            .ok()
-            .and_then(|s| s.parse().ok()), // parse().ok() 类似 Python 的 int(s) try-catch
-        project_id: std::env::var("ZENTAO_PROJECT_ID")
-            .ok()
-            .and_then(|s| s.parse().ok()),
-        api_version: std::env::var("ZENTAO_API_VERSION").ok(),
+        url: String::new(),
+        token: None,
+        product_id: None,
+        project_id: None,
+        api_version: None,
     };
 
-    // 第2步：加载全局配置并合并
     let global_path = global_config_path();
     if global_path.exists() {
-        // 类似 Python 的 Path.exists()
         if let Ok(global_config) = load_toml_config(&global_path) {
             config = merge_config(config, global_config);
         }
     }
 
-    // 第3步：加载项目配置并合并（最低优先级）
+    // 第2步：加载项目配置（中等优先级）
     let project_path = project_config_path();
     if project_path.exists() {
         if let Ok(project_config) = load_toml_config(&project_path) {
             config = merge_config(config, project_config);
+        }
+    }
+
+    // 第3步：环境变量覆盖（最高优先级）
+    if let Ok(url) = std::env::var("ZENTAO_URL") {
+        if !url.is_empty() {
+            config.url = url;
+        }
+    }
+    if let Ok(token) = std::env::var("ZENTAO_TOKEN") {
+        if !token.is_empty() {
+            config.token = Some(token);
+        }
+    }
+    if let Ok(product_id) = std::env::var("ZENTAO_PRODUCT_ID") {
+        if let Ok(id) = product_id.parse() {
+            config.product_id = Some(id);
+        }
+    }
+    if let Ok(project_id) = std::env::var("ZENTAO_PROJECT_ID") {
+        if let Ok(id) = project_id.parse() {
+            config.project_id = Some(id);
+        }
+    }
+    if let Ok(api_version) = std::env::var("ZENTAO_API_VERSION") {
+        if !api_version.is_empty() {
+            config.api_version = Some(api_version);
         }
     }
 

@@ -95,7 +95,7 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 story,
                 project,
             } => {
-                let product_id = config.product_id(Some(*product)).unwrap_or_else(|| {
+                let product_id = config.product_id(*product).unwrap_or_else(|| {
                     eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
                     std::process::exit(1);
                 });

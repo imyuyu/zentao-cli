@@ -79,9 +79,13 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 steps,
                 story,
             } => {
+                let product_id = config.product_id(*product).unwrap_or_else(|| {
+                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
+                    std::process::exit(1);
+                });
                 let req = CreateBugRequest {
                     title: title.clone(),
-                    product: *product,
+                    product: product_id,
                     severity: *severity,
                     pri: *pri,
                     type_: type_.clone(),
