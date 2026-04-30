@@ -171,6 +171,35 @@ impl StoryApi {
         // 获取更新后的完整需求信息
         Self::get(client, id).await
     }
+
+    /// 变更需求
+    ///
+    /// POST /api.php/v1/stories/{id}/change
+    ///
+    /// 用于需求变更操作
+    pub async fn change(client: &ApiClient, id: u64, req: &UpdateStoryRequest) -> Result<Story> {
+        let path = format!("/api.php/v1/stories/{}/change", id);
+        let _: serde_json::Value = client.post(&path, req).await?;
+        Self::get(client, id).await
+    }
+
+    /// 删除需求
+    ///
+    /// DELETE /api.php/v1/stories/{id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<serde_json::Value> {
+        let path = format!("/api.php/v1/stories/{}", id);
+        let resp: serde_json::Value = client.delete(&path).await?;
+        Ok(resp)
+    }
+
+    /// 关闭需求
+    ///
+    /// POST /api.php/v1/stories/{id}/close
+    pub async fn close(client: &ApiClient, id: u64) -> Result<Story> {
+        let path = format!("/api.php/v1/stories/{}/close", id);
+        let _: serde_json::Value = client.post(&path, &serde_json::json!({})).await?;
+        Self::get(client, id).await
+    }
 }
 
 // ============================================================

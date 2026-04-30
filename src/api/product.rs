@@ -13,6 +13,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::ApiClient;
+use crate::core::ZentaoError;
 
 // ============================================================
 // 数据结构体
@@ -49,12 +50,44 @@ pub struct Product {
 }
 
 // ============================================================
+// 请求结构体
+// ============================================================
+
+/// 创建产品的请求体
+#[derive(Debug, Serialize)]
+pub struct CreateProductRequest {
+    /// 产品名称（必填）
+    pub name: String,
+    /// 产品代号（英文标识）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+    /// 产品描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
+
+/// 更新产品的请求体
+/// 所有字段可选，只更新传入的字段
+#[derive(Debug, Serialize)]
+pub struct UpdateProductRequest {
+    /// 新名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// 新状态：normal/closed
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    /// 新描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
+
+// ============================================================
 // Product API
 // ============================================================
 
 /// 产品 API 操作类
 ///
-/// 提供产品的列表查询和详情查询
+/// 提供产品的列表查询、详情查询、创建、更新和删除
 ///
 /// # 使用示例
 /// ```rust,ignore
@@ -119,6 +152,47 @@ impl ProductApi {
         // 产品详情接口返回的是直接的产品对象，不需要 ApiResponse 包装
         let resp: Product = client.get(&path).await?;
         Ok(resp)
+    }
+
+    /// 创建新产品
+    ///
+    /// POST /api.php/v1/products
+    ///
+    /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
+    pub async fn create(client: &ApiClient, req: &CreateProductRequest) -> Result<Product> {
+        #[derive(Deserialize)]
+        struct CreateResponse {
+            id: Option<u64>,
+        }
+
+        let path = "/api.php/v1/products";
+        let resp: CreateResponse = client.post(path, req).await?;
+
+        if let Some(id) = resp.id {
+            Self::get(client, id).await
+        } else {
+            Err(ZentaoError::Api("Failed to create product".to_string()).into())
+        }
+    }
+
+    /// 更新产品
+    ///
+    /// PUT /api.php/v1/product/{id}
+    ///
+    /// ZenTao PUT 接口返回空 JSON {}，需要再调用 get 获取更新后的信息
+    pub async fn update(client: &ApiClient, id: u64, req: &UpdateProductRequest) -> Result<Product> {
+        let path = format!("/api.php/v1/product/{}", id);
+        let _: serde_json::Value = client.put(&path, req).await?;
+        Self::get(client, id).await
+    }
+
+    /// 删除产品
+    ///
+    /// DELETE /api.php/v1/products/{id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/products/{}", id);
+        let _: serde_json::Value = client.delete(&path).await?;
+        Ok(())
     }
 }
 

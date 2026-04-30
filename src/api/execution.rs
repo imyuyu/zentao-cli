@@ -3,9 +3,64 @@
 //! 提供执行的增删改查操作
 
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 use super::ApiClient;
 use crate::api::types::Execution;
+use crate::core::ZentaoError;
+
+// ============================================================
+// 请求结构体 - 对应 ZenTao API 的请求体
+// ============================================================
+
+/// 创建执行的请求体
+#[derive(Debug, Serialize)]
+pub struct CreateExecutionRequest {
+    /// 执行名称（必填）
+    pub name: String,
+    /// 所属项目 ID（必填）
+    pub project: u64,
+    /// 执行类型：iteration/milestone
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type")]
+    pub type_: Option<String>,
+    /// 开始日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub begin: Option<String>,
+    /// 结束日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end: Option<String>,
+    /// 预计工期（天）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub days: Option<u64>,
+    /// 执行描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
+
+/// 更新执行的请求体
+/// 所有字段可选，只更新传入的字段
+#[derive(Debug, Serialize)]
+pub struct UpdateExecutionRequest {
+    /// 新名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// 新状态：wait/doing/closed/suspended
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    /// 开始日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub begin: Option<String>,
+    /// 结束日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end: Option<String>,
+    /// 预计工期（天）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub days: Option<u64>,
+    /// 执行描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
 
 // ============================================================
 // Execution API - 执行相关 API 调用
@@ -52,6 +107,62 @@ impl ExecutionApi {
         let path = format!("/api.php/v1/executions/{}", id);
         let resp: Execution = client.get(&path).await?;
         Ok(resp)
+    }
+
+    /// 创建新执行
+    ///
+    /// POST /api.php/v1/projects/{projectId}/executions
+    ///
+    /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
+    pub async fn create(
+        client: &ApiClient,
+        project_id: u64,
+        req: &CreateExecutionRequest,
+    ) -> Result<Execution> {
+        #[derive(Deserialize)]
+        struct CreateResponse {
+            id: Option<u64>,
+        }
+
+        let path = format!("/api.php/v1/projects/{}/executions", project_id);
+        let resp: CreateResponse = client.post(&path, req).await?;
+
+        // 创建成功后，返回的 id 用于获取完整的执行信息
+        if let Some(id) = resp.id {
+            Self::get(client, id).await
+        } else {
+            Err(ZentaoError::Api("Failed to create execution".to_string()).into())
+        }
+    }
+
+    /// 更新执行
+    ///
+    /// PUT /api.php/v1/executions/{id}
+    ///
+    /// ZenTao PUT 接口返回空 JSON {}，需要再调用 get 获取更新后的信息
+    pub async fn update(
+        client: &ApiClient,
+        id: u64,
+        req: &UpdateExecutionRequest,
+    ) -> Result<Execution> {
+        let path = format!("/api.php/v1/executions/{}", id);
+        // 发送 PUT 请求，忽略响应体
+        let _: serde_json::Value = client.put(&path, req).await?;
+        // 获取更新后的完整执行信息
+        Self::get(client, id).await
+    }
+
+    /// 删除执行
+    ///
+    /// DELETE /api.php/v1/executions/{id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/executions/{}", id);
+        #[derive(Deserialize)]
+        struct DeleteResponse {
+            result: Option<String>,
+        }
+        let _: DeleteResponse = client.delete(&path).await?;
+        Ok(())
     }
 }
 

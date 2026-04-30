@@ -3,9 +3,56 @@
 //! 提供版本的查询操作（禅道版本/构建）
 
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 
 use super::{ApiClient, ApiResponse};
 use crate::api::types::{Build, BuildListResponse};
+use crate::core::ZentaoError;
+
+// ============================================================
+// 请求结构体
+// ============================================================
+
+/// 创建版本(Build)的请求体
+#[derive(Debug, Serialize)]
+pub struct CreateBuildRequest {
+    /// 版本名称（必填）
+    pub name: String,
+    /// 所属项目 ID（必填）
+    pub project: u64,
+    /// 所属产品 ID（必填）
+    pub product: u64,
+    /// 分支/平台 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<u64>,
+    /// SCM 路径
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scm_path: Option<String>,
+    /// CI 名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ci: Option<String>,
+    /// 包路径
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pkg: Option<String>,
+}
+
+/// 更新版本(Build)的请求体
+/// 所有字段可选，只更新传入的字段
+#[derive(Debug, Serialize)]
+pub struct UpdateBuildRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scm_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ci: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pkg: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file_size: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generated_at: Option<String>,
+}
 
 // ============================================================
 // Build API
@@ -89,6 +136,45 @@ impl BuildApi {
         let path = format!("/api.php/v1/builds/{}", id);
         let resp: Build = client.get(&path).await?;
         Ok(resp)
+    }
+
+    /// 创建新版本
+    ///
+    /// POST /api.php/v1/projects/{projectId}/builds
+    ///
+    /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
+    pub async fn create(client: &ApiClient, project_id: u64, req: &CreateBuildRequest) -> Result<Build> {
+        #[derive(Deserialize)]
+        struct CreateResponse {
+            id: Option<u64>,
+        }
+
+        let path = format!("/api.php/v1/projects/{}/builds", project_id);
+        let resp: CreateResponse = client.post(&path, req).await?;
+
+        if let Some(id) = resp.id {
+            Self::get(client, id).await
+        } else {
+            Err(ZentaoError::Api("Failed to create build".to_string()).into())
+        }
+    }
+
+    /// 更新版本
+    ///
+    /// PUT /api.php/v1/builds/{id}
+    pub async fn update(client: &ApiClient, id: u64, req: &UpdateBuildRequest) -> Result<Build> {
+        let path = format!("/api.php/v1/builds/{}", id);
+        let _: serde_json::Value = client.put(&path, req).await?;
+        Self::get(client, id).await
+    }
+
+    /// 删除版本
+    ///
+    /// DELETE /api.php/v1/builds/{id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/builds/{}", id);
+        let _: serde_json::Value = client.delete(&path).await?;
+        Ok(())
     }
 }
 
@@ -221,5 +307,73 @@ mod tests {
         assert!(!json.contains("scm_path"));
         assert!(!json.contains("ci"));
         assert!(!json.contains("pkg"));
+    }
+
+    // ==================== 创建/更新/删除请求测试 ====================
+
+    #[test]
+    fn test_create_build_request_serialization() {
+        let req = CreateBuildRequest {
+            name: "v1.0.0".to_string(),
+            project: 1,
+            product: 1,
+            branch: Some(1),
+            scm_path: Some("git@gitlab.example.com:repo.git".to_string()),
+            ci: Some("Jenkins #123".to_string()),
+            pkg: Some("/path/to/package.tar.gz".to_string()),
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("v1.0.0"));
+        assert!(json.contains("\"project\":1"));
+        assert!(json.contains("\"product\":1"));
+        assert!(json.contains("Jenkins"));
+    }
+
+    #[test]
+    fn test_create_build_request_skips_optional_fields() {
+        let req = CreateBuildRequest {
+            name: "Minimal Build".to_string(),
+            project: 1,
+            product: 1,
+            branch: None,
+            scm_path: None,
+            ci: None,
+            pkg: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("Minimal Build"));
+        assert!(!json.contains("branch"));
+        assert!(!json.contains("scm_path"));
+    }
+
+    #[test]
+    fn test_update_build_request_serialization() {
+        let req = UpdateBuildRequest {
+            name: Some("Updated Build".to_string()),
+            scm_path: Some("git@gitlab.example.com:updated.git".to_string()),
+            ci: None,
+            pkg: None,
+            file_size: None,
+            generated_at: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("Updated Build"));
+        assert!(json.contains("updated.git"));
+        assert!(!json.contains("ci"));
+    }
+
+    #[test]
+    fn test_update_build_request_partial() {
+        let req = UpdateBuildRequest {
+            name: None,
+            scm_path: None,
+            ci: Some("GitLab CI".to_string()),
+            pkg: None,
+            file_size: None,
+            generated_at: None,
+        };
+        let json = serde_json::to_string(&req).unwrap();
+        assert!(json.contains("GitLab CI"));
+        assert!(!json.contains("\"name\""));
     }
 }

@@ -8,7 +8,7 @@
 
 use clap::Subcommand;
 
-use crate::api::{ApiClient, CreateTaskRequest, TaskApi, UpdateTaskRequest};
+use crate::api::{ApiClient, CreateTaskRequest, TaskApi, UpdateTaskRequest, TaskEstimate};
 use crate::core::{Config, OutputFormat};
 
 // ============================================================
@@ -81,6 +81,63 @@ pub enum TaskAction {
         /// 新的指派人（可选）
         #[arg(long)]
         assigned_to: Option<String>,
+    },
+    /// 删除任务
+    #[command(name = "+delete")]
+    Delete {
+        /// 任务 ID
+        id: u64,
+    },
+    /// 开始任务
+    #[command(name = "+start")]
+    Start {
+        /// 任务 ID
+        id: u64,
+    },
+    /// 暂停任务
+    #[command(name = "+pause")]
+    Pause {
+        /// 任务 ID
+        id: u64,
+    },
+    /// 继续任务
+    #[command(name = "+restart")]
+    Restart {
+        /// 任务 ID
+        id: u64,
+    },
+    /// 完成任务
+    #[command(name = "+finish")]
+    Finish {
+        /// 任务 ID
+        id: u64,
+    },
+    /// 关闭任务
+    #[command(name = "+close")]
+    Close {
+        /// 任务 ID
+        id: u64,
+    },
+    /// 添加任务日志（工时）
+    #[command(name = "+estimate")]
+    Estimate {
+        /// 任务 ID
+        id: u64,
+        /// 消耗工时（小时）
+        #[arg(long)]
+        consumed: f64,
+        /// 剩余工时（小时）
+        #[arg(long)]
+        left: f64,
+        /// 备注（可选）
+        #[arg(long)]
+        notes: Option<String>,
+    },
+    /// 获取任务日志
+    #[command(name = "+get-estimate")]
+    GetEstimate {
+        /// 任务 ID
+        id: u64,
     },
 }
 
@@ -224,6 +281,167 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                         println!(
                             "{}",
                             serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- delete 命令 --------------------
+            TaskAction::Delete { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::delete()");
+                    println!("  URL: {}/api.php/v1/tasks/{}", config.url, id);
+                    return;
+                }
+                match TaskApi::delete(&client, *id).await {
+                    Ok(_) => {
+                        println!("Task {} deleted successfully", id);
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- start 命令 --------------------
+            TaskAction::Start { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::start()");
+                    println!("  URL: {}/api.php/v1/tasks/{}/start", config.url, id);
+                    return;
+                }
+                match TaskApi::start(&client, *id).await {
+                    Ok(task) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- pause 命令 --------------------
+            TaskAction::Pause { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::pause()");
+                    println!("  URL: {}/api.php/v1/tasks/{}/pause", config.url, id);
+                    return;
+                }
+                match TaskApi::pause(&client, *id).await {
+                    Ok(task) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- restart 命令 --------------------
+            TaskAction::Restart { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::restart()");
+                    println!("  URL: {}/api.php/v1/tasks/{}/restart", config.url, id);
+                    return;
+                }
+                match TaskApi::restart(&client, *id).await {
+                    Ok(task) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- finish 命令 --------------------
+            TaskAction::Finish { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::finish()");
+                    println!("  URL: {}/api.php/v1/tasks/{}/finish", config.url, id);
+                    return;
+                }
+                match TaskApi::finish(&client, *id).await {
+                    Ok(task) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- close 命令 --------------------
+            TaskAction::Close { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::close()");
+                    println!("  URL: {}/api.php/v1/tasks/{}/close", config.url, id);
+                    return;
+                }
+                match TaskApi::close(&client, *id).await {
+                    Ok(task) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&task).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- estimate 命令 --------------------
+            TaskAction::Estimate { id, consumed, left, notes } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::add_estimate()");
+                    println!("  URL: {}/api.php/v1/tasks/{}/estimate", config.url, id);
+                    println!("  consumed: {}, left: {}", consumed, left);
+                    if let Some(n) = notes {
+                        println!("  notes: {}", n);
+                    }
+                    return;
+                }
+                match TaskApi::add_estimate(&client, *id, *consumed, *left, notes.clone()).await {
+                    Ok(estimate) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&estimate).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- get-estimate 命令 --------------------
+            TaskAction::GetEstimate { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call TaskApi::get_estimates()");
+                    println!("  URL: {}/api.php/v1/tasks/{}/estimate", config.url, id);
+                    return;
+                }
+                match TaskApi::get_estimates(&client, *id).await {
+                    Ok(estimates) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&estimates).unwrap_or_default()
                         );
                     }
                     Err(e) => {

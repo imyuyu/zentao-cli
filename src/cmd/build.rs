@@ -37,6 +37,55 @@ pub enum BuildAction {
         /// 版本 ID
         id: u64,
     },
+    /// 创建版本
+    #[command(name = "+create")]
+    Create {
+        /// 版本名称
+        #[arg(long)]
+        name: String,
+        /// 所属项目 ID
+        #[arg(long)]
+        project: u64,
+        /// 所属产品 ID
+        #[arg(long)]
+        product: u64,
+        /// 分支/平台 ID
+        #[arg(long)]
+        branch: Option<u64>,
+        /// SCM 路径
+        #[arg(long)]
+        scm_path: Option<String>,
+        /// CI 名称
+        #[arg(long)]
+        ci: Option<String>,
+        /// 包路径
+        #[arg(long)]
+        pkg: Option<String>,
+    },
+    /// 更新版本
+    #[command(name = "+update")]
+    Update {
+        /// 版本 ID
+        id: u64,
+        /// 版本名称
+        #[arg(long)]
+        name: Option<String>,
+        /// SCM 路径
+        #[arg(long)]
+        scm_path: Option<String>,
+        /// CI 名称
+        #[arg(long)]
+        ci: Option<String>,
+        /// 包路径
+        #[arg(long)]
+        pkg: Option<String>,
+    },
+    /// 删除版本
+    #[command(name = "+delete")]
+    Delete {
+        /// 版本 ID
+        id: u64,
+    },
 }
 
 // ============================================================
@@ -100,6 +149,107 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                             "{}",
                             serde_json::to_string_pretty(&build).unwrap_or_default()
                         );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            BuildAction::Create { name, project, product, branch, scm_path, ci, pkg } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BuildApi::create()");
+                    println!("  URL: {}/api.php/v1/projects/{}/builds", config.url, project);
+                    println!("  Body: {{");
+                    println!("    name: {}", name);
+                    println!("    project: {}", project);
+                    println!("    product: {}", product);
+                    if let Some(b) = branch {
+                        println!("    branch: {}", b);
+                    }
+                    if let Some(ref s) = scm_path {
+                        println!("    scm_path: {}", s);
+                    }
+                    if let Some(ref c) = ci {
+                        println!("    ci: {}", c);
+                    }
+                    if let Some(ref p) = pkg {
+                        println!("    pkg: {}", p);
+                    }
+                    println!("  }}");
+                    return;
+                }
+
+                let req = crate::api::build::CreateBuildRequest {
+                    name: name.clone(),
+                    project: *project,
+                    product: *product,
+                    branch: *branch,
+                    scm_path: scm_path.clone(),
+                    ci: ci.clone(),
+                    pkg: pkg.clone(),
+                };
+
+                match BuildApi::create(&client, *project, &req).await {
+                    Ok(build) => {
+                        println!("{}", serde_json::to_string_pretty(&build).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            BuildAction::Update { id, name, scm_path, ci, pkg } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BuildApi::update()");
+                    println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
+                    println!("  Body: {{");
+                    if let Some(ref n) = name {
+                        println!("    name: {}", n);
+                    }
+                    if let Some(ref s) = scm_path {
+                        println!("    scm_path: {}", s);
+                    }
+                    if let Some(ref c) = ci {
+                        println!("    ci: {}", c);
+                    }
+                    if let Some(ref p) = pkg {
+                        println!("    pkg: {}", p);
+                    }
+                    println!("  }}");
+                    return;
+                }
+
+                let req = crate::api::build::UpdateBuildRequest {
+                    name: name.clone(),
+                    scm_path: scm_path.clone(),
+                    ci: ci.clone(),
+                    pkg: pkg.clone(),
+                    file_size: None,
+                    generated_at: None,
+                };
+
+                match BuildApi::update(&client, *id, &req).await {
+                    Ok(build) => {
+                        println!("{}", serde_json::to_string_pretty(&build).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            BuildAction::Delete { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BuildApi::delete()");
+                    println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
+                    return;
+                }
+
+                match BuildApi::delete(&client, *id).await {
+                    Ok(_) => {
+                        println!("Build {} deleted successfully", id);
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

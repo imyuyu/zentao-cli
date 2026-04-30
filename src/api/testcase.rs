@@ -1,12 +1,90 @@
 //! ZenTao 测试用例(Testcase) API 模块
 //!
-//! 提供测试用例的查询操作
+//! 提供测试用例的增删改查操作
 
 use anyhow::Result;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::ApiClient;
 use crate::api::types::Testcase;
+use crate::core::ZentaoError;
+
+// ============================================================
+// 请求结构体
+// ============================================================
+
+/// 创建测试用例的请求体
+#[derive(Debug, Serialize)]
+pub struct CreateTestcaseRequest {
+    /// 用例标题（必填）
+    pub title: String,
+    /// 所属产品 ID（必填）
+    pub product: u64,
+    /// 用例类型：feature/performance/interface/security/concurrency/destructive/install/others
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub type_: Option<String>,
+    /// 严重程度：1-4（1 最严重）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<u8>,
+    /// 优先级：0-5
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pri: Option<u8>,
+    /// 测试步骤
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps: Option<String>,
+    /// 期望结果
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expectation: Option<String>,
+    /// 关联的需求 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub story: Option<u64>,
+    /// 所属项目 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project: Option<u64>,
+}
+
+/// 更新测试用例的请求体
+/// 所有字段可选，只更新传入的字段
+#[derive(Debug, Serialize)]
+pub struct UpdateTestcaseRequest {
+    /// 新标题
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    /// 新状态：wait/normal/blocked/bypass
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    /// 新优先级
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pri: Option<u8>,
+    /// 新严重程度
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<u8>,
+    /// 新用例类型
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub type_: Option<String>,
+    /// 新测试步骤
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps: Option<String>,
+    /// 新期望结果
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expectation: Option<String>,
+}
+
+/// 执行测试用例的请求体
+#[derive(Debug, Serialize)]
+pub struct TestcaseResultRequest {
+    /// 执行结果：pass/fail/blocked
+    pub result: String,
+    /// 执行耗时（分钟）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub consumed: Option<f64>,
+    /// 执行备注
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remark: Option<String>,
+    /// 关联的版本 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build: Option<u64>,
+}
 
 // ============================================================
 // Testcase API - 测试用例相关 API 调用
@@ -77,6 +155,66 @@ impl TestcaseApi {
         let path = format!("/api.php/v1/testcases/{}", id);
         let resp: Testcase = client.get(&path).await?;
         Ok(resp)
+    }
+
+    /// 创建新测试用例
+    ///
+    /// POST /api.php/v1/products/{productId}/testcases
+    ///
+    /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
+    pub async fn create(
+        client: &ApiClient,
+        product_id: u64,
+        req: &CreateTestcaseRequest,
+    ) -> Result<Testcase> {
+        #[derive(Deserialize)]
+        struct CreateResponse {
+            id: Option<u64>,
+        }
+
+        let path = format!("/api.php/v1/products/{}/testcases", product_id);
+        let resp: CreateResponse = client.post(&path, req).await?;
+
+        if let Some(id) = resp.id {
+            Self::get(client, id).await
+        } else {
+            Err(ZentaoError::Api("Failed to create testcase".to_string()).into())
+        }
+    }
+
+    /// 更新测试用例
+    ///
+    /// PUT /api.php/v1/testcases/{id}
+    pub async fn update(
+        client: &ApiClient,
+        id: u64,
+        req: &UpdateTestcaseRequest,
+    ) -> Result<Testcase> {
+        let path = format!("/api.php/v1/testcases/{}", id);
+        let _: serde_json::Value = client.put(&path, req).await?;
+        Self::get(client, id).await
+    }
+
+    /// 删除测试用例
+    ///
+    /// DELETE /api.php/v1/testcases/{id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/testcases/{}", id);
+        let _: serde_json::Value = client.delete(&path).await?;
+        Ok(())
+    }
+
+    /// 执行测试用例
+    ///
+    /// POST /api.php/v1/testcases/{id}/results
+    pub async fn create_result(
+        client: &ApiClient,
+        id: u64,
+        req: &TestcaseResultRequest,
+    ) -> Result<Testcase> {
+        let path = format!("/api.php/v1/testcases/{}/results", id);
+        let _: serde_json::Value = client.post(&path, req).await?;
+        Self::get(client, id).await
     }
 }
 

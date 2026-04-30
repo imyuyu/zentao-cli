@@ -158,6 +158,86 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                     }
                 }
             }
+
+            // -------------------- change --------------------
+            StorySubcommand::Change {
+                id,
+                title,
+                status,
+                pri,
+                assigned_to,
+            } => {
+                let req = UpdateStoryRequest {
+                    title: title.clone(),
+                    status: status.clone(),
+                    pri: *pri,
+                    assigned_to: assigned_to.clone(),
+                };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call StoryApi::change()");
+                    println!("  URL: {}/api.php/v1/stories/{}/change", config.url, id);
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
+                    return;
+                }
+
+                match StoryApi::change(&client, *id, &req).await {
+                    Ok(story) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&story).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- delete --------------------
+            StorySubcommand::Delete { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call StoryApi::delete()");
+                    println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
+                    return;
+                }
+
+                match StoryApi::delete(&client, *id).await {
+                    Ok(story) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&story).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- close --------------------
+            StorySubcommand::Close { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call StoryApi::close()");
+                    println!("  URL: {}/api.php/v1/stories/{}/close", config.url, id);
+                    return;
+                }
+
+                match StoryApi::close(&client, *id).await {
+                    Ok(story) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&story).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
         }
     });
 }

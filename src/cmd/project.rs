@@ -9,7 +9,7 @@
 
 use clap::Subcommand;
 
-use crate::api::{ApiClient, ProjectApi};
+use crate::api::{ApiClient, CreateProjectRequest, ProjectApi, UpdateProjectRequest};
 use crate::core::{Config, OutputFormat};
 
 // ============================================================
@@ -25,6 +25,40 @@ pub enum ProjectAction {
     /// 获取指定项目的详细信息
     #[command(name = "+get")]
     Get {
+        /// 项目 ID
+        id: u64,
+    },
+    /// 创建项目
+    #[command(name = "+create")]
+    Create {
+        /// 项目名称
+        #[arg(long)]
+        name: String,
+        /// 项目代号
+        #[arg(long)]
+        code: String,
+        /// 项目描述
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 更新项目
+    #[command(name = "+update")]
+    Update {
+        /// 项目 ID
+        id: u64,
+        /// 新名称
+        #[arg(long)]
+        name: Option<String>,
+        /// 新状态：wait/doing/closed
+        #[arg(long)]
+        status: Option<String>,
+        /// 新描述
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 删除项目
+    #[command(name = "+delete")]
+    Delete {
         /// 项目 ID
         id: u64,
     },
@@ -79,6 +113,86 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run:
                             "{}",
                             serde_json::to_string_pretty(&project).unwrap_or_default()
                         );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- create 命令 --------------------
+            ProjectAction::Create { name, code, desc } => {
+                let req = CreateProjectRequest {
+                    name: name.clone(),
+                    code: code.clone(),
+                    desc: desc.clone(),
+                };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProjectApi::create()");
+                    println!("  URL: {}/api.php/v1/projects", config.url);
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
+                    return;
+                }
+
+                match ProjectApi::create(&client, &req).await {
+                    Ok(project) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&project).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- update 命令 --------------------
+            ProjectAction::Update { id, name, status, desc } => {
+                let req = UpdateProjectRequest {
+                    name: name.clone(),
+                    status: status.clone(),
+                    desc: desc.clone(),
+                };
+
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProjectApi::update()");
+                    println!("  URL: {}/api.php/v1/projects/{}", config.url, id);
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
+                    return;
+                }
+
+                match ProjectApi::update(&client, *id, &req).await {
+                    Ok(project) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&project).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- delete 命令 --------------------
+            ProjectAction::Delete { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProjectApi::delete()");
+                    println!("  URL: {}/api.php/v1/projects/{}", config.url, id);
+                    return;
+                }
+
+                match ProjectApi::delete(&client, *id).await {
+                    Ok(_) => {
+                        println!("Project {} deleted successfully", id);
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

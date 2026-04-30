@@ -161,6 +161,25 @@ pub enum StorySubcommand {
         #[arg(long)]
         assigned_to: Option<String>,
     },
+    /// 变更需求
+    #[command(name = "+change")]
+    Change {
+        id: u64,
+        #[arg(long)]
+        title: Option<String>,
+        #[arg(long)]
+        status: Option<String>,
+        #[arg(long)]
+        pri: Option<u8>,
+        #[arg(long)]
+        assigned_to: Option<String>,
+    },
+    /// 删除需求
+    #[command(name = "+delete")]
+    Delete { id: u64 },
+    /// 关闭需求
+    #[command(name = "+close")]
+    Close { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -220,6 +239,18 @@ pub enum BugSubcommand {
         #[arg(long)]
         resolved_build: String,
     },
+    /// 确认 Bug
+    #[command(name = "+confirm")]
+    Confirm { id: u64 },
+    /// 关闭 Bug
+    #[command(name = "+close")]
+    Close { id: u64 },
+    /// 激活 Bug
+    #[command(name = "+activate")]
+    Activate { id: u64 },
+    /// 删除 Bug
+    #[command(name = "+delete")]
+    Delete { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -239,6 +270,88 @@ pub enum TestcaseSubcommand {
     /// 获取用例详情
     #[command(name = "+get")]
     Get { id: u64 },
+    /// 创建测试用例
+    #[command(name = "+create")]
+    Create {
+        /// 产品 ID（必填）
+        #[arg(long)]
+        product: u64,
+        /// 用例标题（必填）
+        #[arg(long)]
+        title: String,
+        /// 用例类型：feature/performance/interface/security/concurrency/destructive/install/others
+        #[arg(long)]
+        type_: Option<String>,
+        /// 严重程度：1-4（1 最严重）
+        #[arg(long)]
+        severity: Option<u8>,
+        /// 优先级：0-5
+        #[arg(long)]
+        pri: Option<u8>,
+        /// 测试步骤
+        #[arg(long)]
+        steps: Option<String>,
+        /// 期望结果
+        #[arg(long)]
+        expectation: Option<String>,
+        /// 关联的需求 ID
+        #[arg(long)]
+        story: Option<u64>,
+        /// 所属项目 ID
+        #[arg(long)]
+        project: Option<u64>,
+    },
+    /// 更新测试用例
+    #[command(name = "+update")]
+    Update {
+        /// 用例 ID（必填）
+        id: u64,
+        /// 新标题
+        #[arg(long)]
+        title: Option<String>,
+        /// 新状态：wait/normal/blocked/bypass
+        #[arg(long)]
+        status: Option<String>,
+        /// 新优先级
+        #[arg(long)]
+        pri: Option<u8>,
+        /// 新严重程度
+        #[arg(long)]
+        severity: Option<u8>,
+        /// 新用例类型
+        #[arg(long)]
+        type_: Option<String>,
+        /// 新测试步骤
+        #[arg(long)]
+        steps: Option<String>,
+        /// 新期望结果
+        #[arg(long)]
+        expectation: Option<String>,
+    },
+    /// 删除测试用例
+    #[command(name = "+delete")]
+    Delete {
+        /// 用例 ID（必填）
+        id: u64,
+    },
+    /// 执行测试用例
+    #[command(name = "+result")]
+    Result {
+        /// 用例 ID（必填）
+        id: u64,
+        /// 执行结果（必填）：pass/fail/blocked
+        #[arg(long)]
+        result: String,
+        /// 执行耗时（分钟）
+        #[arg(long)]
+        consumed: Option<f64>,
+        /// 执行备注
+        #[arg(long)]
+        remark: Option<String>,
+        /// 关联的版本 ID
+        #[arg(long)]
+        build: Option<u64>,
+    },
 }
 
 #[derive(Subcommand, Clone, Debug)]

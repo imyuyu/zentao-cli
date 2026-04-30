@@ -166,6 +166,78 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                     }
                 }
             }
+
+            // -------------------- confirm --------------------
+            BugSubcommand::Confirm { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::confirm()");
+                    println!("  URL: {}/api.php/v1/bugs/{}/confirm", config.url, id);
+                    return;
+                }
+
+                match BugApi::confirm(&client, *id).await {
+                    Ok(bug) => {
+                        println!("{}", serde_json::to_string_pretty(&bug).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- close --------------------
+            BugSubcommand::Close { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::close()");
+                    println!("  URL: {}/api.php/v1/bugs/{}/close", config.url, id);
+                    return;
+                }
+
+                match BugApi::close(&client, *id).await {
+                    Ok(bug) => {
+                        println!("{}", serde_json::to_string_pretty(&bug).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- activate --------------------
+            BugSubcommand::Activate { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::activate()");
+                    println!("  URL: {}/api.php/v1/bugs/{}/activate", config.url, id);
+                    return;
+                }
+
+                match BugApi::activate(&client, *id).await {
+                    Ok(bug) => {
+                        println!("{}", serde_json::to_string_pretty(&bug).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- delete --------------------
+            BugSubcommand::Delete { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::delete()");
+                    println!("  URL: {}/api.php/v1/bugs/{}", config.url, id);
+                    return;
+                }
+
+                match BugApi::delete(&client, *id).await {
+                    Ok(_) => {
+                        println!("Bug {} deleted successfully", id);
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
         }
     });
 }

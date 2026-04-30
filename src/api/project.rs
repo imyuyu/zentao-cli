@@ -10,6 +10,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::ApiClient;
+use crate::core::ZentaoError;
 
 // ============================================================
 // 数据结构体
@@ -40,6 +41,36 @@ pub struct Project {
     /// 项目状态：wait（未开始）/doing（进行中）/closed（已关闭）
     pub status: String,
     /// 项目描述（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
+
+// ============================================================
+// 请求结构体
+// ============================================================
+
+/// 创建项目的请求体
+#[derive(Debug, Serialize)]
+pub struct CreateProjectRequest {
+    /// 项目名称（必填）
+    pub name: String,
+    /// 项目代号（必填）
+    pub code: String,
+    /// 项目描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
+
+/// 更新项目的请求体
+#[derive(Debug, Serialize)]
+pub struct UpdateProjectRequest {
+    /// 新名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// 新状态：wait/doing/closed
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
+    /// 新描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
 }
@@ -102,6 +133,47 @@ impl ProjectApi {
         // 项目详情接口直接返回项目对象
         let resp: Project = client.get(&path).await?;
         Ok(resp)
+    }
+
+    /// 创建新项目
+    ///
+    /// POST /api.php/v1/projects
+    ///
+    /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
+    pub async fn create(client: &ApiClient, req: &CreateProjectRequest) -> Result<Project> {
+        #[derive(Deserialize)]
+        struct CreateResponse {
+            id: Option<u64>,
+        }
+
+        let path = "/api.php/v1/projects";
+        let resp: CreateResponse = client.post(path, req).await?;
+
+        if let Some(id) = resp.id {
+            Self::get(client, id).await
+        } else {
+            Err(ZentaoError::Api("Failed to create project".to_string()).into())
+        }
+    }
+
+    /// 更新项目
+    ///
+    /// PUT /api.php/v1/projects/{id}
+    ///
+    /// ZenTao PUT 接口返回空 JSON {}，需要再调用 get 获取更新后的信息
+    pub async fn update(client: &ApiClient, id: u64, req: &UpdateProjectRequest) -> Result<Project> {
+        let path = format!("/api.php/v1/projects/{}", id);
+        let _: serde_json::Value = client.put(&path, req).await?;
+        Self::get(client, id).await
+    }
+
+    /// 删除项目
+    ///
+    /// DELETE /api.php/v1/projects/{id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/projects/{}", id);
+        let _: serde_json::Value = client.delete(&path).await?;
+        Ok(())
     }
 }
 

@@ -197,6 +197,42 @@ impl BugApi {
         let _: serde_json::Value = client.post(&path, &body).await?;
         Self::get(client, id).await
     }
+
+    /// 确认 Bug
+    ///
+    /// POST /api.php/v1/bugs/{bug_id}/confirm
+    pub async fn confirm(client: &ApiClient, id: u64) -> Result<Bug> {
+        let path = format!("/api.php/v1/bugs/{}/confirm", id);
+        let _: serde_json::Value = client.post(&path, &()).await?;
+        Self::get(client, id).await
+    }
+
+    /// 关闭 Bug
+    ///
+    /// POST /api.php/v1/bugs/{bug_id}/close
+    pub async fn close(client: &ApiClient, id: u64) -> Result<Bug> {
+        let path = format!("/api.php/v1/bugs/{}/close", id);
+        let _: serde_json::Value = client.post(&path, &()).await?;
+        Self::get(client, id).await
+    }
+
+    /// 激活 Bug
+    ///
+    /// POST /api.php/v1/bugs/{bug_id}/activate
+    pub async fn activate(client: &ApiClient, id: u64) -> Result<Bug> {
+        let path = format!("/api.php/v1/bugs/{}/activate", id);
+        let _: serde_json::Value = client.post(&path, &()).await?;
+        Self::get(client, id).await
+    }
+
+    /// 删除 Bug
+    ///
+    /// DELETE /api.php/v1/bugs/{bug_id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/bugs/{}", id);
+        let _: serde_json::Value = client.delete(&path).await?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]

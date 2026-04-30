@@ -194,4 +194,33 @@ impl ApiClient {
             .await
             .map_err(|e| ZentaoError::Api(e.to_string()).into())
     }
+
+    /// 发送 DELETE 请求（删除资源）
+    ///
+    /// # 参数
+    /// - path: API 路径
+    pub async fn delete<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T> {
+        let url = self.get_url(path);
+
+        let mut req = self.client.delete(&url);
+
+        if let Some(ref token) = self.token {
+            req = req.header(self.auth_header_name(), token.as_str());
+        }
+
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| ZentaoError::Network(e.to_string()))?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let msg = resp.text().await.unwrap_or_default();
+            return Err(ZentaoError::Api(format!("API error {}: {}", status, msg)).into());
+        }
+
+        resp.json()
+            .await
+            .map_err(|e| ZentaoError::Api(e.to_string()).into())
+    }
 }

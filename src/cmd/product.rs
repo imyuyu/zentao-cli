@@ -9,6 +9,7 @@
 use clap::Subcommand;
 
 use crate::api::{ApiClient, ProductApi};
+use crate::api::product::{CreateProductRequest, UpdateProductRequest};
 use crate::core::{Config, OutputFormat};
 
 // ============================================================
@@ -20,6 +21,9 @@ use crate::core::{Config, OutputFormat};
 /// 定义 product 命令支持的子命令：
 /// - list: 列出所有产品
 /// - get: 获取单个产品详情
+/// - create: 创建产品
+/// - update: 修改产品
+/// - delete: 删除产品
 #[derive(Subcommand, Clone, Debug)]
 pub enum ProductAction {
     /// 列出所有产品
@@ -28,6 +32,40 @@ pub enum ProductAction {
     /// 获取指定产品的详细信息
     #[command(name = "+get")]
     Get {
+        /// 产品 ID
+        id: u64,
+    },
+    /// 创建新产品
+    #[command(name = "+create")]
+    Create {
+        /// 产品名称
+        #[arg(long)]
+        name: String,
+        /// 产品代号（英文标识）
+        #[arg(long)]
+        code: Option<String>,
+        /// 产品描述
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 修改产品
+    #[command(name = "+update")]
+    Update {
+        /// 产品 ID
+        id: u64,
+        /// 新名称
+        #[arg(long)]
+        name: Option<String>,
+        /// 新状态：normal/closed
+        #[arg(long)]
+        status: Option<String>,
+        /// 新描述
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 删除产品
+    #[command(name = "+delete")]
+    Delete {
         /// 产品 ID
         id: u64,
     },
@@ -117,6 +155,74 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
                             "{}",
                             serde_json::to_string_pretty(&product).unwrap_or_default()
                         );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- create 命令 --------------------
+            ProductAction::Create { name, code, desc } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProductApi::create()");
+                    println!("  URL: {}/api.php/v1/products", config.url);
+                    println!("  name: {}", name);
+                    return;
+                }
+                let req = CreateProductRequest {
+                    name: name.clone(),
+                    code: code.clone(),
+                    desc: desc.clone(),
+                };
+                match ProductApi::create(&client, &req).await {
+                    Ok(product) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&product).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- update 命令 --------------------
+            ProductAction::Update { id, name, status, desc } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProductApi::update()");
+                    println!("  URL: {}/api.php/v1/product/{}", config.url, id);
+                    return;
+                }
+                let req = UpdateProductRequest {
+                    name: name.clone(),
+                    status: status.clone(),
+                    desc: desc.clone(),
+                };
+                match ProductApi::update(&client, *id, &req).await {
+                    Ok(product) => {
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&product).unwrap_or_default()
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
+
+            // -------------------- delete 命令 --------------------
+            ProductAction::Delete { id } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call ProductApi::delete()");
+                    println!("  URL: {}/api.php/v1/products/{}", config.url, id);
+                    return;
+                }
+                match ProductApi::delete(&client, *id).await {
+                    Ok(_) => {
+                        println!("Product {} deleted successfully", id);
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
