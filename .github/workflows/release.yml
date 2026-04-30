@@ -188,15 +188,31 @@ jobs:
           mv bin/zentao-cli bin/zentao-cli-darwin-x86_64
           tar xzf artifacts/zentao-cli-darwin-arm64.tar.gz -C bin
           mv bin/zentao-cli bin/zentao-cli-darwin-arm64
-          cp artifacts/zentao-cli-windows-x86_64.exe bin/
+          cp artifacts/zentao-cli-windows-x86_64.exe bin/zentao-cli.exe
 
       - name: Package for npm
         run: |
-          cp package.json bin/
-          cp README.md bin/
-          cp LICENSE bin/
+          # Create a clean npm package structure
+          mkdir -p npm-pkg
+          cp -r bin/* npm-pkg/
+          cp package.json npm-pkg/
+          cp README.md npm-pkg/
+          cp LICENSE npm-pkg/
+          # Update package.json for npm publication
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('npm-pkg/package.json'));
+            // Remove preinstall/build scripts - we distribute binaries
+            delete pkg.scripts;
+            // Update bin to point to current platform binary
+            pkg.bin = {'zentao-cli': './zentao-cli.exe'};
+            pkg.files = ['.', 'LICENSE', 'README.md'];
+            fs.writeFileSync('npm-pkg/package.json', JSON.stringify(pkg, null, 2));
+          "
 
       - name: Publish to npm
+        working-directory: npm-pkg
+        run: npm publish --access public
         working-directory: bin
         run: npm publish --access public
         env:
