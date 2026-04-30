@@ -23,36 +23,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Safe print functions (`safe_println`, `safe_print`) to handle broken pipe errors gracefully
 
-## [0.2.0] - 2026-04-29
-
-### Changed
-
-- Rust 1.70 minimum version requirement
-- Updated dependencies for security and compatibility
+## [0.0.1-beta.2] - 2026-04-30
 
 ### Fixed
 
-- cargo clippy warnings resolved
-- Test suite passes (103 tests)
-- Repository configuration improvements
-- Updated .gitignore for proper Rust project coverage
+- Config save behavior - project config directory is now created if it doesn't exist
+
+### Changed
+
+- Updated skill descriptions with "禅道(ZenTao)" for better AI matching
+- Added Chinese trigger keywords to all skill descriptions
+
+## [0.0.1-beta.1] - 2026-04-30
 
 ### Added
 
-- New package metadata and keywords
-
-## [0.1.0] - 2026-04-27
-
-### Added
-
-- Initial release
-- Story CRUD operations
-- Bug CRUD operations
-- Task CRUD operations (list, get, create, update)
-- Product listing
-- Project listing
-- Token-based authentication
-- Multiple output formats (table, json, pretty)
-- TUI browser for bugs and stories
-- Configuration management with profiles
-- Diagnostic command (doctor)
+- Unified `product_id`/`project_id` config priority across all commands
+- Bug `+list` now reads `product_id` from config file
+- Config init wizard shows product/project IDs after selection
+- Support for reading `product_id`/`project_id` from config file
+- CRUD operations for all API modules
+- Additional ZenTao API interfaces
+- Bug `+resolve` command
+- Correct API paths and missing interfaces
+- `resolvedBuild` field in bug update
+- Auth login interactive input and token verification fixes
+- Multi-platform binary publishing workflow
