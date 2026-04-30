@@ -54,7 +54,11 @@ Choose **one** of the following methods:
 **Option 1 — From npm (recommended):**
 
 ```bash
+# Install CLI
 npm install -g @imyuyu/zentao-cli
+
+# Install AI Agent Skills (required)
+npx skills add imyuyu/zentao-cli -y -g
 ```
 
 **Option 2 — From source:**
@@ -65,7 +69,14 @@ cd zentao-cli
 cargo build --release
 cp target/release/zentao-cli.exe bin/zentao.exe
 npm install -g .
+
+# Install AI Agent Skills (required)
+npx skills add imyuyu/zentao-cli -y -g
 ```
+
+**Option 3 — From GitHub Releases:**
+
+Download binaries for your platform from [Releases](https://github.com/imyuyu/zentao-cli/releases) and add to PATH.
 
 #### Configure & Use
 
@@ -82,10 +93,11 @@ zentao-cli story +list --product 1
 
 ## Quick Start (AI Agent)
 
-**Step 1 — Install**
+**Step 1 — Install CLI and Skills**
 
 ```bash
 npm install -g @imyuyu/zentao-cli
+npx skills add imyuyu/zentao-cli -y -g
 ```
 
 **Step 2 — Configure app credentials**

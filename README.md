@@ -54,7 +54,11 @@ zentao-cli - 让人类和 AI Agent 都能在终端中操作禅道。覆盖需求
 **方式一 — 从 npm 安装（推荐）：**
 
 ```bash
+# 安装 CLI
 npm install -g @imyuyu/zentao-cli
+
+# 安装 AI Agent Skills（必需）
+npx skills add imyuyu/zentao-cli -y -g
 ```
 
 **方式二 — 从源码安装：**
@@ -65,7 +69,14 @@ cd zentao-cli
 cargo build --release
 cp target/release/zentao-cli.exe bin/zentao.exe
 npm install -g .
+
+# 安装 AI Agent Skills（必需）
+npx skills add imyuyu/zentao-cli -y -g
 ```
+
+**方式三 — 从 GitHub Releases 下载：**
+
+访问 [Releases](https://github.com/imyuyu/zentao-cli/releases) 下载对应平台的二进制文件，添加到 PATH 中。
 
 #### 配置与使用
 
@@ -82,10 +93,11 @@ zentao-cli story +list --product 1
 
 ## 快速开始（AI Agent）
 
-**第一步 — 安装**
+**第一步 — 安装 CLI 和 Skills**
 
 ```bash
 npm install -g @imyuyu/zentao-cli
+npx skills add imyuyu/zentao-cli -y -g
 ```
 
 **第二步 — 配置应用凭据**
