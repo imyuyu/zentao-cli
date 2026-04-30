@@ -100,7 +100,10 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                 if dry_run {
                     println!("[DRY-RUN] Would call StoryApi::create()");
                     println!("  URL: {}/api.php/v1/stories", config.url);
-                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
                     return;
                 }
 
@@ -136,7 +139,10 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                 if dry_run {
                     println!("[DRY-RUN] Would call StoryApi::update()");
                     println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
-                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
                     return;
                 }
 

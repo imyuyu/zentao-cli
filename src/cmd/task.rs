@@ -172,7 +172,10 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 if dry_run {
                     println!("[DRY-RUN] Would call TaskApi::create()");
                     println!("  URL: {}/api.php/v1/tasks", config.url);
-                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
                     return;
                 }
 
@@ -210,7 +213,10 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 if dry_run {
                     println!("[DRY-RUN] Would call TaskApi::update()");
                     println!("  URL: {}/api.php/v1/tasks/{}", config.url, id);
-                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
                     return;
                 }
 

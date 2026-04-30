@@ -90,7 +90,10 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 if dry_run {
                     println!("[DRY-RUN] Would call BugApi::create()");
                     println!("  URL: {}/api.php/v1/bugs", config.url);
-                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
                     return;
                 }
 
@@ -122,7 +125,10 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 if dry_run {
                     println!("[DRY-RUN] Would call BugApi::update()");
                     println!("  URL: {}/api.php/v1/bugs/{}", config.url, id);
-                    println!("  Body: {}", serde_json::to_string_pretty(&req).unwrap_or_default());
+                    println!(
+                        "  Body: {}",
+                        serde_json::to_string_pretty(&req).unwrap_or_default()
+                    );
                     return;
                 }
 
