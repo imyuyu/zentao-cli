@@ -349,6 +349,13 @@ pub struct Build {
     pub bugs: Option<String>,
 }
 
+/// 版本列表响应格式（用于 /projects/{id}/builds 接口）
+#[derive(Debug, Deserialize)]
+pub struct BuildListResponse {
+    pub total: u64,
+    pub builds: Vec<Build>,
+}
+
 // ============================================================
 // API 响应包装类型
 // ============================================================

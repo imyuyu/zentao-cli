@@ -5,7 +5,7 @@
 use anyhow::Result;
 
 use super::{ApiClient, ApiResponse};
-use crate::api::types::Build;
+use crate::api::types::{Build, BuildListResponse};
 
 // ============================================================
 // Build API
@@ -39,17 +39,19 @@ impl BuildApi {
         project: Option<u64>,
         product: Option<u64>,
     ) -> Result<Vec<Build>> {
-        let mut path = String::from("/api.php/v1/builds?");
-
+        // 如果指定了 project，调用 /api.php/v1/projects/{id}/builds
         if let Some(pid) = project {
-            path.push_str(&format!("projectID={}", pid));
+            let path = format!("/api.php/v1/projects/{}/builds", pid);
+            let resp: BuildListResponse = client.get(&path).await?;
+            return Ok(resp.builds);
         }
-        if let Some(pid) = product {
-            if path.contains("projectID=") {
-                path.push('&');
-            }
-            path.push_str(&format!("productID={}", pid));
-        }
+
+        // 否则调用 /api.php/v1/builds
+        let path = if let Some(pid) = product {
+            format!("/api.php/v1/builds?product={}", pid)
+        } else {
+            String::from("/api.php/v1/builds")
+        };
 
         let resp: ApiResponse<Vec<Build>> = client.get(&path).await?;
         Ok(resp.data.unwrap_or_default())
