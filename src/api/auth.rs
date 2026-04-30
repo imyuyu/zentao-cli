@@ -86,8 +86,8 @@ impl Auth {
 
     /// 验证 Token 是否有效
     ///
-    /// 调用 GET /api.php/v1/users/me 接口
-    /// 携带请求头: Authorization: Bearer {token}
+    /// 调用 GET /api.php/v1/user 接口
+    /// 携带请求头: Token: {token}
     ///
     /// # 参数
     /// - token: 待验证的认证 Token
@@ -98,13 +98,13 @@ impl Auth {
     /// - Err: 网络错误
     pub async fn verify_token(&self, token: &str) -> Result<bool> {
         // ZenTao API v1 获取当前用户信息接口
-        let url = format!("{}/api.php/v1/users/me", self.base_url);
+        let url = format!("{}/api.php/v1/user", self.base_url);
 
         let resp = self
             .client
             .get(&url)
-            // ZenTao API 使用 Bearer Token 认证方式
-            .header("Authorization", format!("Bearer {}", token))
+            // ZenTao API v1 使用 Token header
+            .header("Token", token)
             .send()
             .await
             .map_err(|e| ZentaoError::Network(e.to_string()))?;

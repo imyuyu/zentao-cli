@@ -70,7 +70,7 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
     // 类似于 Java 的 CompletableFuture.join() 或 Go 的 runtime.GOMAXPROCS
     rt.block_on(async {
         // 创建 API 客户端，传入 ZenTao 服务器地址和认证 Token
-        // ApiClient 会在每次请求时自动添加 Authorization header
+        // ApiClient 会在每次请求时自动添加 Token header
         let client = ApiClient::new(&config.url, config.token.clone())
             .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
 

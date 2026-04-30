@@ -7,6 +7,7 @@ use crate::api::Auth;
 use crate::core::{load_config, update_config}; // 导入配置模块
 use anyhow::Result; // anyhow: 错误处理库，类似 Go 的 error 但更灵活
 use clap::Subcommand; // clap: 命令行参数解析库，类似 Java 的 JCommander 或 Python 的 argparse // 导入 API 认证客户端
+use std::io::Write; // 导入 Write trait 以使用 flush()
 
 // ============================================================
 // 命令定义 - 类似 Java 的枚举类或 TypeScript 的 union type
@@ -14,16 +15,16 @@ use clap::Subcommand; // clap: 命令行参数解析库，类似 Java 的 JComma
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum AuthSubcommand {
-    /// 登录命令
-    /// - account: 禅道账号 (对应环境变量 ZENTAO_ACCOUNT)
-    /// - password: 禅道密码 (对应环境变量 ZENTAO_PASSWORD)
+    /// 登录命令（不带参数时启动交互式 TUI 登录）
     #[command(name = "login")]
     Login {
+        /// 禅道账号（可选，未提供时启动 TUI）
         #[arg(long, env = "ZENTAO_ACCOUNT")]
-        account: String,
+        account: Option<String>,
 
+        /// 禅道密码（可选，未提供时启动 TUI）
         #[arg(long, env = "ZENTAO_PASSWORD")]
-        password: String,
+        password: Option<String>,
     },
 
     /// 登出命令 - 清除保存的 token
@@ -56,30 +57,46 @@ pub async fn run(
     match auth_cmd {
         // -------------------- 登录 --------------------
         AuthSubcommand::Login { account, password } => {
-            // 1. 优先使用 CLI 参数，否则从配置文件读取
+            // 获取配置
             let config = load_config()?;
             let url = cli_url
                 .map(String::from)
                 .unwrap_or_else(|| config.url.clone());
 
-            // 2. 如果 URL 为空，启动交互式配置向导
+            // 如果 account 或 password 未提供，使用终端输入
+            let account = if let Some(a) = account {
+                a.clone()
+            } else {
+                print!("请输入账号: ");
+                std::io::stdout().flush().ok();
+                let mut input = String::new();
+                std::io::stdin().read_line(&mut input).ok();
+                input.trim().to_string()
+            };
+
+            let password = if let Some(p) = password {
+                p.clone()
+            } else {
+                print!("请输入密码: ");
+                std::io::stdout().flush().ok();
+                rpassword::read_password().unwrap_or_default()
+            };
+
+            // URL 为空，启动完整配置向导
             if url.is_empty() {
                 println!("ZenTao URL not configured. Starting interactive setup...");
-                // 调用交互式配置向导
                 crate::cmd::config_cmd::run(&crate::cmd::config_cmd::ConfigSubcommand::Init {
                     global: false,
                 })
                 .await?;
-                // 向导结束后重新加载配置
                 let config = load_config()?;
                 if config.url.is_empty() {
                     anyhow::bail!("Setup cancelled or failed. Please configure URL manually.");
                 }
-                // 使用新的 URL 登录
                 let url = config.url;
                 println!("Logging in to {}", url);
                 let auth = Auth::new(&url);
-                match auth.login(account, password).await {
+                match auth.login(&account, &password).await {
                     Ok(token) => {
                         println!("✓ Login successful");
                         update_config("token", &token)?;
@@ -101,7 +118,7 @@ pub async fn run(
                 // URL 已配置，直接登录
                 println!("Logging in to {}", url);
                 let auth = Auth::new(&url);
-                match auth.login(account, password).await {
+                match auth.login(&account, &password).await {
                     Ok(token) => {
                         println!("✓ Login successful");
                         update_config("token", &token)?;

@@ -31,6 +31,7 @@ toml = "0.8"
 colored = "2.0"
 indicatif = "0.17"
 keyring = "2.0"
+rpassword = "7.3"
 
 [dev-dependencies]
 tokio-test = "0.4"
