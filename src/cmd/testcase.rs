@@ -27,14 +27,17 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 type_,
                 status,
             } => {
+                let product_id = config.product_id(*product);
+                let project_id = config.project_id(*project);
+
                 if dry_run {
                     println!("[DRY-RUN] Would call TestcaseApi::list()");
                     println!("  URL: {}/api.php/v1/testcases", config.url);
                     println!("  Params:");
-                    if let Some(p) = product {
+                    if let Some(p) = product_id {
                         println!("    product: {}", p);
                     }
-                    if let Some(p) = project {
+                    if let Some(p) = project_id {
                         println!("    project: {}", p);
                     }
                     if let Some(t) = type_ {
@@ -45,7 +48,7 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                     }
                     return;
                 }
-                match TestcaseApi::list(&client, *product, *project, type_.clone(), status.clone())
+                match TestcaseApi::list(&client, product_id, project_id, type_.clone(), status.clone())
                     .await
                 {
                     Ok(testcases) => {
@@ -92,15 +95,21 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 story,
                 project,
             } => {
+                let product_id = config.product_id(Some(*product)).unwrap_or_else(|| {
+                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
+                    std::process::exit(1);
+                });
+                let project_id = config.project_id(*project);
+
                 if dry_run {
                     println!("[DRY-RUN] Would call TestcaseApi::create()");
                     println!(
                         "  URL: {}/api.php/v1/products/{}/testcases",
-                        config.url, product
+                        config.url, product_id
                     );
                     println!("  Body:");
                     println!("    title: {}", title);
-                    println!("    product: {}", product);
+                    println!("    product: {}", product_id);
                     if let Some(t) = type_ {
                         println!("    type: {}", t);
                     }
@@ -119,23 +128,23 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                     if let Some(s) = story {
                         println!("    story: {}", s);
                     }
-                    if let Some(p) = project {
+                    if let Some(p) = project_id {
                         println!("    project: {}", p);
                     }
                     return;
                 }
                 let req = CreateTestcaseRequest {
                     title: title.clone(),
-                    product: *product,
+                    product: product_id,
                     type_: type_.clone(),
                     severity: *severity,
                     pri: *pri,
                     steps: steps.clone(),
                     expectation: expectation.clone(),
                     story: *story,
-                    project: *project,
+                    project: project_id,
                 };
-                match TestcaseApi::create(&client, *product, &req).await {
+                match TestcaseApi::create(&client, product_id, &req).await {
                     Ok(testcase) => {
                         println!(
                             "{}",

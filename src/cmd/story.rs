@@ -42,7 +42,14 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                     return;
                 }
                 // 调用 StoryApi::list 获取需求列表
-                match StoryApi::list(&client, *product, status.clone(), *project).await {
+                match StoryApi::list(
+                    &client,
+                    config.product_id(*product),
+                    status.clone(),
+                    config.project_id(*project),
+                )
+                .await
+                {
                     Ok(stories) => {
                         // 输出 JSON 格式结果
                         println!(

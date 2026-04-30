@@ -25,6 +25,10 @@ pub enum AuthSubcommand {
         /// 禅道密码（可选，未提供时启动 TUI）
         #[arg(long, env = "ZENTAO_PASSWORD")]
         password: Option<String>,
+
+        /// 保存到全局配置（不加参数默认保存到项目配置）
+        #[arg(long, short = 'g')]
+        global: bool,
     },
 
     /// 登出命令 - 清除保存的 token
@@ -56,7 +60,11 @@ pub async fn run(
 ) -> Result<()> {
     match auth_cmd {
         // -------------------- 登录 --------------------
-        AuthSubcommand::Login { account, password } => {
+        AuthSubcommand::Login {
+            account,
+            password,
+            global,
+        } => {
             // 获取配置
             let config = load_config()?;
             let url = cli_url
@@ -99,7 +107,7 @@ pub async fn run(
                 match auth.login(&account, &password).await {
                     Ok(token) => {
                         println!("✓ Login successful");
-                        update_config("token", &token)?;
+                        update_config("token", &token, *global)?;
                         println!("✓ Token saved to config");
                         println!("  Token: {}...", &token[..token.len().min(8)]);
                         match auth.verify_token(&token).await {
@@ -121,7 +129,7 @@ pub async fn run(
                 match auth.login(&account, &password).await {
                     Ok(token) => {
                         println!("✓ Login successful");
-                        update_config("token", &token)?;
+                        update_config("token", &token, *global)?;
                         println!("✓ Token saved to config");
                         println!("  Token: {}...", &token[..token.len().min(8)]);
                         match auth.verify_token(&token).await {
@@ -146,7 +154,7 @@ pub async fn run(
             // 清空 token
             if config.token.is_some() {
                 // 使用空字符串清空 token，update_config 会处理 None 的情况
-                update_config("token", "")?;
+                update_config("token", "", false)?;
                 println!("✓ Logged out (token cleared)");
             } else {
                 println!("Not logged in");

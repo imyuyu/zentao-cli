@@ -34,13 +34,24 @@ pub enum ConfigSubcommand {
     Show,
     /// 设置配置项
     #[command(name = "set")]
-    Set { key: String, value: String },
+    Set {
+        key: String,
+        value: String,
+        /// 保存到全局配置（不加参数默认保存到项目配置）
+        #[arg(long, short = 'g')]
+        global: bool,
+    },
     /// 获取配置项
     #[command(name = "get")]
     Get { key: String },
     /// 取消设置配置项
     #[command(name = "unset")]
-    Unset { key: String },
+    Unset {
+        key: String,
+        /// 从全局配置取消设置
+        #[arg(long, short = 'g')]
+        global: bool,
+    },
 }
 
 /// 运行 TUI 配置向导
@@ -413,11 +424,12 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
             Ok(())
         }
 
-        ConfigSubcommand::Set { key, value } => {
-            update_config(key, value)?;
-            println!("✓ {} set to {} in global config", key, value);
+        ConfigSubcommand::Set { key, value, global } => {
+            let path = update_config(key, value, *global)?;
+            let scope = if *global { "global" } else { "project" };
+            println!("✓ {} set to {} in {} config", key, value, scope);
             if key == "token" {
-                println!("  Token saved to: {}", global_config_path().display());
+                println!("  Token saved to: {}", path.display());
             }
             Ok(())
         }
@@ -445,9 +457,11 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
             Ok(())
         }
 
-        ConfigSubcommand::Unset { key } => {
-            unset_config(key)?;
-            println!("✓ {} unset in global config", key);
+        ConfigSubcommand::Unset { key, global } => {
+            let path = unset_config(key, *global)?;
+            let scope = if *global { "global" } else { "project" };
+            println!("✓ {} unset in {} config", key, scope);
+            println!("  Removed from: {}", path.display());
             Ok(())
         }
     }

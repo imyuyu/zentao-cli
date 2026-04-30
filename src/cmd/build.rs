@@ -43,12 +43,12 @@ pub enum BuildAction {
         /// 版本名称
         #[arg(long)]
         name: String,
-        /// 所属项目 ID
+        /// 所属项目 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
-        project: u64,
-        /// 所属产品 ID
+        project: Option<u64>,
+        /// 所属产品 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
-        product: u64,
+        product: Option<u64>,
         /// 分支/平台 ID
         #[arg(long)]
         branch: Option<u64>,
@@ -107,6 +107,9 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                 product,
                 execution,
             } => {
+                let project_id = config.project_id(*project);
+                let product_id = config.product_id(*product);
+
                 if dry_run {
                     if let Some(eid) = execution {
                         println!("[DRY-RUN] Would call BuildApi::list_by_execution()");
@@ -115,20 +118,20 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                         println!("[DRY-RUN] Would call BuildApi::list()");
                         println!("  URL: {}/api.php/v1/builds", config.url);
                         println!("  Params:");
-                        if let Some(p) = project {
+                        if let Some(p) = project_id {
                             println!("    project: {}", p);
                         }
-                        if let Some(p) = product {
+                        if let Some(p) = product_id {
                             println!("    product: {}", p);
                         }
                     }
                     return;
                 }
 
-                let builds = if let Some(eid) = execution {
-                    BuildApi::list_by_execution(&client, *eid).await
+                let builds = if let Some(eid) = *execution {
+                    BuildApi::list_by_execution(&client, eid).await
                 } else {
-                    BuildApi::list(&client, *project, *product).await
+                    BuildApi::list(&client, project_id, product_id).await
                 };
 
                 match builds {
@@ -172,16 +175,25 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                 ci,
                 pkg,
             } => {
+                let project_id = config.project_id(*project).unwrap_or_else(|| {
+                    eprintln!("Error: project ID is required. Provide via --project or set ZENTAO_PROJECT_ID");
+                    std::process::exit(1);
+                });
+                let product_id = config.product_id(*product).unwrap_or_else(|| {
+                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
+                    std::process::exit(1);
+                });
+
                 if dry_run {
                     println!("[DRY-RUN] Would call BuildApi::create()");
                     println!(
                         "  URL: {}/api.php/v1/projects/{}/builds",
-                        config.url, project
+                        config.url, project_id
                     );
                     println!("  Body: {{");
                     println!("    name: {}", name);
-                    println!("    project: {}", project);
-                    println!("    product: {}", product);
+                    println!("    project: {}", project_id);
+                    println!("    product: {}", product_id);
                     if let Some(b) = branch {
                         println!("    branch: {}", b);
                     }
@@ -200,15 +212,15 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
 
                 let req = crate::api::build::CreateBuildRequest {
                     name: name.clone(),
-                    project: *project,
-                    product: *product,
+                    project: project_id,
+                    product: product_id,
                     branch: *branch,
                     scm_path: scm_path.clone(),
                     ci: ci.clone(),
                     pkg: pkg.clone(),
                 };
 
-                match BuildApi::create(&client, *project, &req).await {
+                match BuildApi::create(&client, project_id, &req).await {
                     Ok(build) => {
                         println!(
                             "{}",

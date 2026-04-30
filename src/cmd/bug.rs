@@ -36,7 +36,10 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                     }
                     return;
                 }
-                match BugApi::list(&client, *product, status.clone(), assigned_to.clone()).await {
+                match BugApi::list(&client, config.product_id(Some(*product)).unwrap_or_else(|| {
+                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
+                    std::process::exit(1);
+                }), status.clone(), assigned_to.clone()).await {
                     Ok(bugs) => {
                         println!(
                             "{}",

@@ -158,6 +158,7 @@ impl ExecutionApi {
     pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
         let path = format!("/api.php/v1/executions/{}", id);
         #[derive(Deserialize)]
+        #[allow(dead_code)]
         struct DeleteResponse {
             result: Option<String>,
         }

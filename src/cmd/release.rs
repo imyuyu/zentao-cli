@@ -19,11 +19,14 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
         match cmd {
             // -------------------- list --------------------
             ReleaseSubcommand::List { product, project } => {
+                let product_id = config.product_id(*product);
+                let project_id = config.project_id(*project);
+
                 if dry_run {
-                    if let Some(pid) = product {
+                    if let Some(pid) = product_id {
                         println!("[DRY-RUN] Would call ReleaseApi::list_by_product()");
                         println!("  URL: {}/api.php/v1/products/{}/releases", config.url, pid);
-                    } else if let Some(pid) = project {
+                    } else if let Some(pid) = project_id {
                         println!("[DRY-RUN] Would call ReleaseApi::list_by_project()");
                         println!("  URL: {}/api.php/v1/projects/{}/releases", config.url, pid);
                     } else {
@@ -33,10 +36,10 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
                     return;
                 }
 
-                let releases = if let Some(pid) = product {
-                    ReleaseApi::list_by_product(&client, *pid).await
-                } else if let Some(pid) = project {
-                    ReleaseApi::list_by_project(&client, *pid).await
+                let releases = if let Some(pid) = product_id {
+                    ReleaseApi::list_by_product(&client, pid).await
+                } else if let Some(pid) = project_id {
+                    ReleaseApi::list_by_project(&client, pid).await
                 } else {
                     ReleaseApi::list(&client).await
                 };

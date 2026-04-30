@@ -73,6 +73,18 @@ pub struct Config {
     pub api_version: Option<String>,
 }
 
+impl Config {
+    /// 获取产品 ID，优先使用传入的值，否则使用配置中的值
+    pub fn product_id(&self, cli_value: Option<u64>) -> Option<u64> {
+        cli_value.or(self.product_id)
+    }
+
+    /// 获取项目 ID，优先使用传入的值，否则使用配置中的值
+    pub fn project_id(&self, cli_value: Option<u64>) -> Option<u64> {
+        cli_value.or(self.project_id)
+    }
+}
+
 /// TOML 文件包装结构体
 ///
 /// ZenTao 配置存在 TOML 文件时格式为:
@@ -297,8 +309,17 @@ pub fn load_config() -> Result<Config> {
 ///     with open(path, 'w') as f:
 ///         tomllib.dump(content, f)
 /// ```
-pub fn save_config(config: &Config) -> Result<()> {
-    let path = global_config_path();
+/// 保存配置到配置文件
+/// - global=true: 保存到全局配置
+/// - global=false: 保存到项目配置（如果存在），否则保存到全局配置
+fn save_config_to_file(config: &Config, global: bool) -> Result<PathBuf> {
+    let path = if global {
+        global_config_path()
+    } else if project_config_path().exists() {
+        project_config_path()
+    } else {
+        global_config_path()
+    };
 
     // 确保目录存在，create_dir_all 类似 Go 的 os.MkdirAll 或 Python 的 mkdir -p
     if let Some(parent) = path.parent() {
@@ -315,6 +336,11 @@ pub fn save_config(config: &Config) -> Result<()> {
     // 写入文件，类似 Python 的 Path.write_text()
     std::fs::write(&path, content)?;
 
+    Ok(path)
+}
+
+pub fn save_config(config: &Config) -> Result<()> {
+    save_config_to_file(config, false)?;
     Ok(())
 }
 
@@ -323,26 +349,19 @@ pub fn save_config(config: &Config) -> Result<()> {
 /// # 参数
 /// - key: 配置键名 (url/token/product_id/project_id)
 /// - value: 配置值
+/// - global: true 保存到全局配置，false 保存到项目配置（如果存在）
 ///
 /// # 返回
-/// 更新后的完整配置
+/// 更新单个配置项并保存
 ///
-/// # 类比
-/// ```typescript
-/// // TypeScript 等价
-/// function updateConfig(key: string, value: string): Config {
-///     const config = loadConfig();
-///     switch(key) {
-///         case "url": config.url = value; break;
-///         case "token": config.token = value; break;
-///         case "product_id": config.productId = parseInt(value); break;
-///         case "project_id": config.projectId = parseInt(value); break;
-///     }
-///     saveConfig(config);
-///     return config;
-/// }
-/// ```
-pub fn update_config(key: &str, value: &str) -> Result<Config> {
+/// # 参数
+/// - key: 配置键名 (url/token/product_id/project_id)
+/// - value: 配置值
+/// - global: true 保存到全局配置，false 保存到项目配置（如果存在）
+///
+/// # 返回
+/// 保存配置的路径
+pub fn update_config(key: &str, value: &str, global: bool) -> Result<PathBuf> {
     let mut config = load_config()?;
 
     match key {
@@ -367,8 +386,7 @@ pub fn update_config(key: &str, value: &str) -> Result<Config> {
         }
     }
 
-    save_config(&config)?;
-    Ok(config)
+    save_config_to_file(&config, global)
 }
 
 /// 删除配置项并保存
@@ -387,7 +405,7 @@ pub fn update_config(key: &str, value: &str) -> Result<Config> {
 ///     save_config(config)
 ///     return config
 /// ```
-pub fn unset_config(key: &str) -> Result<Config> {
+pub fn unset_config(key: &str, global: bool) -> Result<PathBuf> {
     let mut config = load_config()?;
 
     match key {
@@ -411,8 +429,7 @@ pub fn unset_config(key: &str) -> Result<Config> {
         }
     }
 
-    save_config(&config)?;
-    Ok(config)
+    save_config_to_file(&config, global)
 }
 
 // ============================================================

@@ -8,7 +8,7 @@
 
 use clap::Subcommand;
 
-use crate::api::{ApiClient, CreateTaskRequest, TaskApi, TaskEstimate, UpdateTaskRequest};
+use crate::api::{ApiClient, CreateTaskRequest, TaskApi, UpdateTaskRequest};
 use crate::core::{Config, OutputFormat};
 
 // ============================================================
@@ -27,10 +27,9 @@ pub enum TaskAction {
     /// 列出项目下的任务
     #[command(name = "+list")]
     List {
-        /// 项目 ID（必填）
-        /// 使用 #[arg(long)] 表示必须使用 --project 参数
+        /// 项目 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
-        project: u64,
+        project: Option<u64>,
         /// 按指派人筛选（可选）
         /// 使用 Option<String> 表示参数可选
         #[arg(long)]
@@ -48,9 +47,9 @@ pub enum TaskAction {
         /// 任务名称
         #[arg(long)]
         name: String,
-        /// 所属项目 ID
+        /// 所属项目 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
-        project: u64,
+        project: Option<u64>,
         /// 优先级 1-5
         #[arg(long)]
         pri: u8,
@@ -162,7 +161,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call TaskApi::list()");
-                    println!("  Step 1: GET /api.php/v1/projects/{}/executions", project);
+                    println!("  Step 1: GET /api.php/v1/projects/{{project_id}}/executions");
                     println!(
                         "  Step 2: For each execution, GET /api.php/v1/executions/{{id}}/tasks"
                     );
@@ -173,7 +172,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 }
                 // 调用任务列表 API
                 // 传入 project ID 和可选的指派人筛选
-                match TaskApi::list(&client, *project, assigned_to.clone()).await {
+                match TaskApi::list(&client, config.project_id(*project).unwrap_or_default(), assigned_to.clone()).await {
                     Ok(tasks) => {
                         println!(
                             "{}",
@@ -218,9 +217,13 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 // 构建创建请求结构体
                 // 使用 clone() 是因为 req 需要 owned 值
                 // 而 cmd 中的参数是引用
+                let project_id = config.project_id(*project).unwrap_or_else(|| {
+                    eprintln!("Error: project ID is required. Provide via --project or set ZENTAO_PROJECT_ID");
+                    std::process::exit(1);
+                });
                 let req = CreateTaskRequest {
                     name: name.clone(),
-                    project: *project,
+                    project: project_id,
                     pri: *pri,
                     type_: type_.clone(),
                     assigned_to: assigned_to.clone(),

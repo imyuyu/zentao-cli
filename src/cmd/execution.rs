@@ -45,9 +45,9 @@ pub enum ExecutionAction {
         /// 执行名称（必填）
         #[arg(long)]
         name: String,
-        /// 所属项目 ID（必填）
+        /// 所属项目 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
-        project: u64,
+        project: Option<u64>,
         /// 执行类型：iteration/milestone
         #[arg(long)]
         type_: Option<String>,
@@ -168,11 +168,11 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
                     println!("[DRY-RUN] Would call ExecutionApi::create()");
                     println!(
                         "  URL: {}/api.php/v1/projects/{}/executions",
-                        config.url, project
+                        config.url, config.project_id(*project).unwrap_or(0)
                     );
                     println!("  Body:");
                     println!("    name: {}", name);
-                    println!("    project: {}", project);
+                    println!("    project: {}", config.project_id(*project).unwrap_or(0));
                     if let Some(t) = type_ {
                         println!("    type: {}", t);
                     }
@@ -190,16 +190,20 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
                     }
                     return;
                 }
+                let project_id = config.project_id(*project).unwrap_or_else(|| {
+                    eprintln!("Error: project ID is required. Provide via --project or set ZENTAO_PROJECT_ID");
+                    std::process::exit(1);
+                });
                 let req = CreateExecutionRequest {
                     name: name.clone(),
-                    project: *project,
+                    project: project_id,
                     type_: type_.clone(),
                     begin: begin.clone(),
                     end: end.clone(),
                     days: *days,
                     desc: desc.clone(),
                 };
-                match ExecutionApi::create(&client, *project, &req).await {
+                match ExecutionApi::create(&client, project_id, &req).await {
                     Ok(execution) => {
                         println!(
                             "{}",
