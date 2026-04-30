@@ -46,12 +46,14 @@ impl BuildApi {
             return Ok(resp.builds);
         }
 
+        // ZenTao API 要求必须指定 project 或 execution
+        // 只提供 product 而没有 project 是无效的
+        if product.is_some() && project.is_none() {
+            anyhow::bail!("--product requires --project to be specified. Use --project to filter builds by product within a project, or use --execution to list builds for a specific execution.");
+        }
+
         // 否则调用 /api.php/v1/builds
-        let path = if let Some(pid) = product {
-            format!("/api.php/v1/builds?product={}", pid)
-        } else {
-            String::from("/api.php/v1/builds")
-        };
+        let path = String::from("/api.php/v1/builds");
 
         let resp: ApiResponse<Vec<Build>> = client.get(&path).await?;
         Ok(resp.data.unwrap_or_default())

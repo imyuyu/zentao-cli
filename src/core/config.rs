@@ -253,7 +253,7 @@ pub fn load_config() -> Result<Config> {
     // .unwrap_or_default() 类似 TypeScript 的 ?? 默认值
     let mut config = Config {
         url: std::env::var("ZENTAO_URL").unwrap_or_default(),
-        token: std::env::var("ZENTAO_TOKEN").ok(),
+        token: std::env::var("ZENTAO_TOKEN").ok().filter(|s| !s.is_empty()),
         product_id: std::env::var("ZENTAO_PRODUCT_ID")
             .ok()
             .and_then(|s| s.parse().ok()), // parse().ok() 类似 Python 的 int(s) try-catch
