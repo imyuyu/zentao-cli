@@ -52,6 +52,8 @@ pub struct UpdateBugRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolution: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub resolved_build: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub assigned_to: Option<String>,
 }
 

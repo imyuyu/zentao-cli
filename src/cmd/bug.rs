@@ -113,12 +113,14 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 title,
                 status,
                 resolution,
+                resolved_build,
                 assigned_to,
             } => {
                 let req = UpdateBugRequest {
                     title: title.clone(),
                     status: status.clone(),
                     resolution: resolution.clone(),
+                    resolved_build: *resolved_build,
                     assigned_to: assigned_to.clone(),
                 };
 

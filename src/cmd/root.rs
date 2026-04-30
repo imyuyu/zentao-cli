@@ -207,6 +207,8 @@ pub enum BugSubcommand {
         #[arg(long)]
         resolution: Option<String>,
         #[arg(long)]
+        resolved_build: Option<u64>,
+        #[arg(long)]
         assigned_to: Option<String>,
     },
 }
