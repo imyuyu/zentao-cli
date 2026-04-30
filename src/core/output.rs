@@ -185,6 +185,31 @@ pub fn format_output<T: Serialize>(items: &[T], format: OutputFormat, columns: &
     }
 }
 
+/// 安全打印到 stdout，处理管道关闭错误
+/// 当输出被 pipe 到其他命令（如 head, tail, jq）时，
+/// 如果下游命令提前关闭管道，println! 会 panic，
+/// 这个函数会忽略BrokenPipe错误
+pub fn safe_println(s: &str) {
+    use std::io::{self, Write};
+    let result = writeln!(io::stdout(), "{}", s);
+    if let Err(e) = result {
+        if e.kind() != io::ErrorKind::BrokenPipe {
+            eprintln!("Write error: {}", e);
+        }
+    }
+}
+
+/// 安全打印到 stdout（不换行）
+pub fn safe_print(s: &str) {
+    use std::io::{self, Write};
+    let result = write!(io::stdout(), "{}", s);
+    if let Err(e) = result {
+        if e.kind() != io::ErrorKind::BrokenPipe {
+            eprintln!("Write error: {}", e);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -4,6 +4,7 @@
 
 use crate::api::{ApiClient, UserApi};
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 use clap::Subcommand;
 
 #[derive(Subcommand, Clone, Debug)]
@@ -34,9 +35,9 @@ pub fn run(cmd: &UserAction, config: &Config, _format: OutputFormat, dry_run: bo
         match cmd {
             UserAction::List { dept, role } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call UserApi::list()");
+                    safe_println(&format!("[DRY-RUN] Would call UserApi::list()"));
                     println!("  URL: {}/api.php/v1/users", config.url);
-                    println!("  Params:");
+                    safe_println(&format!("  Params:"));
                     if let Some(d) = dept {
                         println!("    dept: {}", d);
                     }
@@ -59,7 +60,7 @@ pub fn run(cmd: &UserAction, config: &Config, _format: OutputFormat, dry_run: bo
             }
             UserAction::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call UserApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call UserApi::get()"));
                     println!("  URL: {}/api.php/v1/users/{}", config.url, id);
                     return;
                 }

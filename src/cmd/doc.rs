@@ -10,6 +10,7 @@ use clap::Subcommand;
 
 use crate::api::{ApiClient, DocApi};
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 
 // ============================================================
 // 子命令定义
@@ -55,7 +56,7 @@ pub fn run(cmd: &DocAction, config: &Config, _format: OutputFormat, dry_run: boo
             // -------------------- list 命令 --------------------
             DocAction::List => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call DocApi::list()");
+                    safe_println(&format!("[DRY-RUN] Would call DocApi::list()"));
                     println!("  URL: {}/api.php/v1/docs", config.url);
                     return;
                 }
@@ -75,7 +76,7 @@ pub fn run(cmd: &DocAction, config: &Config, _format: OutputFormat, dry_run: boo
             // -------------------- get 命令 --------------------
             DocAction::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call DocApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call DocApi::get()"));
                     println!("  URL: {}/api.php/v1/docs/{}", config.url, id);
                     return;
                 }

@@ -11,6 +11,7 @@ use clap::Subcommand;
 use crate::api::execution::{CreateExecutionRequest, UpdateExecutionRequest};
 use crate::api::{ApiClient, ExecutionApi};
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 
 // ============================================================
 // 子命令定义
@@ -113,9 +114,9 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
             // -------------------- list 命令 --------------------
             ExecutionAction::List { project } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ExecutionApi::list()");
+                    safe_println(&format!("[DRY-RUN] Would call ExecutionApi::list()"));
                     println!("  URL: {}/api.php/v1/executions", config.url);
-                    println!("  Params:");
+                    safe_println(&format!("  Params:"));
                     if let Some(p) = project {
                         println!("    project: {}", p);
                     }
@@ -137,7 +138,7 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
             // -------------------- get 命令 --------------------
             ExecutionAction::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ExecutionApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call ExecutionApi::get()"));
                     println!("  URL: {}/api.php/v1/executions/{}", config.url, id);
                     return;
                 }
@@ -165,12 +166,12 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
                 desc,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ExecutionApi::create()");
+                    safe_println(&format!("[DRY-RUN] Would call ExecutionApi::create()"));
                     println!(
                         "  URL: {}/api.php/v1/projects/{}/executions",
                         config.url, config.project_id(*project).unwrap_or(0)
                     );
-                    println!("  Body:");
+                    safe_println(&format!("  Body:"));
                     println!("    name: {}", name);
                     println!("    project: {}", config.project_id(*project).unwrap_or(0));
                     if let Some(t) = type_ {
@@ -227,9 +228,9 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
                 desc,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ExecutionApi::update()");
+                    safe_println(&format!("[DRY-RUN] Would call ExecutionApi::update()"));
                     println!("  URL: {}/api.php/v1/executions/{}", config.url, id);
-                    println!("  Body:");
+                    safe_println(&format!("  Body:"));
                     if let Some(n) = name {
                         println!("    name: {}", n);
                     }
@@ -274,7 +275,7 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
             // -------------------- delete 命令 --------------------
             ExecutionAction::Delete { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ExecutionApi::delete()");
+                    safe_println(&format!("[DRY-RUN] Would call ExecutionApi::delete()"));
                     println!("  URL: {}/api.php/v1/executions/{}", config.url, id);
                     return;
                 }

@@ -7,7 +7,7 @@ pub mod tui;
 pub use anyhow::Result;
 pub use api::types::{Bug, Story};
 pub use api::{ApiClient, ApiResponse, Auth};
-pub use core::output::PaginationMeta;
+pub use core::output::{safe_println, PaginationMeta};
 pub use core::Config;
 
 pub fn run() -> Result<()> {

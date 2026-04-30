@@ -19,6 +19,7 @@ use crate::core::{
     global_config_path, load_config, project_config_path, unset_config, update_config, Config,
     GlobalConfig,
 };
+use crate::safe_println;
 use crate::tui::config::{ConfigWizard, ConfigWizardState};
 
 #[derive(Subcommand, Clone, Debug)]
@@ -613,12 +614,12 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
         ConfigSubcommand::Show => {
             let config = load_config()?;
 
-            println!("ZenTao CLI Configuration");
-            println!("======================");
+            safe_println(&format!("ZenTao CLI Configuration"));
+            safe_println(&format!("======================"));
             println!("Global config: {}", global_config_path().display());
             println!("Project config: {}", project_config_path().display());
             println!();
-            println!("Current values:");
+            safe_println(&format!("Current values:"));
             println!("  url: {}", config.url);
             println!(
                 "  token: {}",

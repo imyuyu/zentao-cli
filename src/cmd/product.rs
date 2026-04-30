@@ -11,6 +11,7 @@ use clap::Subcommand;
 use crate::api::product::{CreateProductRequest, UpdateProductRequest};
 use crate::api::{ApiClient, ProductApi};
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 
 // ============================================================
 // 子命令定义
@@ -117,7 +118,7 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- list 命令 --------------------
             ProductAction::List => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProductApi::list()");
+                    safe_println(&format!("[DRY-RUN] Would call ProductApi::list()"));
                     println!("  URL: {}/api.php/v1/products", config.url);
                     return;
                 }
@@ -143,7 +144,7 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- get 命令 --------------------
             ProductAction::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProductApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call ProductApi::get()"));
                     println!("  URL: {}/api.php/v1/products/{}", config.url, id);
                     return;
                 }
@@ -165,7 +166,7 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- create 命令 --------------------
             ProductAction::Create { name, code, desc } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProductApi::create()");
+                    safe_println(&format!("[DRY-RUN] Would call ProductApi::create()"));
                     println!("  URL: {}/api.php/v1/products", config.url);
                     println!("  name: {}", name);
                     return;
@@ -196,7 +197,7 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
                 desc,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProductApi::update()");
+                    safe_println(&format!("[DRY-RUN] Would call ProductApi::update()"));
                     println!("  URL: {}/api.php/v1/product/{}", config.url, id);
                     return;
                 }
@@ -221,7 +222,7 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- delete 命令 --------------------
             ProductAction::Delete { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProductApi::delete()");
+                    safe_println(&format!("[DRY-RUN] Would call ProductApi::delete()"));
                     println!("  URL: {}/api.php/v1/products/{}", config.url, id);
                     return;
                 }

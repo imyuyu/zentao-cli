@@ -5,6 +5,7 @@
 use crate::api::{ApiClient, CreateStoryRequest, StoryApi, UpdateStoryRequest};
 use crate::cmd::root::StorySubcommand;
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 
 /// 执行 Story 相关命令
 ///
@@ -27,9 +28,9 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                 status,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call StoryApi::list()");
+                    safe_println(&format!("[DRY-RUN] Would call StoryApi::list()"));
                     println!("  URL: {}/api.php/v1/stories", config.url);
-                    println!("  Params:");
+                    safe_println(&format!("  Params:"));
                     if let Some(p) = product {
                         println!("    product: {}", p);
                     }
@@ -66,7 +67,7 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
             // -------------------- get --------------------
             StorySubcommand::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call StoryApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call StoryApi::get()"));
                     println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
                     return;
                 }
@@ -109,7 +110,7 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                 };
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call StoryApi::create()");
+                    safe_println(&format!("[DRY-RUN] Would call StoryApi::create()"));
                     println!("  URL: {}/api.php/v1/stories", config.url);
                     println!(
                         "  Body: {}",
@@ -148,7 +149,7 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                 };
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call StoryApi::update()");
+                    safe_println(&format!("[DRY-RUN] Would call StoryApi::update()"));
                     println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
                     println!(
                         "  Body: {}",
@@ -186,7 +187,7 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
                 };
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call StoryApi::change()");
+                    safe_println(&format!("[DRY-RUN] Would call StoryApi::change()"));
                     println!("  URL: {}/api.php/v1/stories/{}/change", config.url, id);
                     println!(
                         "  Body: {}",
@@ -211,7 +212,7 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
             // -------------------- delete --------------------
             StorySubcommand::Delete { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call StoryApi::delete()");
+                    safe_println(&format!("[DRY-RUN] Would call StoryApi::delete()"));
                     println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
                     return;
                 }
@@ -232,7 +233,7 @@ pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_ru
             // -------------------- close --------------------
             StorySubcommand::Close { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call StoryApi::close()");
+                    safe_println(&format!("[DRY-RUN] Would call StoryApi::close()"));
                     println!("  URL: {}/api.php/v1/stories/{}/close", config.url, id);
                     return;
                 }

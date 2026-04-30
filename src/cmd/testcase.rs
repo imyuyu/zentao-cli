@@ -8,6 +8,7 @@ use crate::api::testcase::{
 use crate::api::ApiClient;
 use crate::cmd::root::TestcaseSubcommand;
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 
 /// 执行测试用例相关命令
 ///
@@ -31,9 +32,9 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 let project_id = config.project_id(*project);
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call TestcaseApi::list()");
+                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::list()"));
                     println!("  URL: {}/api.php/v1/testcases", config.url);
-                    println!("  Params:");
+                    safe_println(&format!("  Params:"));
                     if let Some(p) = product_id {
                         println!("    product: {}", p);
                     }
@@ -66,7 +67,7 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
             // -------------------- get --------------------
             TestcaseSubcommand::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TestcaseApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::get()"));
                     println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
                     return;
                 }
@@ -102,12 +103,12 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 let project_id = config.project_id(*project);
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call TestcaseApi::create()");
+                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::create()"));
                     println!(
                         "  URL: {}/api.php/v1/products/{}/testcases",
                         config.url, product_id
                     );
-                    println!("  Body:");
+                    safe_println(&format!("  Body:"));
                     println!("    title: {}", title);
                     println!("    product: {}", product_id);
                     if let Some(t) = type_ {
@@ -169,9 +170,9 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 expectation,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TestcaseApi::update()");
+                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::update()"));
                     println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
-                    println!("  Body:");
+                    safe_println(&format!("  Body:"));
                     if let Some(t) = title {
                         println!("    title: {}", t);
                     }
@@ -220,7 +221,7 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
             // -------------------- delete --------------------
             TestcaseSubcommand::Delete { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TestcaseApi::delete()");
+                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::delete()"));
                     println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
                     return;
                 }
@@ -243,9 +244,9 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
                 build,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TestcaseApi::create_result()");
+                    safe_println(&format!("[DRY-RUN] Would call TestcaseApi::create_result()"));
                     println!("  URL: {}/api.php/v1/testcases/{}/results", config.url, id);
-                    println!("  Body:");
+                    safe_println(&format!("  Body:"));
                     println!("    result: {}", result);
                     if let Some(c) = consumed {
                         println!("    consumed: {}", c);

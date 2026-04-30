@@ -10,6 +10,7 @@ use clap::Subcommand;
 
 use crate::api::{ApiClient, CreateTaskRequest, TaskApi, UpdateTaskRequest};
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 
 // ============================================================
 // 子命令定义
@@ -160,11 +161,9 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 assigned_to,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::list()");
-                    println!("  Step 1: GET /api.php/v1/projects/{{project_id}}/executions");
-                    println!(
-                        "  Step 2: For each execution, GET /api.php/v1/executions/{{id}}/tasks"
-                    );
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::list()"));
+                    safe_println(&format!("  Step 1: GET /api.php/v1/projects/{{project_id}}/executions"));
+                    safe_println(&format!("  Step 2: For each execution, GET /api.php/v1/executions/{{id}}/tasks"));
                     if let Some(a) = assigned_to {
                         println!("  Filter: assignedTo={}", a);
                     }
@@ -188,7 +187,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- get 命令 --------------------
             TaskAction::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::get()"));
                     println!("  URL: {}/api.php/v1/tasks/{}", config.url, id);
                     return;
                 }
@@ -231,7 +230,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 };
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::create()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::create()"));
                     println!("  URL: {}/api.php/v1/tasks", config.url);
                     println!(
                         "  Body: {}",
@@ -272,7 +271,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 };
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::update()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::update()"));
                     println!("  URL: {}/api.php/v1/tasks/{}", config.url, id);
                     println!(
                         "  Body: {}",
@@ -297,7 +296,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- delete 命令 --------------------
             TaskAction::Delete { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::delete()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::delete()"));
                     println!("  URL: {}/api.php/v1/tasks/{}", config.url, id);
                     return;
                 }
@@ -314,7 +313,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- start 命令 --------------------
             TaskAction::Start { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::start()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::start()"));
                     println!("  URL: {}/api.php/v1/tasks/{}/start", config.url, id);
                     return;
                 }
@@ -334,7 +333,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- pause 命令 --------------------
             TaskAction::Pause { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::pause()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::pause()"));
                     println!("  URL: {}/api.php/v1/tasks/{}/pause", config.url, id);
                     return;
                 }
@@ -354,7 +353,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- restart 命令 --------------------
             TaskAction::Restart { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::restart()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::restart()"));
                     println!("  URL: {}/api.php/v1/tasks/{}/restart", config.url, id);
                     return;
                 }
@@ -374,7 +373,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- finish 命令 --------------------
             TaskAction::Finish { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::finish()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::finish()"));
                     println!("  URL: {}/api.php/v1/tasks/{}/finish", config.url, id);
                     return;
                 }
@@ -394,7 +393,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- close 命令 --------------------
             TaskAction::Close { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::close()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::close()"));
                     println!("  URL: {}/api.php/v1/tasks/{}/close", config.url, id);
                     return;
                 }
@@ -419,7 +418,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 notes,
             } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::add_estimate()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::add_estimate()"));
                     println!("  URL: {}/api.php/v1/tasks/{}/estimate", config.url, id);
                     println!("  consumed: {}, left: {}", consumed, left);
                     if let Some(n) = notes {
@@ -443,7 +442,7 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             // -------------------- get-estimate 命令 --------------------
             TaskAction::GetEstimate { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call TaskApi::get_estimates()");
+                    safe_println(&format!("[DRY-RUN] Would call TaskApi::get_estimates()"));
                     println!("  URL: {}/api.php/v1/tasks/{}/estimate", config.url, id);
                     return;
                 }

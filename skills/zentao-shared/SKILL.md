@@ -148,11 +148,10 @@ zentao-cli task list              # 使用配置中的默认值
 
 | 选项 | 说明 |
 |------|------|
-| `--format` | 输出格式：`json`、`pretty`、`table` |
+| `--format` | 输出格式：`json`、`pretty`、`table`、`ndjson`、`csv` |
 | `--product` | 按产品 ID 过滤 |
 | `--project` | 按项目 ID 过滤 |
-| `--limit` | 限制结果数量（默认：50） |
-| `--page` | 分页页码 |
+| `--status` | 按状态筛选 |
 
 ## 输出格式
 

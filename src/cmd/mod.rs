@@ -1,3 +1,6 @@
+// 安全打印函数，处理管道关闭错误
+pub use crate::core::output::safe_println;
+
 pub mod api_cmd;
 pub mod auth;
 pub mod browse;

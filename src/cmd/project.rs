@@ -11,6 +11,7 @@ use clap::Subcommand;
 
 use crate::api::{ApiClient, CreateProjectRequest, ProjectApi, UpdateProjectRequest};
 use crate::core::{Config, OutputFormat};
+use crate::safe_println;
 
 // ============================================================
 // 子命令定义
@@ -83,7 +84,7 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- list 命令 --------------------
             ProjectAction::List => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProjectApi::list()");
+                    safe_println(&format!("[DRY-RUN] Would call ProjectApi::list()"));
                     println!("  URL: {}/api.php/v1/projects", config.url);
                     return;
                 }
@@ -103,7 +104,7 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- get 命令 --------------------
             ProjectAction::Get { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProjectApi::get()");
+                    safe_println(&format!("[DRY-RUN] Would call ProjectApi::get()"));
                     println!("  URL: {}/api.php/v1/projects/{}", config.url, id);
                     return;
                 }
@@ -129,7 +130,7 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run:
                 };
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProjectApi::create()");
+                    safe_println(&format!("[DRY-RUN] Would call ProjectApi::create()"));
                     println!("  URL: {}/api.php/v1/projects", config.url);
                     println!(
                         "  Body: {}",
@@ -165,7 +166,7 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run:
                 };
 
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProjectApi::update()");
+                    safe_println(&format!("[DRY-RUN] Would call ProjectApi::update()"));
                     println!("  URL: {}/api.php/v1/projects/{}", config.url, id);
                     println!(
                         "  Body: {}",
@@ -190,7 +191,7 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run:
             // -------------------- delete 命令 --------------------
             ProjectAction::Delete { id } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ProjectApi::delete()");
+                    safe_println(&format!("[DRY-RUN] Would call ProjectApi::delete()"));
                     println!("  URL: {}/api.php/v1/projects/{}", config.url, id);
                     return;
                 }

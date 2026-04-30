@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.0.1-beta.3] - 2026-04-30
+
+### Fixed
+- Broken pipe panic when CLI output is piped to other commands (e.g., `head`, `tail`, `jq`)
+- CLI version string hardcoded as "0.0.3" - now reads from Cargo.toml
+- Config save fallback behavior - when `global=false`, config is now saved to project directory instead of falling back to global
+- Removed non-existent `--limit` and `--page` options from shared skill documentation
+
+### Changed
+- Updated `zentao-shared` skill with auto-configuration guidance
+- Added config flow for asking user about save location (global vs project)
+
+### Added
+- Safe print functions (`safe_println`, `safe_print`) to handle broken pipe errors gracefully
+
 ## [0.2.0] - 2026-04-29
 
 ### Changed

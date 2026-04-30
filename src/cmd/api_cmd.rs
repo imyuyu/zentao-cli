@@ -1,4 +1,5 @@
 use crate::api::ApiClient;
+use crate::safe_println;
 use crate::tui::api_selector::run_selector;
 use anyhow::Result;
 use clap::Subcommand;
@@ -770,11 +771,11 @@ pub enum ApiSubcommand {
 pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Result<()> {
     match api_cmd {
         ApiSubcommand::Test => {
-            println!("Testing ZenTao API connection...");
+            safe_println(&format!("Testing ZenTao API connection..."));
             println!("URL: {}", config.url);
 
             if config.url.is_empty() {
-                println!("✗ Error: ZENTAO_URL is not set");
+                safe_println(&format!("✗ Error: ZENTAO_URL is not set"));
                 return Ok(());
             }
 
@@ -784,7 +785,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
             // Try to fetch current user
             match client.get::<serde_json::Value>("/api.php/v1/user").await {
                 Ok(data) => {
-                    println!("✓ Connected successfully!");
+                    safe_println(&format!("✓ Connected successfully!"));
                     println!(
                         "Response: {}",
                         serde_json::to_string_pretty(&data).unwrap_or_default()
@@ -797,30 +798,34 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
             Ok(())
         }
         ApiSubcommand::Endpoints => {
-            println!("ZenTao API v1 Endpoints");
-            println!("======================");
+            safe_println(&format!("ZenTao API v1 Endpoints"));
+            safe_println(&format!("======================"));
             println!();
-            println!("Authentication:");
-            println!("  POST   /tokens              - Get access token");
+            safe_println(&format!("Authentication:"));
+            safe_println(&format!("  POST   /tokens              - Get access token"));
             println!();
-            println!("Stories:");
-            println!("  GET    /stories              - List stories");
-            println!("  GET    /stories/{{id}}        - Get story details");
-            println!("  POST   /stories              - Create story");
-            println!("  PUT    /stories/{{id}}        - Update story");
+            safe_println(&format!("Stories:"));
+            safe_println(&format!("  GET    /stories              - List stories"));
+            safe_println(&format!(
+                "  GET    /stories/{{id}}        - Get story details"
+            ));
+            safe_println(&format!("  POST   /stories              - Create story"));
+            safe_println(&format!("  PUT    /stories/{{id}}        - Update story"));
             println!();
-            println!("Bugs:");
-            println!("  GET    /bugs                - List bugs");
-            println!("  GET    /bugs/{{id}}          - Get bug details");
-            println!("  POST   /bugs                - Create bug");
-            println!("  PUT    /bugs/{{id}}          - Update bug");
+            safe_println(&format!("Bugs:"));
+            safe_println(&format!("  GET    /bugs                - List bugs"));
+            safe_println(&format!("  GET    /bugs/{{id}}          - Get bug details"));
+            safe_println(&format!("  POST   /bugs                - Create bug"));
+            safe_println(&format!("  PUT    /bugs/{{id}}          - Update bug"));
             println!();
-            println!("Products:");
-            println!("  GET    /products             - List products");
+            safe_println(&format!("Products:"));
+            safe_println(&format!("  GET    /products             - List products"));
             println!();
-            println!("Users:");
-            println!("  GET    /users/me             - Current user info");
-            println!("  GET    /users                - List users");
+            safe_println(&format!("Users:"));
+            safe_println(&format!(
+                "  GET    /users/me             - Current user info"
+            ));
+            safe_println(&format!("  GET    /users                - List users"));
             Ok(())
         }
         ApiSubcommand::List { name } => {
@@ -838,7 +843,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
                     }
                 } else {
                     println!("未找到匹配的端点: {}", name);
-                    println!("使用 'zentao-cli api list' 查看所有端点");
+                    safe_println(&format!("使用 'zentao-cli api list' 查看所有端点"));
                 }
                 return Ok(());
             }
@@ -848,7 +853,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
                 let endpoint = match run_selector() {
                     Some(ep) => ep,
                     None => {
-                        println!("已取消");
+                        safe_println(&format!("已取消"));
                         break;
                     }
                 };
@@ -923,7 +928,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
                             println!("    {} {}", method.http_method, method.path);
                             println!("    {}", method.description);
                             if !method.params.is_empty() {
-                                println!("    参数:");
+                                safe_println(&format!("    参数:"));
                                 for param in &method.params {
                                     let req = if param.required {
                                         "[必填]"
@@ -949,7 +954,7 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
 
 async fn call_api_endpoint(config: &crate::core::Config, endpoint: &ApiEndpoint) -> Result<()> {
     if config.url.is_empty() {
-        println!("✗ Error: ZENTAO_URL is not set");
+        safe_println(&format!("✗ Error: ZENTAO_URL is not set"));
         return Ok(());
     }
 
@@ -962,7 +967,7 @@ async fn call_api_endpoint(config: &crate::core::Config, endpoint: &ApiEndpoint)
     match endpoint.method {
         "GET" => match client.get::<serde_json::Value>(endpoint.path).await {
             Ok(data) => {
-                println!("✓ 成功!");
+                safe_println(&format!("✓ 成功!"));
                 println!(
                     "{}",
                     serde_json::to_string_pretty(&data).unwrap_or_default()
@@ -974,10 +979,12 @@ async fn call_api_endpoint(config: &crate::core::Config, endpoint: &ApiEndpoint)
         },
         "POST" => {
             // POST 请求需要 body，这里只做示例
-            println!("⚠ POST 请求需要额外参数，请使用 --data 指定请求体");
+            safe_println(&format!(
+                "⚠ POST 请求需要额外参数，请使用 --data 指定请求体"
+            ));
         }
         "PUT" => {
-            println!("⚠ PUT 请求需要额外参数，请使用 --data 指定请求体");
+            safe_println(&format!("⚠ PUT 请求需要额外参数，请使用 --data 指定请求体"));
         }
         _ => {}
     }
