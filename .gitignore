@@ -25,3 +25,10 @@ Thumbs.db
 node_modules/
 Cargo.lock
 package-lock.json
+
+# Claude Code
+.claude/
+.omc/
+
+# Build artifacts
+bin/
