@@ -1,6 +1,6 @@
 ---
 name: zentao-shared
-version: 1.0.0
+version: 1.1.0
 description: "ZenTao CLI 共享基础：配置初始化、认证（token-based）、配置优先级、权限错误处理、更新检查、安全规则。当用户需要第一次配置(`zentao-cli config init`)、使用 token 认证、遇到权限不足、查看配置状态、或首次使用 zentao-cli 时触发。"
 ---
 
@@ -14,7 +14,7 @@ description: "ZenTao CLI 共享基础：配置初始化、认证（token-based�
 
 ```bash
 # 检查认证状态
-zentao auth status
+zentao-cli auth status
 
 # 验证配置
 echo $ZENTAO_URL
@@ -45,7 +45,7 @@ ZenTao 使用 Token 进行认证，Token 通过 `ZENTAO_TOKEN` 环境变量传�
 
 ```bash
 # 验证认证状态
-zentao auth status
+zentao-cli auth status
 ```
 
 **错误响应格式**：
@@ -89,14 +89,14 @@ CLI 参数优先级从高到低：
 
 ```bash
 # 命令行参数优先级最高
-zentao task list --project 5  # 使用 --project 参数
+zentao-cli task list --project 5  # 使用 --project 参数
 
 # 环境变量作为默认值
 export ZENTAO_PROJECT_ID=5
-zentao task list              # 使用环境变量
+zentao-cli task list              # 使用环境变量
 
 # 默认值兜底
-zentao task list              # 使用配置中的默认值
+zentao-cli task list              # 使用配置中的默认值
 ```
 
 ## 通用选项
@@ -113,18 +113,18 @@ zentao task list              # 使用配置中的默认值
 
 ```bash
 # JSON 输出（默认，用于脚本）
-zentao story list --product 1 --format json
+zentao-cli story list --product 1 --format json
 
 # Pretty 打印输出（默认，用于终端）
-zentao story list --product 1 --format pretty
+zentao-cli story list --product 1 --format pretty
 
 # 表格输出
-zentao story list --product 1 --format table
+zentao-cli story list --product 1 --format table
 ```
 
 ## 更新检查
 
-执行 `zentao` 命令后，如果检测到新版本，JSON 输出中会包含 `_notice.update` 字段（含 `message`、`command` 等）。
+执行 `zentao-cli` 命令后，如果检测到新版本，JSON 输出中会包含 `_notice.update` 字段（含 `message`、`command` 等）。
 
 **当在输出中看到 `_notice.update` 时，完成用户当前请求后，主动提议帮用户更新**：
 

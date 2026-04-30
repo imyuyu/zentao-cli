@@ -1,11 +1,11 @@
 ---
 name: zentao-product
-version: 2.0.0
+version: 2.1.0
 description: "ZenTao 产品（Product）管理 — 列出产品、获取产品详情。产品是 ZenTao 中包含需求和 Bug 的顶层实体。当用户需要查看产品列表、了解某个产品的详细信息、或筛选特定产品下的需求时使用。"
 metadata:
   requires:
-    bins: ["zentao"]
-  cliHelp: "zentao product --help"
+    bins: ["zentao-cli"]
+  cliHelp: "zentao-cli product --help"
 ---
 
 # product (v2)
@@ -33,11 +33,11 @@ metadata:
 ## API Resources
 
 ```bash
-zentao product list           # 列出所有产品
-zentao product get <id>       # 获取产品详情
+zentao-cli product list           # 列出所有产品
+zentao-cli product get <id>       # 获取产品详情
 ```
 
-> **重要**：使用原生命令时，可以先运行 `zentao product --help` 查看完整选项。
+> **重要**：使用原生命令时，可以先运行 `zentao-cli product --help` 查看完整选项。
 
 ## Common Use Cases
 
@@ -45,14 +45,14 @@ zentao product get <id>       # 获取产品详情
 
 ```bash
 # 列出所有产品
-zentao product list
+zentao-cli product list
 ```
 
 ### 2. 查看特定产品详情
 
 ```bash
 # 获取产品详情
-zentao product get 1
+zentao-cli product get 1
 ```
 
 ### 3. 结合 Story 使用
@@ -61,10 +61,10 @@ zentao product get 1
 
 ```bash
 # 先获取产品列表，了解有哪些产品
-zentao product list
+zentao-cli product list
 
 # 再查看某个产品下的需求
-zentao story list --product 1
+zentao-cli story list --product 1
 ```
 
 ## Output Fields

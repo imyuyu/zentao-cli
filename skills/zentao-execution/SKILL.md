@@ -1,7 +1,11 @@
 ---
 name: zentao-execution
-version: 0.1.0
+version: 0.2.0
 description: ZenTao Execution (执行/迭代) management - list and get executions
+metadata:
+  requires:
+    bins: ["zentao-cli"]
+  cliHelp: "zentao-cli execution --help"
 ---
 
 # Execution (执行/迭代) Management
@@ -27,13 +31,13 @@ description: ZenTao Execution (执行/迭代) management - list and get executio
 
 ### List Executions
 ```bash
-zentao execution list --project 1
-zentao execution list
+zentao-cli execution list --project 1
+zentao-cli execution list
 ```
 
 ### Get Execution
 ```bash
-zentao execution get 100
+zentao-cli execution get 100
 ```
 
 详细命令参考见 references/ 目录。

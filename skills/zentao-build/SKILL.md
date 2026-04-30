@@ -1,11 +1,11 @@
 ---
 name: zentao-build
-version: 1.0.0
+version: 1.1.0
 description: "ZenTao 版本：管理产品版本/Build。列出版本、获取版本详情、查看版本关联的Story和Bug。当用户需要查看产品的发布版本、获取Build详情、或查看某个版本关联的需求和Bug时使用。"
 metadata:
   requires:
-    bins: ["zentao"]
-  cliHelp: "zentao build --help"
+    bins: ["zentao-cli"]
+  cliHelp: "zentao-cli build --help"
 ---
 
 # Build (版本)
@@ -24,8 +24,8 @@ metadata:
 ## API Resources
 
 ```bash
-zentao build list [filters]   # 列出版本
-zentao build get <build_id>    # 获取版本详情
+zentao-cli build list [filters]   # 列出版本
+zentao-cli build get <build_id>    # 获取版本详情
 ```
 
 ## Common Use Cases
@@ -34,26 +34,26 @@ zentao build get <build_id>    # 获取版本详情
 
 ```bash
 # 列出所有版本
-zentao build list
+zentao-cli build list
 
 # 列出某项目的版本
-zentao build list --project 1
+zentao-cli build list --project 1
 
 # 列出某产品的版本
-zentao build list --product 1
+zentao-cli build list --product 1
 
 # 同时按项目和产品筛选
-zentao build list --project 1 --product 1
+zentao-cli build list --project 1 --product 1
 ```
 
 ### 获取版本详情
 
 ```bash
 # 获取版本详情
-zentao build get 10
+zentao-cli build get 10
 
 # 获取版本详情（JSON 格式）
-zentao build get 10 --format json
+zentao-cli build get 10 --format json
 ```
 
 ## Output Fields
@@ -92,7 +92,7 @@ zentao build get 10 --format json
 
 ```bash
 # 查看认证状态
-zentao auth status
+zentao-cli auth status
 
 # 验证配置
 echo $ZENTAO_URL

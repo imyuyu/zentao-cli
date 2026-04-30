@@ -1,11 +1,11 @@
 ---
 name: zentao-project
-version: 2.0.0
+version: 2.1.0
 description: "ZenTao 项目（Project）管理 — 列出项目、获取项目详情。项目是一组关联的任务和团队成员。当用户需要查看项目列表、了解某个项目的详细信息、或查看项目下的任务时使用。"
 metadata:
   requires:
-    bins: ["zentao"]
-  cliHelp: "zentao project --help"
+    bins: ["zentao-cli"]
+  cliHelp: "zentao-cli project --help"
 ---
 
 # project (v2)
@@ -43,12 +43,12 @@ metadata:
 ## API Resources
 
 ```bash
-zentao project list           # 列出所有项目
-zentao project list --status <status>  # 按状态筛选
-zentao project get <id>       # 获取项目详情
+zentao-cli project list           # 列出所有项目
+zentao-cli project list --status <status>  # 按状态筛选
+zentao-cli project get <id>       # 获取项目详情
 ```
 
-> **重要**：使用原生命令时，可以先运行 `zentao project --help` 查看完整选项。
+> **重要**：使用原生命令时，可以先运行 `zentao-cli project --help` 查看完整选项。
 
 ## Common Use Cases
 
@@ -56,24 +56,24 @@ zentao project get <id>       # 获取项目详情
 
 ```bash
 # 列出所有项目
-zentao project list
+zentao-cli project list
 ```
 
 ### 2. 按状态筛选项目
 
 ```bash
 # 只看正在进行中的项目
-zentao project list --status doing
+zentao-cli project list --status doing
 
 # 查看已关闭的项目
-zentao project list --status closed
+zentao-cli project list --status closed
 ```
 
 ### 3. 查看特定项目详情
 
 ```bash
 # 获取项目详情
-zentao project get 1
+zentao-cli project get 1
 ```
 
 ### 4. 结合 Story 和 Task 使用
@@ -82,13 +82,13 @@ zentao project get 1
 
 ```bash
 # 查看项目详情
-zentao project get 1
+zentao-cli project get 1
 
 # 查看该项目关联的需求
-zentao story list --product 1 --project 1
+zentao-cli story list --product 1 --project 1
 
 # 查看该项目的任务
-zentao task list --project 1
+zentao-cli task list --project 1
 ```
 
 ## Output Fields
@@ -119,6 +119,6 @@ zentao task list --project 1
 
 4. **Team Members**：通过 `users` 字段返回团队成员列表，完整成员详情可能需要额外查询。
 
-5. **Project Manager**：PM 字段只返回项目经理的用户 ID，需要时可结合 `zentao user get <id>` 获取更多信息。
+5. **Project Manager**：PM 字段只返回项目经理的用户 ID，需要时可结合 `zentao-cli user get <id>` 获取更多信息。
 
 6. **Opened Date Format**：返回的日期格式为 ZenTao API 标准格式，可能需要转换本地时区显示。

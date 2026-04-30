@@ -1,61 +1,56 @@
 ---
 name: zentao-doc
-version: 0.1.0
-description: ZenTao Doc (文档) management - list and get documents from document libraries
+version: 0.2.0
+description: "ZenTao 文档（Doc）管理 — 列出、查看文档库中的文档。当用户需要查看文档列表或查询文档详情时使用。"
+metadata:
+  requires:
+    bins: ["zentao-cli"]
+  cliHelp: "zentao-cli doc --help"
 ---
 
-# Doc (文档) Management
+# doc (v0.2.0)
 
-**MUST** - 在使用此模块前，先阅读 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md) 了解认证和环境变量配置。
+**CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md)，其中包含认证、环境变量配置和错误处理。**
 
-## Core Concepts
+## Shortcuts
 
-- **Doc**: A document in ZenTao's document library
-- **Doc ID**: Unique identifier for a document
-- **Lib**: Document library ID - documents belong to a library
-- **Product/Project**: Documents can be associated with products or projects
-
-## Shortcuts (推荐优先使用)
-
-| Shortcut | 说明 |
-|----------|------|
-| `+doc-list` | List all documents |
-| `+doc-get` | Get document details |
+- `+doc-list` — 列出文档列表
+- `+doc-get` — 获取文档详情
 
 ## Commands
 
 ### List Documents
 ```bash
-zentao doc list
+zentao-cli doc list
 ```
 
 ### Get Document
 ```bash
-zentao doc get 1
+zentao-cli doc get 1
 ```
 
 ## Output Fields
 
 | Field | Type | Description |
 |-------|------|-------------|
-| id | u64 | Document ID |
-| title | string | Document title |
-| product | u64 | Associated product ID |
-| project | u64 | Associated project ID |
-| lib | u64 | Document library ID |
-| type | string | Document type (e.g., "doc", "article") |
-| size | string | Document size in bytes |
-| added_by | string | Creator account |
-| added_date | string | Creation date |
-| edited_date | string | Last edit date |
-| deleted | string | Deletion flag ("0"/"1") |
+| id | u64 | 文档 ID |
+| title | string | 文档标题 |
+| product | u64 | 关联产品 ID |
+| project | u64 | 关联项目 ID |
+| lib | u64 | 文档库 ID |
+| type | string | 文档类型（如 "doc", "article"） |
+| size | string | 文档大小（字节） |
+| added_by | string | 创建者账号 |
+| added_date | string | 创建日期 |
+| edited_date | string | 最后编辑日期 |
+| deleted | string | 删除标志（"0"/"1"） |
 
 ## Examples
 
 ```bash
-# List all documents
-zentao doc list
+# 列出所有文档
+zentao-cli doc list
 
-# Get document details by ID
-zentao doc get 10
+# 根据 ID 获取文档详情
+zentao-cli doc get 10
 ```

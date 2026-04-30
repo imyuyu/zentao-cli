@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo build *)",
+      "Bash(node -e \"require\\('fs'\\).copyFileSync\\('target/release/zentao-cli.exe','bin/zentao.exe'\\)\")",
+      "Bash(npm publish *)",
+      "Bash(git tag *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
+    ]
+  }
+}

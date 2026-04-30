@@ -11,7 +11,7 @@ use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
 #[command(name = "zentao-cli")]
-#[command(version = "0.1.0")]
+#[command(version = "0.0.3")]
 #[command(about = "ZenTao CLI - Command line tool for ZenTao project management")]
 struct Cli {
     #[command(subcommand)]

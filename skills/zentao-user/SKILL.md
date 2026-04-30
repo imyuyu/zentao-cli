@@ -1,12 +1,12 @@
 ---
 name: zentao-user
-version: 1.0.0
+version: 1.1.0
 description: ZenTao User (用户) management - list and get users, query users by department or role. When user needs to find team members, look up user information, query users by department/role, or get user details in ZenTao.
 metadata:
   requires:
-    bins: ["zentao"]
+    bins: ["zentao-cli"]
     envs: ["ZENTAO_URL", "ZENTAO_TOKEN"]
-  cliHelp: "zentao user --help"
+  cliHelp: "zentao-cli user --help"
 ---
 
 # User (v2)
@@ -15,7 +15,7 @@ metadata:
 
 > **用户识别技巧**：ZenTao 中用户通过数字 ID 标识，但在指派任务、Bug 等场景中可能使用 account（账号名）。API 调用时注意区分 `id` 和 `account`。
 >
-> **用户身份场景**：当用户提到"我"（例如"指派给我"、"我创建的"），需要使用当前登录用户的 ID。可以通过 `zentao user list` 查看自己的账号信息。
+> **用户身份场景**：当用户提到"我"（例如"指派给我"、"我创建的"），需要使用当前登录用户的 ID。可以通过 `zentao-cli user list` 查看自己的账号信息。
 >
 > **部门与角色**：用户归属于部门（dept），拥有角色（role）。常见角色包括：dev（开发）、manager（经理）、qa（测试）、pd（产品）等。
 >
@@ -40,10 +40,10 @@ metadata:
 ## API Resources
 
 ```bash
-zentao user list                 # 列出所有用户
-zentao user list --dept <id>     # 按部门筛选
-zentao user list --role <role>   # 按角色筛选
-zentao user get <id>             # 获取用户详情
+zentao-cli user list                 # 列出所有用户
+zentao-cli user list --dept <id>     # 按部门筛选
+zentao-cli user list --role <role>   # 按角色筛选
+zentao-cli user get <id>             # 获取用户详情
 ```
 
 ## Common Use Cases
@@ -52,34 +52,34 @@ zentao user get <id>             # 获取用户详情
 
 ```bash
 # 列出系统中的所有用户
-zentao user list
+zentao-cli user list
 ```
 
 ### 场景 2：按部门查询用户
 
 ```bash
 # 查看某部门下的所有用户
-zentao user list --dept 1
+zentao-cli user list --dept 1
 
 # 组合筛选：某部门的开发人员
-zentao user list --dept 1 --role dev
+zentao-cli user list --dept 1 --role dev
 ```
 
 ### 场景 3：按角色查询用户
 
 ```bash
 # 查看所有开发人员
-zentao user list --role dev
+zentao-cli user list --role dev
 
 # 查看所有测试人员
-zentao user list --role qa
+zentao-cli user list --role qa
 ```
 
 ### 场景 4：获取用户详情
 
 ```bash
 # 通过用户 ID 获取详细信息
-zentao user get 123
+zentao-cli user get 123
 
 # 输出包括：账号、姓名、邮箱、部门、角色等
 ```
@@ -112,7 +112,7 @@ zentao user get 123
 
 ```bash
 # 遇到 auth 错误时检查认证状态
-zentao auth status
+zentao-cli auth status
 
 # 验证配置
 echo $ZENTAO_URL

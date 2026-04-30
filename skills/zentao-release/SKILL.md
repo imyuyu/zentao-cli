@@ -1,7 +1,14 @@
 ---
 name: zentao-release
-version: 0.1.0
+version: 0.2.0
 description: ZenTao Release (发布) management - list and get product releases
+metadata:
+  bins:
+    - zentao-cli
+  cliHelp: |
+    # Release Management
+    zentao-cli release list              # List all releases
+    zentao-cli release get <id>         # Get release details
 ---
 
 # Release (发布) Management
@@ -25,12 +32,12 @@ description: ZenTao Release (发布) management - list and get product releases
 
 ### List Releases
 ```bash
-zentao release list
+zentao-cli release list
 ```
 
 ### Get Release
 ```bash
-zentao release get 1
+zentao-cli release get 1
 ```
 
 ## Output Fields
@@ -49,8 +56,8 @@ zentao release get 1
 
 ```bash
 # List all releases
-zentao release list
+zentao-cli release list
 
 # Get release details
-zentao release get 1
+zentao-cli release get 1
 ```

@@ -1,11 +1,11 @@
 ---
 name: zentao-task
-version: 1.0.0
+version: 1.1.0
 description: "ZenTao 任务：管理任务。创建任务、查看和更新任务状态、分配负责人、设置优先级、跟踪任务进度。当用户需要创建待办事项、查看任务列表、跟踪任务进度、管理任务分配或给他人分配任务时使用。"
 metadata:
   requires:
-    bins: ["zentao"]
-  cliHelp: "zentao task --help"
+    bins: ["zentao-cli"]
+  cliHelp: "zentao-cli task --help"
 ---
 
 # Task (任务)
@@ -30,10 +30,10 @@ metadata:
 ## API Resources
 
 ```bash
-zentao task list <filters>    # 列出任务
-zentao task get <task_id>    # 获取任务详情
-zentao task create [flags]   # 创建任务
-zentao task update <task_id> [flags]  # 更新任务
+zentao-cli task list <filters>    # 列出任务
+zentao-cli task get <task_id>    # 获取任务详情
+zentao-cli task create [flags]   # 创建任务
+zentao-cli task update <task_id> [flags]  # 更新任务
 ```
 
 ## Common Use Cases
@@ -42,42 +42,42 @@ zentao task update <task_id> [flags]  # 更新任务
 
 ```bash
 # 列出项目所有任务
-zentao task list --project 1
+zentao-cli task list --project 1
 
 # 只看我被指派的任务
-zentao task list --project 1 --assigned-to me
+zentao-cli task list --project 1 --assigned-to me
 
 # 查看某个执行（ sprint ）下的任务
-zentao task list --execution 1
+zentao-cli task list --project 1 --execution 1
 ```
 
 ### 获取任务详情
 
 ```bash
-zentao task get 456
+zentao-cli task get 456
 ```
 
 ### 创建任务
 
 ```bash
 # 创建简单任务
-zentao task create --name "实现登录功能" --project 1 --pri 3
+zentao-cli task create --name "实现登录功能" --project 1 --pri 3
 
 # 创建任务并指定负责人、预估工时
-zentao task create --name "代码评审" --project 1 --pri 2 --assigned-to developer-name --estimate 4
+zentao-cli task create --name "代码评审" --project 1 --pri 2 --assigned-to developer-name --estimate 4
 ```
 
 ### 更新任务
 
 ```bash
 # 更新任务状态
-zentao task update 456 --status done
+zentao-cli task update 456 --status done
 
 # 更新任务负责人
-zentao task update 456 --assigned-to another-user
+zentao-cli task update 456 --assigned-to another-user
 
 # 更新任务状态为进行中
-zentao task update 456 --status doing
+zentao-cli task update 456 --status doing
 ```
 
 ## 任务状态值
@@ -112,7 +112,7 @@ zentao task update 456 --status doing
 
 ```bash
 # 查看认证状态
-zentao auth status
+zentao-cli auth status
 
 # 验证配置
 echo $ZENTAO_URL

@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cargo build --release --manifest-path ./Cargo.toml && node -e \\\"require('fs').copyFileSync('target/release/zentao-cli.exe','bin/zentao.exe')\\\"\",\"timeout\":300000,\"description\":\"Build releas...",
+  "error": "Exit code 1\n   Compiling proc-macro2 v1.0.106\n   Compiling unicode-ident v1.0.24\n   Compiling quote v1.0.45\n   Compiling cfg-if v1.0.4\n   Compiling windows-link v0.2.1\n   Compiling smallvec v1.15.1\n   Compiling stable_deref_trait v1.2.1\n   Compiling windows_x86_64_msvc v0.52.6\n   Compiling parking_lot_core v0.9.12\n   Compiling find-msvc-tools v0.1.9\n   Compiling serde_core v1.0.228\n   Compiling scopeguard v1.2.0\n   Compiling shlex v1.3.0\n   Compiling itoa v1.0.18\n   Compiling pin-project-lite v0...",
+  "timestamp": "2026-04-30T01:19:52.090Z",
+  "retry_count": 1
+}

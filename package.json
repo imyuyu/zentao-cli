@@ -1,6 +1,6 @@
 {
   "name": "@imyuyu/zentao-cli",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "ZenTao CLI - Command line tool for ZenTao project management",
   "license": "MIT",
   "repository": {
