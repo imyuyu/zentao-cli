@@ -62,6 +62,7 @@ active (激活) ──[修复]──> resolved (已解决) ──[确认]──>
 - [`+bug-get`](./references/zentao-bug-get.md) — Get bug details
 - [`+bug-create`](./references/zentao-bug-create.md) — Create a new bug
 - [`+bug-update`](./references/zentao-bug-update.md) — Update bug fields
+- [`+bug-resolve`](./references/zentao-bug-resolve.md) — Resolve a bug
 
 ## API Resources
 

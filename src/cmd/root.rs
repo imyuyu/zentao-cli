@@ -211,6 +211,15 @@ pub enum BugSubcommand {
         #[arg(long)]
         assigned_to: Option<String>,
     },
+    /// 解决 Bug
+    #[command(name = "+resolve")]
+    Resolve {
+        id: u64,
+        #[arg(long)]
+        resolution: String,
+        #[arg(long)]
+        resolved_build: String,
+    },
 }
 
 #[derive(Subcommand, Clone, Debug)]

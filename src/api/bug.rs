@@ -172,6 +172,31 @@ impl BugApi {
         let _: serde_json::Value = client.put(&path, req).await?;
         Self::get(client, id).await
     }
+
+    /// 解决 Bug
+    ///
+    /// POST /api.php/v1/bugs/{bug_id}/resolve
+    ///
+    /// # 参数
+    /// - client: API 客户端
+    /// - id: Bug ID
+    /// - resolution: 解决方案 (bydesign/duplicate/external/fixed/notrepro/postponed/willnotfix/tostory)
+    /// - resolved_build: 解决的版本 ID 或 "trunk"
+    pub async fn resolve(
+        client: &ApiClient,
+        id: u64,
+        resolution: &str,
+        resolved_build: &str,
+    ) -> Result<Bug> {
+        let path = format!("/api.php/v1/bugs/{}/resolve", id);
+        // resolved_build 可以是版本 ID 或 "trunk"
+        let body = serde_json::json!({
+            "resolution": resolution,
+            "resolvedBuild": resolved_build
+        });
+        let _: serde_json::Value = client.post(&path, &body).await?;
+        Self::get(client, id).await
+    }
 }
 
 #[cfg(test)]

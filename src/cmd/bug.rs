@@ -143,6 +143,29 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                     }
                 }
             }
+
+            // -------------------- resolve --------------------
+            BugSubcommand::Resolve {
+                id,
+                resolution,
+                resolved_build,
+            } => {
+                if dry_run {
+                    println!("[DRY-RUN] Would call BugApi::resolve()");
+                    println!("  URL: {}/api.php/v1/bugs/{}/resolve", config.url, id);
+                    println!("  Body: {{ resolution: {}, resolved_build: {} }}", resolution, resolved_build);
+                    return;
+                }
+
+                match BugApi::resolve(&client, *id, resolution, resolved_build).await {
+                    Ok(bug) => {
+                        println!("{}", serde_json::to_string_pretty(&bug).unwrap_or_default());
+                    }
+                    Err(e) => {
+                        eprintln!("Error: {}", e);
+                    }
+                }
+            }
         }
     });
 }
