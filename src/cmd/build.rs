@@ -27,6 +27,9 @@ pub enum BuildAction {
         /// 按产品 ID 筛选
         #[arg(long)]
         product: Option<u64>,
+        /// 按执行 ID 筛选
+        #[arg(long)]
+        execution: Option<u64>,
     },
     /// 获取指定版本的详细信息
     #[command(name = "+get")]
@@ -50,25 +53,34 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
             .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
 
         match cmd {
-            BuildAction::List { project, product } => {
+            BuildAction::List { project, product, execution } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call BuildApi::list()");
-                    println!("  URL: {}/api.php/v1/builds", config.url);
-                    println!("  Params:");
-                    if let Some(p) = project {
-                        println!("    project: {}", p);
-                    }
-                    if let Some(p) = product {
-                        println!("    product: {}", p);
+                    if let Some(eid) = execution {
+                        println!("[DRY-RUN] Would call BuildApi::list_by_execution()");
+                        println!("  URL: {}/api.php/v1/executions/{}/builds", config.url, eid);
+                    } else {
+                        println!("[DRY-RUN] Would call BuildApi::list()");
+                        println!("  URL: {}/api.php/v1/builds", config.url);
+                        println!("  Params:");
+                        if let Some(p) = project {
+                            println!("    project: {}", p);
+                        }
+                        if let Some(p) = product {
+                            println!("    product: {}", p);
+                        }
                     }
                     return;
                 }
-                match BuildApi::list(&client, *project, *product).await {
+
+                let builds = if let Some(eid) = execution {
+                    BuildApi::list_by_execution(&client, *eid).await
+                } else {
+                    BuildApi::list(&client, *project, *product).await
+                };
+
+                match builds {
                     Ok(builds) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&builds).unwrap_or_default()
-                        );
+                        println!("{}", serde_json::to_string_pretty(&builds).unwrap_or_default());
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

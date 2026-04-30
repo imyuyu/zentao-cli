@@ -4,7 +4,27 @@
 
 ## Command
 ```bash
+zentao-cli release +list [--product <id>] [--project <id>]
+```
+
+## Options
+
+| Option | Required | Description |
+|--------|----------|-------------|
+| `--product` | No | Filter by product ID |
+| `--project` | No | Filter by project ID |
+
+## Examples
+
+```bash
+# List all releases
 zentao-cli release +list
+
+# List releases for a specific product
+zentao-cli release +list --product 1
+
+# List releases for a specific project
+zentao-cli release +list --project 1
 ```
 
 ## Output Fields

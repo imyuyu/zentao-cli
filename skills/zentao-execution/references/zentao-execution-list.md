@@ -11,16 +11,22 @@ zentao-cli execution +list [--project <id>]
 
 | Option | Required | Description |
 |--------|----------|-------------|
-| `--project` | No | 按项目 ID 筛选 |
+| `--project` | No | 按项目 ID 筛选执行列表（使用 `/projects/{id}/executions` 接口） |
 
 ## Examples
 
 ```bash
-# List all executions
-zentao-cli execution +list
-
-# List executions for a specific project
+# List executions for a specific project (推荐)
 zentao-cli execution +list --project 1
+
+# List all executions (可能需要较大权限)
+zentao-cli execution +list
+```
+
+## API Endpoint
+
+```
+GET /api.php/v1/projects/{projectId}/executions
 ```
 
 ## Output Fields

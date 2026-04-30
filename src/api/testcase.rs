@@ -31,33 +31,34 @@ impl TestcaseApi {
     pub async fn list(
         client: &ApiClient,
         product: Option<u64>,
-        project: Option<u64>,
+        _project: Option<u64>,
         type_: Option<String>,
         status: Option<String>,
     ) -> Result<Vec<Testcase>> {
-        let mut path = String::from("/api.php/v1/testcases?");
-
-        if let Some(pid) = product {
-            path.push_str(&format!("productID={}", pid));
-        }
-        if let Some(pid) = project {
-            if path.contains('=') {
-                path.push('&');
+        // ZenTao API: /products/{productId}/testcases
+        let path = if let Some(pid) = product {
+            let mut p = format!("/api.php/v1/products/{}/testcases", pid);
+            if let Some(ref t) = type_ {
+                p.push_str(&format!("&type={}", t));
             }
-            path.push_str(&format!("projectID={}", pid));
-        }
-        if let Some(t) = type_ {
-            if path.contains('=') {
-                path.push('&');
+            if let Some(ref s) = status {
+                p.push_str(&format!("&status={}", s));
             }
-            path.push_str(&format!("type={}", t));
-        }
-        if let Some(s) = status {
-            if path.contains('=') {
-                path.push('&');
+            p
+        } else {
+            let mut p = String::from("/api.php/v1/testcases");
+            if let Some(ref t) = type_ {
+                p.push_str(&format!("?type={}", t));
             }
-            path.push_str(&format!("status={}", s));
-        }
+            if let Some(ref s) = status {
+                if p.contains('?') {
+                    p.push_str(&format!("&status={}", s));
+                } else {
+                    p.push_str(&format!("?status={}", s));
+                }
+            }
+            p
+        };
 
         #[derive(Deserialize)]
         struct TestcaseListResponse {

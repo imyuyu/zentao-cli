@@ -46,9 +46,6 @@ zentao-cli task +list --project 1
 
 # 只看我被指派的任务
 zentao-cli task +list --project 1 --assigned-to me
-
-# 查看某个执行（ sprint ）下的任务
-zentao-cli task +list --project 1 --execution 1
 ```
 
 ### 获取任务详情

@@ -26,12 +26,12 @@ impl ExecutionApi {
     /// 满足条件的执行列表
     pub async fn list(client: &ApiClient, project: Option<u64>) -> Result<Vec<Execution>> {
         // 构建查询参数
-        let mut path = String::from("/api.php/v1/executions?");
-
-        // 添加项目筛选参数
-        if let Some(pid) = project {
-            path.push_str(&format!("projectID={}", pid));
-        }
+        // ZenTao API: /projects/{projectId}/executions
+        let path = if let Some(pid) = project {
+            format!("/api.php/v1/projects/{}/executions", pid)
+        } else {
+            String::from("/api.php/v1/executions")
+        };
 
         // 响应体结构：{"executions": [...]}
         #[derive(serde::Deserialize)]

@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli build +list [--project <id>] [--product <id>]
+zentao-cli build +list [--project <id>] [--product <id>] [--execution <id>]
 ```
 
 ## Options
@@ -13,6 +13,7 @@ zentao-cli build +list [--project <id>] [--product <id>]
 |--------|----------|-------------|
 | `--project` | No | Filter by project ID |
 | `--product` | No | Filter by product ID |
+| `--execution` | No | Filter by execution ID |
 
 ## Examples
 
@@ -26,8 +27,8 @@ zentao-cli build +list --project 5
 # List builds for a specific product
 zentao-cli build +list --product 1
 
-# List builds with both filters
-zentao-cli build +list --project 1 --product 1
+# List builds for a specific execution
+zentao-cli build +list --execution 5
 ```
 
 ## Output Fields

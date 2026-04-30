@@ -18,18 +18,32 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
 
         match cmd {
             // -------------------- list --------------------
-            ReleaseSubcommand::List => {
+            ReleaseSubcommand::List { product, project } => {
                 if dry_run {
-                    println!("[DRY-RUN] Would call ReleaseApi::list()");
-                    println!("  URL: {}/api.php/v1/releases", config.url);
+                    if let Some(pid) = product {
+                        println!("[DRY-RUN] Would call ReleaseApi::list_by_product()");
+                        println!("  URL: {}/api.php/v1/products/{}/releases", config.url, pid);
+                    } else if let Some(pid) = project {
+                        println!("[DRY-RUN] Would call ReleaseApi::list_by_project()");
+                        println!("  URL: {}/api.php/v1/projects/{}/releases", config.url, pid);
+                    } else {
+                        println!("[DRY-RUN] Would call ReleaseApi::list()");
+                        println!("  URL: {}/api.php/v1/releases", config.url);
+                    }
                     return;
                 }
-                match ReleaseApi::list(&client).await {
+
+                let releases = if let Some(pid) = product {
+                    ReleaseApi::list_by_product(&client, *pid).await
+                } else if let Some(pid) = project {
+                    ReleaseApi::list_by_project(&client, *pid).await
+                } else {
+                    ReleaseApi::list(&client).await
+                };
+
+                match releases {
                     Ok(releases) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&releases).unwrap_or_default()
-                        );
+                        println!("{}", serde_json::to_string_pretty(&releases).unwrap_or_default());
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -46,10 +60,7 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
                 }
                 match ReleaseApi::get(&client, *id).await {
                     Ok(release) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&release).unwrap_or_default()
-                        );
+                        println!("{}", serde_json::to_string_pretty(&release).unwrap_or_default());
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

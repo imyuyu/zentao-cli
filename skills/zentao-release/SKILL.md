@@ -33,6 +33,8 @@ metadata:
 ### List Releases
 ```bash
 zentao-cli release +list
+zentao-cli release +list --product 1
+zentao-cli release +list --project 1
 ```
 
 ### Get Release

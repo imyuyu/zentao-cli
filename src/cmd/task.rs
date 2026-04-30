@@ -105,11 +105,10 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call TaskApi::list()");
-                    println!("  URL: {}/api.php/v1/tasks", config.url);
-                    println!("  Params:");
-                    println!("    project: {}", project);
+                    println!("  Step 1: GET /api.php/v1/projects/{}/executions", project);
+                    println!("  Step 2: For each execution, GET /api.php/v1/executions/{{id}}/tasks");
                     if let Some(a) = assigned_to {
-                        println!("    assigned_to: {}", a);
+                        println!("  Filter: assignedTo={}", a);
                     }
                     return;
                 }

@@ -115,24 +115,43 @@ impl TaskApi {
         project: u64,
         assigned_to: Option<String>,
     ) -> Result<Vec<Task>> {
-        // 构建查询参数
-        let mut path = format!("/api.php/v1/tasks?projectID={}", project);
-
-        // 如果指定了指派人，添加筛选条件
-        // 使用 & 作为分隔符，因为 path 已经包含 ?
-        if let Some(u) = assigned_to {
-            path.push_str(&format!("&assignedTo={}", u));
+        // 先获取执行列表，再获取每个执行的任务
+        // ZenTao API: /projects/{projectId}/executions 获取执行列表
+        // 然后: /executions/{executionId}/tasks 获取每个执行的任务
+        #[derive(Deserialize)]
+        struct ExecutionListResponse {
+            #[serde(rename = "executions")]
+            executions: Option<Vec<crate::api::types::Execution>>,
         }
 
-        // ZenTao 任务列表返回格式：{"tasks": [...]}
         #[derive(Deserialize)]
         struct TaskListResponse {
             #[serde(rename = "tasks")]
             tasks: Option<Vec<Task>>,
         }
 
-        let resp: TaskListResponse = client.get(&path).await?;
-        Ok(resp.tasks.unwrap_or_default())
+        // 获取项目的执行列表
+        let exec_path = format!("/api.php/v1/projects/{}/executions", project);
+        let exec_resp: ExecutionListResponse = client.get(&exec_path).await?;
+        let executions = exec_resp.executions.unwrap_or_default();
+
+        // 获取所有执行的任务
+        let mut all_tasks = Vec::new();
+        for exec in executions {
+            let task_path = if let Some(ref u) = assigned_to {
+                format!("/api.php/v1/executions/{}/tasks?assignedTo={}", exec.id, u)
+            } else {
+                format!("/api.php/v1/executions/{}/tasks", exec.id)
+            };
+
+            if let Ok(task_resp) = client.get::<TaskListResponse>(&task_path).await {
+                if let Some(tasks) = task_resp.tasks {
+                    all_tasks.extend(tasks);
+                }
+            }
+        }
+
+        Ok(all_tasks)
     }
 
     /// 获取单个任务详情

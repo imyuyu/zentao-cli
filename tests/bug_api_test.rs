@@ -51,6 +51,7 @@ fn test_update_bug_request_resolution() {
         title: None,
         status: Some("resolved".to_string()),
         resolution: Some("fixed".to_string()),
+        resolved_build: None,
         assigned_to: None,
     };
 
@@ -66,6 +67,7 @@ fn test_update_bug_request_all_fields() {
         title: Some("Fixed Bug".to_string()),
         status: Some("closed".to_string()),
         resolution: Some("fixed".to_string()),
+        resolved_build: None,
         assigned_to: Some("admin".to_string()),
     };
 

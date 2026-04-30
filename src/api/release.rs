@@ -64,18 +64,43 @@ pub struct Release {
 pub struct ReleaseApi;
 
 impl ReleaseApi {
-    /// 查询发布列表
+    /// 查询发布列表（所有）
     ///
     /// GET /api.php/v1/releases
     ///
     /// # 返回值
     /// 返回所有有权限访问的发布列表
     pub async fn list(client: &ApiClient) -> Result<Vec<Release>> {
-        // ZenTao 发布列表接口返回格式：{"data": [...], "status": "success"}
-        // 需要用 ApiResponse 包装来解析这种格式
         let resp: ApiResponse<Vec<Release>> = client.get("/api.php/v1/releases").await?;
-        // 取出 data 字段，如果没有数据则返回空数组
         Ok(resp.data.unwrap_or_default())
+    }
+
+    /// 查询产品发布列表
+    ///
+    /// GET /api.php/v1/products/{productId}/releases
+    pub async fn list_by_product(client: &ApiClient, product: u64) -> Result<Vec<Release>> {
+        let path = format!("/api.php/v1/products/{}/releases", product);
+        #[derive(Deserialize)]
+        struct ReleaseListResponse {
+            #[serde(rename = "releases")]
+            releases: Option<Vec<Release>>,
+        }
+        let resp: ReleaseListResponse = client.get(&path).await?;
+        Ok(resp.releases.unwrap_or_default())
+    }
+
+    /// 查询项目发布列表
+    ///
+    /// GET /api.php/v1/projects/{projectId}/releases
+    pub async fn list_by_project(client: &ApiClient, project: u64) -> Result<Vec<Release>> {
+        let path = format!("/api.php/v1/projects/{}/releases", project);
+        #[derive(Deserialize)]
+        struct ReleaseListResponse {
+            #[serde(rename = "releases")]
+            releases: Option<Vec<Release>>,
+        }
+        let resp: ReleaseListResponse = client.get(&path).await?;
+        Ok(resp.releases.unwrap_or_default())
     }
 
     /// 获取单个发布详情

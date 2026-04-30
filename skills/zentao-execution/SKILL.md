@@ -31,7 +31,10 @@ metadata:
 
 ### List Executions
 ```bash
+# List executions for a project (通过项目获取执行列表)
 zentao-cli execution +list --project 1
+
+# List all executions (不推荐，可能需要较大权限)
 zentao-cli execution +list
 ```
 
@@ -39,5 +42,12 @@ zentao-cli execution +list
 ```bash
 zentao-cli execution +get 100
 ```
+
+## API Endpoint
+
+| 操作 | URL 模式 |
+|------|----------|
+| 列表 | `GET /api.php/v1/projects/{projectId}/executions` |
+| 详情 | `GET /api.php/v1/executions/{id}` |
 
 详细命令参考见 references/ 目录。

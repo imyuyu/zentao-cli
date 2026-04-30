@@ -44,6 +44,9 @@ zentao-cli build +list --product 1
 
 # 同时按项目和产品筛选
 zentao-cli build +list --project 1 --product 1
+
+# 列出某执行的版本
+zentao-cli build +list --execution 5
 ```
 
 ### 获取版本详情

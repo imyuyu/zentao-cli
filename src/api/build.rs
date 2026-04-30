@@ -57,6 +57,22 @@ impl BuildApi {
         Ok(resp.data.unwrap_or_default())
     }
 
+    /// 查询执行版本列表
+    ///
+    /// GET /api.php/v1/executions/{id}/builds
+    ///
+    /// # 参数
+    /// - client: API 客户端
+    /// - execution: 执行 ID
+    ///
+    /// # 返回值
+    /// 返回指定执行下的版本列表
+    pub async fn list_by_execution(client: &ApiClient, execution: u64) -> Result<Vec<Build>> {
+        let path = format!("/api.php/v1/executions/{}/builds", execution);
+        let resp: BuildListResponse = client.get(&path).await?;
+        Ok(resp.builds)
+    }
+
     /// 获取单个版本详情
     ///
     /// GET /api.php/v1/builds/{id}

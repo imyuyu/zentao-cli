@@ -236,7 +236,14 @@ pub enum TestcaseSubcommand {
 pub enum ReleaseSubcommand {
     /// 列出发布
     #[command(name = "+list")]
-    List,
+    List {
+        /// 按产品 ID 筛选
+        #[arg(long)]
+        product: Option<u64>,
+        /// 按项目 ID 筛选
+        #[arg(long)]
+        project: Option<u64>,
+    },
     /// 获取发布详情
     #[command(name = "+get")]
     Get { id: u64 },
