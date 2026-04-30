@@ -152,7 +152,12 @@ pub fn run(cmd: &ProjectAction, config: &Config, _format: OutputFormat, dry_run:
             }
 
             // -------------------- update 命令 --------------------
-            ProjectAction::Update { id, name, status, desc } => {
+            ProjectAction::Update {
+                id,
+                name,
+                status,
+                desc,
+            } => {
                 let req = UpdateProjectRequest {
                     name: name.clone(),
                     status: status.clone(),

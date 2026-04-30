@@ -26,6 +26,7 @@ metadata:
 - [`+task-get`](./references/zentao-task-get.md) — Get task details
 - [`+task-create`](./references/zentao-task-create.md) — Create a task
 - [`+task-update`](./references/zentao-task-update.md) — Update a task
+- [`+task-delete`](./references/zentao-task-delete.md) — Delete a task
 
 ## API Resources
 
@@ -34,6 +35,7 @@ zentao-cli task +list --project <id>    # 列出任务
 zentao-cli task +get <task_id>    # 获取任务详情
 zentao-cli task +create --name <name> --project <id> --pri <priority>  # 创建任务
 zentao-cli task +update <task_id> [flags]  # 更新任务
+zentao-cli task +delete <task_id>  # 删除任务
 ```
 
 ## Common Use Cases

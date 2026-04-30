@@ -50,31 +50,61 @@ story +list              # list stories
 story +get 123           # get story detail
 story +create --title "..." --product 1 --pri 1
 story +update 123 --status closed
+story +change 123 --status active    # 变更需求
+story +delete 123                        # 删除需求
+story +close 123                        # 关闭需求
 
 bug +list --product 1
 bug +get 456
 bug +create --title "..." --product 1 --severity 1
 bug +update 456 --status resolved
+bug +resolve 456 --resolution fixed --resolved-build trunk  # 解决 Bug
+bug +confirm 456       # 确认 Bug
+bug +close 456         # 关闭 Bug
+bug +activate 456      # 激活 Bug
+bug +delete 456        # 删除 Bug
 
 task +list --project 1
 task +get 123
 task +create --name "..." --project 1 --pri 1
 task +update 123 --status done
+task +delete 123       # 删除任务
 
 product +list
 product +get 1
+product +create --name "..." --code myproduct  # 创建产品
+product +update 1 --status closed  # 更新产品
+product +delete 1       # 删除产品
+
 project +list
 project +get 1
+project +create --name "..." --code myproject  # 创建项目
+project +update 1 --status closed  # 更新项目
+project +delete 1       # 删除项目
+
 user +list
 user +get 1
 testcase +list --product 1
 testcase +get 123
+testcase +create --product 1 --title "..."  # 创建用例
+testcase +update 123 --status normal  # 更新用例
+testcase +delete 123     # 删除用例
+testcase +result 123 --result pass    # 执行用例
+
 execution +list --project 1
 execution +get 100
+execution +create --name "Sprint 1" --project 1  # 创建执行
+execution +update 100 --status closed  # 更新执行
+execution +delete 100     # 删除执行
+
 release +list
 release +get 1
 build +list --product 1
 build +get 1
+build +create --name "v1.0.0" --project 1 --product 1  # 创建版本
+build +update 1 --ci "Jenkins #1"  # 更新版本
+build +delete 1           # 删除版本
+
 doc +list
 doc +get 10
 

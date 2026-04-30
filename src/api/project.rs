@@ -161,7 +161,11 @@ impl ProjectApi {
     /// PUT /api.php/v1/projects/{id}
     ///
     /// ZenTao PUT 接口返回空 JSON {}，需要再调用 get 获取更新后的信息
-    pub async fn update(client: &ApiClient, id: u64, req: &UpdateProjectRequest) -> Result<Project> {
+    pub async fn update(
+        client: &ApiClient,
+        id: u64,
+        req: &UpdateProjectRequest,
+    ) -> Result<Project> {
         let path = format!("/api.php/v1/projects/{}", id);
         let _: serde_json::Value = client.put(&path, req).await?;
         Self::get(client, id).await

@@ -94,7 +94,10 @@ pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry
             } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call TestcaseApi::create()");
-                    println!("  URL: {}/api.php/v1/products/{}/testcases", config.url, product);
+                    println!(
+                        "  URL: {}/api.php/v1/products/{}/testcases",
+                        config.url, product
+                    );
                     println!("  Body:");
                     println!("    title: {}", title);
                     println!("    product: {}", product);

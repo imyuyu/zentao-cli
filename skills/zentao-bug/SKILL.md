@@ -63,6 +63,10 @@ active (激活) ──[修复]──> resolved (已解决) ──[确认]──>
 - [`+bug-create`](./references/zentao-bug-create.md) — Create a new bug
 - [`+bug-update`](./references/zentao-bug-update.md) — Update bug fields
 - [`+bug-resolve`](./references/zentao-bug-resolve.md) — Resolve a bug
+- [`+bug-confirm`](./references/zentao-bug-confirm.md) — Confirm a bug
+- [`+bug-close`](./references/zentao-bug-close.md) — Close a bug
+- [`+bug-activate`](./references/zentao-bug-activate.md) — Activate a bug
+- [`+bug-delete`](./references/zentao-bug-delete.md) — Delete a bug
 
 ## API Resources
 
@@ -71,6 +75,11 @@ zentao-cli bug +list --product <id>        # 列出产品下的 Bug
 zentao-cli bug +get <id>                  # 获取 Bug 详情
 zentao-cli bug +create --title <title>... # 创建 Bug
 zentao-cli bug +update <id> --status ...  # 更新 Bug
+zentao-cli bug +resolve <id> --resolution fixed --resolved-build trunk  # 解决 Bug
+zentao-cli bug +confirm <id>              # 确认 Bug
+zentao-cli bug +close <id>                # 关闭 Bug
+zentao-cli bug +activate <id>             # 激活 Bug
+zentao-cli bug +delete <id>              # 删除 Bug
 ```
 
 ## Common Use Cases

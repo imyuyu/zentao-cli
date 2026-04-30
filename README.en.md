@@ -24,16 +24,16 @@ zentao-cli - A CLI tool for both humans and AI Agents to operate ZenTao. Covers 
 
 | Category      | Capabilities                                              |
 | ------------ | --------------------------------------------------------|
-| 📝 Story     | Story management - create, query, update stories          |
-| 🐛 Bug       | Bug management - create, query, update bugs              |
-| ✅ Task      | Task management - view and manage tasks                 |
-| 📦 Product   | Product management - view and manage products           |
-| 🏗️ Project  | Project management - view and manage projects           |
+| 📝 Story     | Story management - create, query, update, change, close, delete stories |
+| 🐛 Bug       | Bug management - create, query, update, resolve, confirm, close, activate, delete bugs |
+| ✅ Task      | Task management - view, create, update, delete tasks    |
+| 📦 Product   | Product management - view, create, update, delete products |
+| 🏗️ Project  | Project management - view, create, update, delete projects |
 | 👤 User      | User management - view user information                |
-| 🧪 Testcase | Testcase management - view testcases                    |
-| ▶️ Execution | Execution management - view execution progress          |
+| 🧪 Testcase | Testcase management - view, create, update, delete, execute testcases |
+| ▶️ Execution | Execution management - view, create, update, delete executions |
 | 🎉 Release   | Release management - view release information          |
-| 🔨 Build     | Build management - view build information              |
+| 🔨 Build     | Build management - view, create, update, delete builds |
 | 📄 Doc       | Doc management - view and manage documents            |
 
 ## Installation & Quick Start
@@ -118,16 +118,16 @@ zentao-cli auth status
 | Skill              | Description                                                              |
 | ----------------- | ----------------------------------------------------------------------- |
 | `zentao-shared`   | App config, auth, env vars, error handling, config priority, security rules (auto-loaded by all skills) |
-| `zentao-story`    | Story management - list, get, create, update stories                     |
-| `zentao-bug`      | Bug management - list, get, create, update bugs                         |
-| `zentao-task`     | Task management - list, get, create, update tasks                       |
-| `zentao-product`  | Product management - list, get product information                      |
-| `zentao-project`  | Project management - list, get project information                       |
+| `zentao-story`    | Story management - list, get, create, update, change, close, delete stories |
+| `zentao-bug`      | Bug management - list, get, create, update, resolve, confirm, close, activate, delete bugs |
+| `zentao-task`     | Task management - list, get, create, update, delete tasks                |
+| `zentao-product`  | Product management - list, get, create, update, delete products        |
+| `zentao-project`  | Project management - list, get, create, update, delete projects          |
 | `zentao-user`     | User management - list, get user information                            |
-| `zentao-testcase` | Testcase - list, get testcases                                         |
-| `zentao-execution`| Execution management - list, get execution progress                     |
+| `zentao-testcase` | Testcase - list, get, create, update, delete, execute testcases         |
+| `zentao-execution`| Execution management - list, get, create, update, delete executions     |
 | `zentao-release`  | Release management - list, get release information                       |
-| `zentao-build`    | Build management - list, get build information                          |
+| `zentao-build`    | Build management - list, get, create, update, delete builds            |
 | `zentao-doc`      | Doc management - list, get documents                                    |
 
 ## Authentication

@@ -26,6 +26,9 @@ metadata:
 |----------|------|
 | `+execution-list` | List executions for a project |
 | `+execution-get` | Get execution details |
+| `+execution-create` | Create a new execution |
+| `+execution-update` | Update an execution |
+| `+execution-delete` | Delete an execution |
 
 ## Commands
 
@@ -41,6 +44,21 @@ zentao-cli execution +list
 ### Get Execution
 ```bash
 zentao-cli execution +get 100
+```
+
+### Create Execution
+```bash
+zentao-cli execution +create --name "Sprint 1" --project 1 --begin 2024-01-01 --end 2024-01-14
+```
+
+### Update Execution
+```bash
+zentao-cli execution +update 100 --status closed
+```
+
+### Delete Execution
+```bash
+zentao-cli execution +delete 100
 ```
 
 ## API Endpoint

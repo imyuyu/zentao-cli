@@ -143,7 +143,11 @@ impl BuildApi {
     /// POST /api.php/v1/projects/{projectId}/builds
     ///
     /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
-    pub async fn create(client: &ApiClient, project_id: u64, req: &CreateBuildRequest) -> Result<Build> {
+    pub async fn create(
+        client: &ApiClient,
+        project_id: u64,
+        req: &CreateBuildRequest,
+    ) -> Result<Build> {
         #[derive(Deserialize)]
         struct CreateResponse {
             id: Option<u64>,

@@ -8,8 +8,8 @@
 
 use clap::Subcommand;
 
-use crate::api::{ApiClient, ProductApi};
 use crate::api::product::{CreateProductRequest, UpdateProductRequest};
+use crate::api::{ApiClient, ProductApi};
 use crate::core::{Config, OutputFormat};
 
 // ============================================================
@@ -189,7 +189,12 @@ pub fn run(cmd: &ProductAction, config: &Config, _format: OutputFormat, dry_run:
             }
 
             // -------------------- update 命令 --------------------
-            ProductAction::Update { id, name, status, desc } => {
+            ProductAction::Update {
+                id,
+                name,
+                status,
+                desc,
+            } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call ProductApi::update()");
                     println!("  URL: {}/api.php/v1/product/{}", config.url, id);

@@ -8,7 +8,7 @@
 
 use clap::Subcommand;
 
-use crate::api::{ApiClient, CreateTaskRequest, TaskApi, UpdateTaskRequest, TaskEstimate};
+use crate::api::{ApiClient, CreateTaskRequest, TaskApi, TaskEstimate, UpdateTaskRequest};
 use crate::core::{Config, OutputFormat};
 
 // ============================================================
@@ -163,7 +163,9 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
                 if dry_run {
                     println!("[DRY-RUN] Would call TaskApi::list()");
                     println!("  Step 1: GET /api.php/v1/projects/{}/executions", project);
-                    println!("  Step 2: For each execution, GET /api.php/v1/executions/{{id}}/tasks");
+                    println!(
+                        "  Step 2: For each execution, GET /api.php/v1/executions/{{id}}/tasks"
+                    );
                     if let Some(a) = assigned_to {
                         println!("  Filter: assignedTo={}", a);
                     }
@@ -407,7 +409,12 @@ pub fn run(cmd: &TaskAction, config: &Config, _format: OutputFormat, dry_run: bo
             }
 
             // -------------------- estimate 命令 --------------------
-            TaskAction::Estimate { id, consumed, left, notes } => {
+            TaskAction::Estimate {
+                id,
+                consumed,
+                left,
+                notes,
+            } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call TaskApi::add_estimate()");
                     println!("  URL: {}/api.php/v1/tasks/{}/estimate", config.url, id);

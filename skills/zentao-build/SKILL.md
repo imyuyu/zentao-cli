@@ -20,12 +20,18 @@ metadata:
 
 - [`+build-list`](./references/zentao-build-list.md) — List builds/versions
 - [`+build-get`](./references/zentao-build-get.md) — Get build details
+- [`+build-create`](./references/zentao-build-create.md) — Create a build
+- [`+build-update`](./references/zentao-build-update.md) — Update a build
+- [`+build-delete`](./references/zentao-build-delete.md) — Delete a build
 
 ## API Resources
 
 ```bash
 zentao-cli build +list [filters]   # 列出版本
 zentao-cli build +get <build_id>    # 获取版本详情
+zentao-cli build +create --name <name> --project <id> --product <id>  # 创建版本
+zentao-cli build +update <build_id> [flags]  # 更新版本
+zentao-cli build +delete <build_id>  # 删除版本
 ```
 
 ## Common Use Cases

@@ -180,7 +180,11 @@ impl ProductApi {
     /// PUT /api.php/v1/product/{id}
     ///
     /// ZenTao PUT 接口返回空 JSON {}，需要再调用 get 获取更新后的信息
-    pub async fn update(client: &ApiClient, id: u64, req: &UpdateProductRequest) -> Result<Product> {
+    pub async fn update(
+        client: &ApiClient,
+        id: u64,
+        req: &UpdateProductRequest,
+    ) -> Result<Product> {
         let path = format!("/api.php/v1/product/{}", id);
         let _: serde_json::Value = client.put(&path, req).await?;
         Self::get(client, id).await

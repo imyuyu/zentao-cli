@@ -16,6 +16,9 @@ metadata:
 
 - [`+product-list`](./references/zentao-product-list.md) — 列出所有可访问的产品
 - [`+product-get`](./references/zentao-product-get.md) — 获取产品详情
+- [`+product-create`](./references/zentao-product-create.md) — 创建新产品
+- [`+product-update`](./references/zentao-product-update.md) — 更新产品信息
+- [`+product-delete`](./references/zentao-product-delete.md) — 删除产品
 
 ## Core Concepts
 
@@ -35,6 +38,9 @@ metadata:
 ```bash
 zentao-cli product +list          # 列出所有产品
 zentao-cli product +get <id>      # 获取产品详情
+zentao-cli product +create --name <name> [--code <code>]  # 创建产品
+zentao-cli product +update <id> [flags]  # 更新产品
+zentao-cli product +delete <id>   # 删除产品
 ```
 
 > **重要**：使用原生命令时，可以先运行 `zentao-cli product --help` 查看完整选项。

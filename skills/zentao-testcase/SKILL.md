@@ -58,6 +58,10 @@ metadata:
 
 - [`+testcase-list`](./references/zentao-testcase-list.md) — List test cases for a product/project
 - [`+testcase-get`](./references/zentao-testcase-get.md) — Get test case details
+- [`+testcase-create`](./references/zentao-testcase-create.md) — Create a test case
+- [`+testcase-update`](./references/zentao-testcase-update.md) — Update a test case
+- [`+testcase-delete`](./references/zentao-testcase-delete.md) — Delete a test case
+- [`+testcase-result`](./references/zentao-testcase-result.md) — Record test case execution result
 
 ## API Resources
 
@@ -65,6 +69,10 @@ metadata:
 zentao-cli testcase +list --product <id>         # 列出产品的测试用例
 zentao-cli testcase +list --product <id> --project <id>  # 列出产品+项目的测试用例
 zentao-cli testcase +get <id>                   # 获取测试用例详情
+zentao-cli testcase +create --product <id> --title <title>  # 创建测试用例
+zentao-cli testcase +update <id> [flags]        # 更新测试用例
+zentao-cli testcase +delete <id>                # 删除测试用例
+zentao-cli testcase +result <id> --result pass   # 执行测试用例
 ```
 
 ## Common Use Cases

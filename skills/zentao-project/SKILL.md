@@ -16,6 +16,9 @@ metadata:
 
 - [`+project-list`](./references/zentao-project-list.md) — 列出所有项目
 - [`+project-get`](./references/zentao-project-get.md) — 获取项目详情
+- [`+project-create`](./references/zentao-project-create.md) — 创建新项目
+- [`+project-update`](./references/zentao-project-update.md) — 更新项目信息
+- [`+project-delete`](./references/zentao-project-delete.md) — 删除项目
 
 ## Core Concepts
 
@@ -45,6 +48,9 @@ metadata:
 ```bash
 zentao-cli project +list           # 列出所有项目
 zentao-cli project +get <id>      # 获取项目详情
+zentao-cli project +create --name <name> --code <code>  # 创建项目
+zentao-cli project +update <id> [flags]  # 更新项目
+zentao-cli project +delete <id>   # 删除项目
 ```
 
 > **重要**：使用原生命令时，可以先运行 `zentao-cli project --help` 查看完整选项。

@@ -102,7 +102,11 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
             .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
 
         match cmd {
-            BuildAction::List { project, product, execution } => {
+            BuildAction::List {
+                project,
+                product,
+                execution,
+            } => {
                 if dry_run {
                     if let Some(eid) = execution {
                         println!("[DRY-RUN] Would call BuildApi::list_by_execution()");
@@ -129,7 +133,10 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
 
                 match builds {
                     Ok(builds) => {
-                        println!("{}", serde_json::to_string_pretty(&builds).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&builds).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -156,10 +163,21 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                 }
             }
 
-            BuildAction::Create { name, project, product, branch, scm_path, ci, pkg } => {
+            BuildAction::Create {
+                name,
+                project,
+                product,
+                branch,
+                scm_path,
+                ci,
+                pkg,
+            } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call BuildApi::create()");
-                    println!("  URL: {}/api.php/v1/projects/{}/builds", config.url, project);
+                    println!(
+                        "  URL: {}/api.php/v1/projects/{}/builds",
+                        config.url, project
+                    );
                     println!("  Body: {{");
                     println!("    name: {}", name);
                     println!("    project: {}", project);
@@ -192,7 +210,10 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
 
                 match BuildApi::create(&client, *project, &req).await {
                     Ok(build) => {
-                        println!("{}", serde_json::to_string_pretty(&build).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&build).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -200,7 +221,13 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
                 }
             }
 
-            BuildAction::Update { id, name, scm_path, ci, pkg } => {
+            BuildAction::Update {
+                id,
+                name,
+                scm_path,
+                ci,
+                pkg,
+            } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call BuildApi::update()");
                     println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
@@ -232,7 +259,10 @@ pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: b
 
                 match BuildApi::update(&client, *id, &req).await {
                     Ok(build) => {
-                        println!("{}", serde_json::to_string_pretty(&build).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&build).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

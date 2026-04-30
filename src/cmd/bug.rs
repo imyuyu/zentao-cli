@@ -153,7 +153,10 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                 if dry_run {
                     println!("[DRY-RUN] Would call BugApi::resolve()");
                     println!("  URL: {}/api.php/v1/bugs/{}/resolve", config.url, id);
-                    println!("  Body: {{ resolution: {}, resolved_build: {} }}", resolution, resolved_build);
+                    println!(
+                        "  Body: {{ resolution: {}, resolved_build: {} }}",
+                        resolution, resolved_build
+                    );
                     return;
                 }
 

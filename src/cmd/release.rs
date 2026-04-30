@@ -43,7 +43,10 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
 
                 match releases {
                     Ok(releases) => {
-                        println!("{}", serde_json::to_string_pretty(&releases).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&releases).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);
@@ -60,7 +63,10 @@ pub fn run(cmd: &ReleaseSubcommand, config: &Config, _format: OutputFormat, dry_
                 }
                 match ReleaseApi::get(&client, *id).await {
                     Ok(release) => {
-                        println!("{}", serde_json::to_string_pretty(&release).unwrap_or_default());
+                        println!(
+                            "{}",
+                            serde_json::to_string_pretty(&release).unwrap_or_default()
+                        );
                     }
                     Err(e) => {
                         eprintln!("Error: {}", e);

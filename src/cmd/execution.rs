@@ -8,8 +8,8 @@
 
 use clap::Subcommand;
 
-use crate::api::{ApiClient, ExecutionApi};
 use crate::api::execution::{CreateExecutionRequest, UpdateExecutionRequest};
+use crate::api::{ApiClient, ExecutionApi};
 use crate::core::{Config, OutputFormat};
 
 // ============================================================
@@ -166,7 +166,10 @@ pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_ru
             } => {
                 if dry_run {
                     println!("[DRY-RUN] Would call ExecutionApi::create()");
-                    println!("  URL: {}/api.php/v1/projects/{}/executions", config.url, project);
+                    println!(
+                        "  URL: {}/api.php/v1/projects/{}/executions",
+                        config.url, project
+                    );
                     println!("  Body:");
                     println!("    name: {}", name);
                     println!("    project: {}", project);

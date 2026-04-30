@@ -287,7 +287,11 @@ impl TaskApi {
             #[serde(skip_serializing_if = "Option::is_none")]
             notes: Option<String>,
         }
-        let req = EstimateRequest { consumed, left, notes };
+        let req = EstimateRequest {
+            consumed,
+            left,
+            notes,
+        };
         let estimate: TaskEstimate = client.post(&path, &req).await?;
         Ok(estimate)
     }

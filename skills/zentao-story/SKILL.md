@@ -18,6 +18,9 @@ metadata:
 - [`+story-get`](./references/zentao-story-get.md) — 获取需求详情
 - [`+story-create`](./references/zentao-story-create.md) — 创建新需求
 - [`+story-update`](./references/zentao-story-update.md) — 更新需求信息
+- [`+story-change`](./references/zentao-story-change.md) — 变更需求
+- [`+story-delete`](./references/zentao-story-delete.md) — 删除需求
+- [`+story-close`](./references/zentao-story-close.md) — 关闭需求
 
 ## Story Lifecycle
 
@@ -86,6 +89,9 @@ zentao-cli story +list --product <id>    # 列出需求
 zentao-cli story +get <id>                # 获取需求详情
 zentao-cli story +create --title <title>  # 创建需求
 zentao-cli story +update <id>             # 更新需求
+zentao-cli story +change <id>             # 变更需求
+zentao-cli story +delete <id>             # 删除需求
+zentao-cli story +close <id>              # 关闭需求
 ```
 
 > **重要**：使用原生命令时，可以先运行 `zentao-cli story --help` 查看完整选项。
