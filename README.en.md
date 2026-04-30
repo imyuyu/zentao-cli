@@ -103,8 +103,15 @@ npx skills add imyuyu/zentao-cli -y -g
 **Step 2 — Configure app credentials**
 
 ```bash
-export ZENTAO_URL=https://your-zentao.company.com
-export ZENTAO_TOKEN=your-api-token
+# 1. Set server URL
+zentao-cli config set url "https://your-zentao.company.com"
+
+# 2. Login to get token via account credentials
+zentao-cli auth login --account your-account --password your-password
+
+# 3. Set default product and project (optional)
+zentao-cli config set product_id 1
+zentao-cli config set project_id 1
 ```
 
 **Step 3 — Verify**
