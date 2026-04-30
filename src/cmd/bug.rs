@@ -27,7 +27,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                     println!("[DRY-RUN] Would call BugApi::list()");
                     println!("  URL: {}/api.php/v1/bugs", config.url);
                     println!("  Params:");
-                    println!("    product: {}", product);
+                    println!("    product: {:?}", product);
                     if let Some(s) = status {
                         println!("    status: {}", s);
                     }
@@ -36,7 +36,7 @@ pub fn run(cmd: &BugSubcommand, config: &Config, _format: OutputFormat, dry_run:
                     }
                     return;
                 }
-                match BugApi::list(&client, config.product_id(Some(*product)).unwrap_or_else(|| {
+                match BugApi::list(&client, config.product_id(*product).unwrap_or_else(|| {
                     eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
                     std::process::exit(1);
                 }), status.clone(), assigned_to.clone()).await {

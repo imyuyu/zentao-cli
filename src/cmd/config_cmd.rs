@@ -467,9 +467,6 @@ fn render_wizard_frame(
                             Span::raw(format!("{:3}", p.id)),
                             Span::raw(" "),
                             Span::raw(&p.name),
-                            Span::raw(" ("),
-                            Span::raw(&p.code),
-                            Span::raw(")"),
                         ]))
                         .style(style)
                     })
@@ -533,9 +530,6 @@ fn render_wizard_frame(
                             Span::raw(format!("{:3}", p.id)),
                             Span::raw(" "),
                             Span::raw(&p.name),
-                            Span::raw(" ("),
-                            Span::raw(&p.code),
-                            Span::raw(")"),
                         ]))
                         .style(style)
                     })

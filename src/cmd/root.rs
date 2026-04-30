@@ -188,7 +188,7 @@ pub enum BugSubcommand {
     #[command(name = "+list")]
     List {
         #[arg(long)]
-        product: u64,
+        product: Option<u64>,
         #[arg(long)]
         status: Option<String>,
         #[arg(long)]
