@@ -87,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: npm-vendor-${{ matrix.target }}
-          path: npm-vendor/${{ matrix.target }}
+          path: npm-vendor
           if-no-files-found: error
 
   package-skills:
@@ -142,6 +142,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -169,7 +171,7 @@ jobs:
       - name: Download npm vendor payloads
         uses: actions/download-artifact@v4
         with:
-          path: vendor-artifacts
+          path: vendor-artifacts/npm-vendor
           pattern: npm-vendor-*
           merge-multiple: true
 
