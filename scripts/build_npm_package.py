@@ -210,13 +210,25 @@ def copy_native_binaries(vendor_src: Path, staging_dir: Path, package: str) -> N
     target_triple = platform_package["target_triple"]
     vendor_src = vendor_src.resolve()
 
-    source_binary = vendor_src / target_triple / "zentao-cli"
-    if not source_binary.exists():
-        raise RuntimeError(f"Missing native payload: {source_binary}")
+    # Try multiple possible paths for the binary
+    possible_paths = [
+        vendor_src / target_triple / "zentao-cli",
+        vendor_src / "npm-vendor" / target_triple / "zentao-cli",
+        vendor_src / "zentao-cli",  # fallback
+    ]
+
+    source_binary = None
+    for path in possible_paths:
+        if path.exists():
+            source_binary = path
+            break
+
+    if source_binary is None:
+        raise RuntimeError(f"Missing native payload for {package}, tried: {[str(p) for p in possible_paths]}")
 
     vendor_dest = staging_dir / "vendor" / target_triple
     vendor_dest.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(source_binary, vendor_dest / "zentao-cli")
+    shutil.copy2(source_binary, vendor_dest / "zentao-cli")
 
 
 def run_npm_pack(staging_dir: Path, output_path: Path) -> Path:
