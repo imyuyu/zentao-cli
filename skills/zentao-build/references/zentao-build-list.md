@@ -1,10 +1,10 @@
-# build +list
+# build list
 
 列出版本列表。
 
 ## Command
 ```bash
-zentao-cli build +list [--project <id>] [--product <id>] [--execution <id>]
+zentao-cli build list [--project <id>] [--product <id>] [--execution <id>]
 ```
 
 ## Options
@@ -19,16 +19,16 @@ zentao-cli build +list [--project <id>] [--product <id>] [--execution <id>]
 
 ```bash
 # List all builds
-zentao-cli build +list
+zentao-cli build list
 
 # List builds for a specific project
-zentao-cli build +list --project 5
+zentao-cli build list --project 5
 
 # List builds for a specific product
-zentao-cli build +list --product 1
+zentao-cli build list --product 1
 
 # List builds for a specific execution
-zentao-cli build +list --execution 5
+zentao-cli build list --execution 5
 ```
 
 ## Output Fields
@@ -47,3 +47,4 @@ zentao-cli build +list --execution 5
 | generated_at | string | Build generation timestamp |
 | stories | string | Number of linked stories |
 | bugs | string | Number of linked bugs |
+

@@ -1,10 +1,10 @@
-# build +update
+# build update
 
 更新版本信息。
 
 ## Command
 ```bash
-zentao-cli build +update <id> [--name <name>] [--status <status>]
+zentao-cli build update <id> [--name <name>] [--status <status>]
 ```
 
 ## Options
@@ -19,8 +19,9 @@ zentao-cli build +update <id> [--name <name>] [--status <status>]
 
 ```bash
 # Update build name
-zentao-cli build +update 1 --name "v1.0.1"
+zentao-cli build update 1 --name "v1.0.1"
 
 # Update build status
-zentao-cli build +update 1 --status released
+zentao-cli build update 1 --status released
 ```
+

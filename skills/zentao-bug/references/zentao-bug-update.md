@@ -1,10 +1,10 @@
-# bug +update
+# bug update
 
 更新缺陷信息。
 
 ## Command
 ```bash
-zentao-cli bug +update <id> [--title <title>] [--status <status>] [--resolution <resolution>] [--resolved-build <id>] [--assigned-to <user>]
+zentao-cli bug update <id> [--title <title>] [--status <status>] [--resolution <resolution>] [--resolved-build <id>] [--assigned-to <user>]
 ```
 
 ## Options
@@ -22,11 +22,12 @@ zentao-cli bug +update <id> [--title <title>] [--status <status>] [--resolution 
 
 ```bash
 # Resolve a bug (requires --resolved-build)
-zentao-cli bug +update 123 --status resolved --resolution fixed --resolved-build 1
+zentao-cli bug update 123 --status resolved --resolution fixed --resolved-build 1
 
 # Assign bug
-zentao-cli bug +update 123 --assigned-to developer-name
+zentao-cli bug update 123 --assigned-to developer-name
 
 # Close a bug
-zentao-cli bug +update 123 --status closed
+zentao-cli bug update 123 --status closed
 ```
+

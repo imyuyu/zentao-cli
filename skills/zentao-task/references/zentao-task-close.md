@@ -1,10 +1,10 @@
-# task +close
+# task close
 
 关闭任务。
 
 ## Command
 ```bash
-zentao-cli task +close <id>
+zentao-cli task close <id>
 ```
 
 ## Options
@@ -17,9 +17,10 @@ zentao-cli task +close <id>
 
 ```bash
 # Close a task
-zentao-cli task +close 123
+zentao-cli task close 123
 ```
 
 ## Status Transition
 
 - Changes task status from `done` to `closed`
+

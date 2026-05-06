@@ -1,10 +1,10 @@
-# task +pause
+# task pause
 
 暂停任务。
 
 ## Command
 ```bash
-zentao-cli task +pause <id>
+zentao-cli task pause <id>
 ```
 
 ## Options
@@ -17,9 +17,10 @@ zentao-cli task +pause <id>
 
 ```bash
 # Pause a task
-zentao-cli task +pause 123
+zentao-cli task pause 123
 ```
 
 ## Status Transition
 
 - Changes task status from `doing` to `wait`
+

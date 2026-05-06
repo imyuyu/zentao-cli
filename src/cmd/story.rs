@@ -1,255 +1,212 @@
 //! ZenTao 需求(Story)命令模块
 //!
-//! CLI 命令入口，调用 StoryApi 处理用户请求
+//! CLI 命令入口，调用 StoryService 处理用户请求
 
-use crate::api::{ApiClient, CreateStoryRequest, StoryApi, UpdateStoryRequest};
+use crate::api::UpdateStoryRequest;
+use crate::cmd::common::{
+    log_command, print_dry_run, print_dry_run_with_body, print_error, print_json,
+};
 use crate::cmd::root::StorySubcommand;
-use crate::core::{Config, OutputFormat};
+use crate::core::{AppContext, OutputFormat};
 use crate::safe_println;
+use crate::service::story::StoryService;
 
 /// 执行 Story 相关命令
-///
-/// 根据子命令类型调用对应的 API 并输出结果
-pub fn run(cmd: &StorySubcommand, config: &Config, _format: OutputFormat, dry_run: bool) {
-    // 创建 Tokio 异步运行时
-    // CLI 命令需要手动创建运行时来执行 async 代码
-    let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
-
-    rt.block_on(async {
-        // 创建 API 客户端，传入 URL 和 Token
-        let client = ApiClient::new(&config.url, config.token.clone())
-            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
-
-        match cmd {
-            // -------------------- list --------------------
-            StorySubcommand::List {
-                product,
-                project,
-                status,
-            } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call StoryApi::list()");
-                    println!("  URL: {}/api.php/v1/stories", config.url);
-                    safe_println("  Params:");
-                    if let Some(p) = product {
-                        println!("    product: {}", p);
-                    }
-                    if let Some(p) = project {
-                        println!("    project: {}", p);
-                    }
-                    if let Some(s) = status {
-                        println!("    status: {}", s);
-                    }
-                    return;
+pub async fn run(cmd: &StorySubcommand, ctx: &AppContext) {
+    log_command("story", format!("{:?}", cmd));
+    match cmd {
+        StorySubcommand::List {
+            product,
+            project,
+            status,
+        } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "StoryService::list()",
+                    &format!("{}/api.php/v1/stories", ctx.config.url),
+                );
+                safe_println("  Params:");
+                if let Some(p) = product {
+                    println!("    product: {}", p);
                 }
-                // 调用 StoryApi::list 获取需求列表
-                match StoryApi::list(
-                    &client,
-                    config.product_id(*product),
-                    status.clone(),
-                    config.project_id(*project),
-                )
-                .await
-                {
-                    Ok(stories) => {
-                        // 输出 JSON 格式结果
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&stories).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+                if let Some(p) = project {
+                    println!("    project: {}", p);
                 }
+                if let Some(s) = status {
+                    println!("    status: {}", s);
+                }
+                return;
             }
 
-            // -------------------- get --------------------
-            StorySubcommand::Get { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call StoryApi::get()");
-                    println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
-                    return;
-                }
-                match StoryApi::get(&client, *id).await {
-                    Ok(story) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&story).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- create --------------------
-            StorySubcommand::Create {
-                title,
-                product,
-                pri,
-                category,
-                spec,
-                estimate,
-            } => {
-                // 构建创建请求
-                let product_id = config.product_id(*product).unwrap_or_else(|| {
-                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
-                    std::process::exit(1);
-                });
-                let req = CreateStoryRequest {
-                    title: title.clone(),
-                    product: product_id,
-                    pri: *pri,
-                    category: category.clone(),
-                    spec: spec.clone(),
-                    // verify 字段暂不支持
-                    verify: None,
-                    estimate: *estimate,
-                };
-
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call StoryApi::create()");
-                    println!("  URL: {}/api.php/v1/stories", config.url);
-                    println!(
-                        "  Body: {}",
-                        serde_json::to_string_pretty(&req).unwrap_or_default()
-                    );
-                    return;
-                }
-
-                match StoryApi::create(&client, &req).await {
-                    Ok(story) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&story).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- update --------------------
-            StorySubcommand::Update {
-                id,
-                title,
-                status,
-                pri,
-                assigned_to,
-            } => {
-                // 构建更新请求
-                let req = UpdateStoryRequest {
-                    title: title.clone(),
-                    status: status.clone(),
-                    pri: *pri,
-                    assigned_to: assigned_to.clone(),
-                };
-
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call StoryApi::update()");
-                    println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
-                    println!(
-                        "  Body: {}",
-                        serde_json::to_string_pretty(&req).unwrap_or_default()
-                    );
-                    return;
-                }
-
-                match StoryApi::update(&client, *id, &req).await {
-                    Ok(story) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&story).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- change --------------------
-            StorySubcommand::Change {
-                id,
-                title,
-                status,
-                pri,
-                assigned_to,
-            } => {
-                let req = UpdateStoryRequest {
-                    title: title.clone(),
-                    status: status.clone(),
-                    pri: *pri,
-                    assigned_to: assigned_to.clone(),
-                };
-
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call StoryApi::change()");
-                    println!("  URL: {}/api.php/v1/stories/{}/change", config.url, id);
-                    println!(
-                        "  Body: {}",
-                        serde_json::to_string_pretty(&req).unwrap_or_default()
-                    );
-                    return;
-                }
-
-                match StoryApi::change(&client, *id, &req).await {
-                    Ok(story) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&story).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- delete --------------------
-            StorySubcommand::Delete { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call StoryApi::delete()");
-                    println!("  URL: {}/api.php/v1/stories/{}", config.url, id);
-                    return;
-                }
-
-                match StoryApi::delete(&client, *id).await {
-                    Ok(story) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&story).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- close --------------------
-            StorySubcommand::Close { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call StoryApi::close()");
-                    println!("  URL: {}/api.php/v1/stories/{}/close", config.url, id);
-                    return;
-                }
-
-                match StoryApi::close(&client, *id).await {
-                    Ok(story) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&story).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
+            match StoryService::list(ctx, *product, *project, status.clone()).await {
+                Ok(stories) => print_story_list(&stories, ctx.format.clone()),
+                Err(e) => print_error(&e),
             }
         }
-    });
+        StorySubcommand::Get { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "StoryService::get()",
+                    &format!("{}/api.php/v1/stories/{}", ctx.config.url, id),
+                );
+                return;
+            }
+
+            match StoryService::get(ctx, *id).await {
+                Ok(story) => print_json(&story),
+                Err(e) => print_error(&e),
+            }
+        }
+        StorySubcommand::Create {
+            title,
+            product,
+            pri,
+            category,
+            spec,
+            estimate,
+        } => {
+            let product_id = match ctx.require_product_id(*product) {
+                Ok(id) => id,
+                Err(e) => {
+                    print_error(&e);
+                    return;
+                }
+            };
+
+            let req = serde_json::json!({
+                "title": title,
+                "product": product_id,
+                "pri": pri,
+                "category": category,
+                "spec": spec,
+                "verify": serde_json::Value::Null,
+                "estimate": estimate,
+            });
+
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "StoryService::create()",
+                    &format!("{}/api.php/v1/stories", ctx.config.url),
+                    &req,
+                );
+                return;
+            }
+
+            match StoryService::create(
+                ctx,
+                title.clone(),
+                *product,
+                *pri,
+                category.clone(),
+                spec.clone(),
+                *estimate,
+            )
+            .await
+            {
+                Ok(story) => print_json(&story),
+                Err(e) => print_error(&e),
+            }
+        }
+        StorySubcommand::Update {
+            id,
+            title,
+            status,
+            pri,
+            assigned_to,
+        } => {
+            let req = UpdateStoryRequest {
+                title: title.clone(),
+                status: status.clone(),
+                pri: *pri,
+                assigned_to: assigned_to.clone(),
+            };
+
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "StoryService::update()",
+                    &format!("{}/api.php/v1/stories/{}", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+
+            match StoryService::update(ctx, *id, req).await {
+                Ok(story) => print_json(&story),
+                Err(e) => print_error(&e),
+            }
+        }
+        StorySubcommand::Change {
+            id,
+            title,
+            status,
+            pri,
+            assigned_to,
+        } => {
+            let req = UpdateStoryRequest {
+                title: title.clone(),
+                status: status.clone(),
+                pri: *pri,
+                assigned_to: assigned_to.clone(),
+            };
+
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "StoryService::change()",
+                    &format!("{}/api.php/v1/stories/{}/change", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+
+            match StoryService::change(ctx, *id, req).await {
+                Ok(story) => print_json(&story),
+                Err(e) => print_error(&e),
+            }
+        }
+        StorySubcommand::Delete { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "StoryService::delete()",
+                    &format!("{}/api.php/v1/stories/{}", ctx.config.url, id),
+                );
+                return;
+            }
+
+            match StoryService::delete(ctx, *id).await {
+                Ok(story) => print_json(&story),
+                Err(e) => print_error(&e),
+            }
+        }
+        StorySubcommand::Close { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "StoryService::close()",
+                    &format!("{}/api.php/v1/stories/{}/close", ctx.config.url, id),
+                );
+                return;
+            }
+
+            match StoryService::close(ctx, *id).await {
+                Ok(story) => print_json(&story),
+                Err(e) => print_error(&e),
+            }
+        }
+    }
+}
+
+fn print_story_list(stories: &[crate::api::Story], format: OutputFormat) {
+    match format {
+        OutputFormat::Table => {
+            println!("Stories:");
+            for story in stories {
+                println!("  [{}] {} - {}", story.id, story.title, story.status);
+            }
+        }
+        _ => {
+            println!(
+                "{}",
+                serde_json::to_string_pretty(stories).unwrap_or_default()
+            );
+        }
+    }
 }

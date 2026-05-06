@@ -12,15 +12,15 @@ metadata:
 
 **CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md)，其中包含认证、环境变量配置、错误处理和状态值定义。**
 
-## Shortcuts
+## Commands
 
-- [`+story-list`](./references/zentao-story-list.md) — 列出产品下的需求列表
-- [`+story-get`](./references/zentao-story-get.md) — 获取需求详情
-- [`+story-create`](./references/zentao-story-create.md) — 创建新需求
-- [`+story-update`](./references/zentao-story-update.md) — 更新需求信息
-- [`+story-change`](./references/zentao-story-change.md) — 变更需求
-- [`+story-delete`](./references/zentao-story-delete.md) — 删除需求
-- [`+story-close`](./references/zentao-story-close.md) — 关闭需求
+- [`story list`](./references/zentao-story-list.md) — 列出产品下的需求列表
+- [`story get`](./references/zentao-story-get.md) — 获取需求详情
+- [`story create`](./references/zentao-story-create.md) — 创建新需求
+- [`story update`](./references/zentao-story-update.md) — 更新需求信息
+- [`story change`](./references/zentao-story-change.md) — 变更需求
+- [`story delete`](./references/zentao-story-delete.md) — 删除需求
+- [`story close`](./references/zentao-story-close.md) — 关闭需求
 
 ## Story Lifecycle
 
@@ -82,19 +82,7 @@ draft → active → changed → closed
 | `released` | 已发布 |
 | `closed` | 已关闭 |
 
-## API Resources
-
-```bash
-zentao-cli story +list --product <id>    # 列出需求
-zentao-cli story +get <id>                # 获取需求详情
-zentao-cli story +create --title <title>  # 创建需求
-zentao-cli story +update <id>             # 更新需求
-zentao-cli story +change <id>             # 变更需求
-zentao-cli story +delete <id>             # 删除需求
-zentao-cli story +close <id>              # 关闭需求
-```
-
-> **重要**：使用原生命令时，可以先运行 `zentao-cli story --help` 查看完整选项。
+> 使用前可先运行 `zentao-cli story --help` 查看完整选项。
 
 ## Common Use Cases
 
@@ -102,47 +90,47 @@ zentao-cli story +close <id>              # 关闭需求
 
 ```bash
 # 列出产品 1 下的所有需求
-zentao-cli story +list --product 1
+zentao-cli story list --product 1
 
 # 只看活跃的需求
-zentao-cli story +list --product 1 --status active
+zentao-cli story list --product 1 --status active
 ```
 
 ### 2. 查看特定需求详情
 
 ```bash
 # 获取需求详情（包含描述、预估工时、阶段等）
-zentao-cli story +get 123
+zentao-cli story get 123
 ```
 
 ### 3. 创建新需求
 
 ```bash
 # 基础创建
-zentao-cli story +create --title "用户登录功能" --product 1 --pri 1
+zentao-cli story create --title "用户登录功能" --product 1 --pri 1
 
 # 完整创建（带类型和预估工时）
-zentao-cli story +create --title "用户注册功能" --product 1 --pri 1 --type feature --estimate 8
+zentao-cli story create --title "用户注册功能" --product 1 --pri 1 --type feature --estimate 8
 ```
 
 ### 4. 更新需求状态
 
 ```bash
 # 关闭需求
-zentao-cli story +update 123 --status closed
+zentao-cli story update 123 --status closed
 
 # 更新优先级
-zentao-cli story +update 123 --pri 2
+zentao-cli story update 123 --pri 2
 
 # 变更需求状态并指派
-zentao-cli story +update 123 --status changed --assigned-to developer-name
+zentao-cli story update 123 --status changed --assigned-to developer-name
 ```
 
 ### 5. 按项目筛选需求
 
 ```bash
 # 查看项目 1 下的所有需求
-zentao-cli story +list --product 1 --project 1
+zentao-cli story list --product 1 --project 1
 ```
 
 ## Output Fields
@@ -180,3 +168,4 @@ zentao-cli story +list --product 1 --project 1
 6. **Closed Story Reactivation**：已关闭的需求可以通过设置为 `active` 重新激活。
 
 7. **Product Required**：创建需求时 `--product` 参数是必需的，且需求必须归属于某个产品。
+

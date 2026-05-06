@@ -1,7 +1,7 @@
 pub mod api;
 pub mod cmd;
 pub mod core;
-pub mod shortcuts;
+pub mod service;
 pub mod tui;
 
 pub use anyhow::Result;

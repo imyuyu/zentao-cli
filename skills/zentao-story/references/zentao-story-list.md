@@ -1,11 +1,11 @@
-# story +list
+# story list
 
 列出某个产品下的需求列表，支持分页和多种输出格式。
 
 ## Command
 
 ```bash
-zentao-cli story +list --product <id> [--status <status>] [--project <id>]
+zentao-cli story list --product <id> [--status <status>] [--project <id>]
 ```
 
 ## Options
@@ -15,31 +15,23 @@ zentao-cli story +list --product <id> [--status <status>] [--project <id>]
 | `--product` | Yes | 产品 ID |
 | `--status` | No | 按状态筛选：draft / active / closed / changed |
 | `--project` | No | 按项目 ID 筛选 |
-| `--page-limit` | No | 每页数量（默认 100，最大 500） |
-| `--page-delay` | No | 分页请求间隔毫秒（默认 100） |
-| `--page-all` | No | 获取所有数据（分页遍历） |
 | `--format` | No | 输出格式：json / pretty / table / ndjson / csv（默认 table） |
 
 ## Examples
 
 ```bash
 # List stories for product 1 (default: table format)
-zentao-cli story +list --product 1
+zentao-cli story list --product 1
 
 # List stories with JSON output
-zentao-cli story +list --product 1 --format json
+zentao-cli story list --product 1 --format json
 
 # List stories in CSV format (for Excel)
-zentao-cli story +list --product 1 --format csv
+zentao-cli story list --product 1 --format csv
 
 # List stories in NDJSON format (for pipeline processing)
-zentao-cli story +list --product 1 --format ndjson
+zentao-cli story list --product 1 --format ndjson
 
-# List first 50 stories
-zentao-cli story +list --product 1 --page-limit 50
-
-# Get all stories (paginated, with 200ms delay between requests)
-zentao-cli story +list --product 1 --page-all --page-delay 200
 ```
 
 ## Output Fields
@@ -57,3 +49,4 @@ zentao-cli story +list --product 1 --page-all --page-delay 200
 | assigned_to | string | 指派人（可选） |
 | estimate | f64 | 预估工时（小时）（可选） |
 | version | u64 | 版本号（可选） |
+

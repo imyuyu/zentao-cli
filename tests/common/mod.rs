@@ -1,6 +1,7 @@
 use zentao_cli::{ApiClient, Config};
 
 /// Creates a test configuration
+#[allow(dead_code)]
 pub fn test_config() -> Config {
     Config {
         url: "https://test.zentao.com".to_string(),
@@ -12,6 +13,7 @@ pub fn test_config() -> Config {
 }
 
 /// Creates an API client for testing
+#[allow(dead_code)]
 pub fn test_client() -> ApiClient {
     let config = test_config();
     ApiClient::new(&config.url, config.token)

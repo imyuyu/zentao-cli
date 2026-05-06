@@ -1,23 +1,18 @@
-use crate::api::{ApiClient, BugApi, StoryApi};
-use crate::core::Config;
+use crate::core::{AppContext, Config, OutputFormat};
+use crate::service::bug::BugService;
+use crate::service::story::StoryService;
 use crate::tui::{App, Browser};
 use anyhow::Result;
 
 pub fn bug_browse(config: &Config) -> Result<()> {
     let rt = tokio::runtime::Runtime::new()?;
+    let ctx = AppContext::new(config.clone(), OutputFormat::Table, false);
 
     rt.block_on(async {
-        let client = ApiClient::new(&config.url, config.token.clone())
-            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
-        let product_id = config.product_id.unwrap_or(1);
-
         let mut app = App::new();
         app.set_loading("Fetching bugs...".to_string());
 
-        // Spawn async task
-        let bugs = BugApi::list(&client, product_id, Some("active".to_string()), None).await;
-
-        match bugs {
+        match BugService::list(&ctx, config.product_id, Some("active".to_string()), None).await {
             Ok(bugs) => {
                 let mut app = App::new();
                 app.set_bug_list(bugs);
@@ -35,17 +30,13 @@ pub fn bug_browse(config: &Config) -> Result<()> {
 
 pub fn story_browse(config: &Config) -> Result<()> {
     let rt = tokio::runtime::Runtime::new()?;
+    let ctx = AppContext::new(config.clone(), OutputFormat::Table, false);
 
     rt.block_on(async {
-        let client = ApiClient::new(&config.url, config.token.clone())
-            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
-
         let mut app = App::new();
         app.set_loading("Fetching stories...".to_string());
 
-        let stories = StoryApi::list(&client, config.product_id, None, config.project_id).await;
-
-        match stories {
+        match StoryService::list(&ctx, config.product_id, config.project_id, None).await {
             Ok(stories) => {
                 let mut app = App::new();
                 app.set_story_list(stories);

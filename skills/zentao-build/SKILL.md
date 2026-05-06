@@ -12,27 +12,17 @@ metadata:
 
 **CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md)，其中包含认证、权限处理、配置说明**
 
-> **版本搜索技巧**：先区分用户是否**特地指定使用搜索 skill**，以及是否真的提供了**查询关键字**（例如版本名称、关键词）。如果用户特地指定使用搜索 skill，或明确给出了查询关键字，则优先使用搜索。如果用户没有特地指定使用搜索 skill，且意图里没有查询关键字，只有范围条件（例如"某产品的版本"、"某项目的版本"），应优先使用 `+build-list`。
+> **版本搜索技巧**：先区分用户是否**特地指定使用搜索 skill**，以及是否真的提供了**查询关键字**（例如版本名称、关键词）。如果用户特地指定使用搜索 skill，或明确给出了查询关键字，则优先使用搜索。如果用户没有特地指定使用搜索 skill，且意图里没有查询关键字，只有范围条件（例如"某产品的版本"、"某项目的版本"），应优先使用 `build list`。
 >
 > **友好输出**：在输出版本详情时，建议同时提取并输出命令返回结果中的相关链接字段（如果有），以便用户可以直接点击跳转查看详情。
 
-## Shortcuts
+## Commands
 
-- [`+build-list`](./references/zentao-build-list.md) — List builds/versions
-- [`+build-get`](./references/zentao-build-get.md) — Get build details
-- [`+build-create`](./references/zentao-build-create.md) — Create a build
-- [`+build-update`](./references/zentao-build-update.md) — Update a build
-- [`+build-delete`](./references/zentao-build-delete.md) — Delete a build
-
-## API Resources
-
-```bash
-zentao-cli build +list [filters]   # 列出版本
-zentao-cli build +get <build_id>    # 获取版本详情
-zentao-cli build +create --name <name> --project <id> --product <id>  # 创建版本
-zentao-cli build +update <build_id> [flags]  # 更新版本
-zentao-cli build +delete <build_id>  # 删除版本
-```
+- [`build list`](./references/zentao-build-list.md) — List builds/versions
+- [`build get`](./references/zentao-build-get.md) — Get build details
+- [`build create`](./references/zentao-build-create.md) — Create a build
+- [`build update`](./references/zentao-build-update.md) — Update a build
+- [`build delete`](./references/zentao-build-delete.md) — Delete a build
 
 ## Common Use Cases
 
@@ -40,29 +30,29 @@ zentao-cli build +delete <build_id>  # 删除版本
 
 ```bash
 # 列出所有版本
-zentao-cli build +list
+zentao-cli build list
 
 # 列出某项目的版本
-zentao-cli build +list --project 1
+zentao-cli build list --project 1
 
 # 列出某产品的版本
-zentao-cli build +list --product 1
+zentao-cli build list --product 1
 
 # 同时按项目和产品筛选
-zentao-cli build +list --project 1 --product 1
+zentao-cli build list --project 1 --product 1
 
 # 列出某执行的版本
-zentao-cli build +list --execution 5
+zentao-cli build list --execution 5
 ```
 
 ### 获取版本详情
 
 ```bash
 # 获取版本详情
-zentao-cli build +get 10
+zentao-cli build get 10
 
 # 获取版本详情（JSON 格式）
-zentao-cli build +get 10 --format json
+zentao-cli build get 10 --format json
 ```
 
 ## Output Fields
@@ -118,5 +108,6 @@ echo $ZENTAO_TOKEN
 
 | 操作 | 所需权限 |
 |------|----------|
-| `build +list` | 项目/产品查看权限 |
-| `build +get` | 项目/产品查看权限 |
+| `build list` | 项目/产品查看权限 |
+| `build get` | 项目/产品查看权限 |
+

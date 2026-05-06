@@ -1,10 +1,10 @@
-# user +list
+# user list
 
 列出用户列表。
 
 ## Command
 ```bash
-zentao-cli user +list [--dept <id>] [--role <role>]
+zentao-cli user list [--dept <id>] [--role <role>]
 ```
 
 ## Options
@@ -18,13 +18,13 @@ zentao-cli user +list [--dept <id>] [--role <role>]
 
 ```bash
 # List all users
-zentao-cli user +list
+zentao-cli user list
 
 # List users in a specific department
-zentao-cli user +list --dept 1
+zentao-cli user list --dept 1
 
 # List users with a specific role
-zentao-cli user +list --role dev
+zentao-cli user list --role dev
 ```
 
 ## Output Fields
@@ -37,3 +37,4 @@ zentao-cli user +list --role dev
 | email | string | 邮箱（可选） |
 | dept | u64 | 部门 ID（可选） |
 | role | string | 角色（可选） |
+

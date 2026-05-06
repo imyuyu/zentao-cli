@@ -1,10 +1,10 @@
-# execution +update
+# execution update
 
 更新执行信息。
 
 ## Command
 ```bash
-zentao-cli execution +update <id> [--name <name>] [--status <status>] [--begin <date>] [--end <date>] [--days <days>]
+zentao-cli execution update <id> [--name <name>] [--status <status>] [--begin <date>] [--end <date>] [--days <days>]
 ```
 
 ## Options
@@ -22,11 +22,12 @@ zentao-cli execution +update <id> [--name <name>] [--status <status>] [--begin <
 
 ```bash
 # Update execution name
-zentao-cli execution +update 100 --name "Sprint 2"
+zentao-cli execution update 100 --name "Sprint 2"
 
 # Update status
-zentao-cli execution +update 100 --status doing
+zentao-cli execution update 100 --status doing
 
 # Update dates
-zentao-cli execution +update 100 --begin 2024-02-01 --end 2024-02-28
+zentao-cli execution update 100 --begin 2024-02-01 --end 2024-02-28
 ```
+

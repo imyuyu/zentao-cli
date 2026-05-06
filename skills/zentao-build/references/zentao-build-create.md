@@ -1,10 +1,10 @@
-# build +create
+# build create
 
 创建版本。
 
 ## Command
 ```bash
-zentao-cli build +create --name <name> --product <id> [--project <id>] [--execution <id>] [--scm-path <path>] [--ci <ci>] [--pkg <package>]
+zentao-cli build create --name <name> --product <id> [--project <id>] [--execution <id>] [--scm-path <path>] [--ci <ci>] [--pkg <package>]
 ```
 
 ## Options
@@ -23,8 +23,9 @@ zentao-cli build +create --name <name> --product <id> [--project <id>] [--execut
 
 ```bash
 # Create a build
-zentao-cli build +create --name "v1.0.0" --product 1
+zentao-cli build create --name "v1.0.0" --product 1
 
 # Create with project
-zentao-cli build +create --name "Build-001" --product 1 --project 5
+zentao-cli build create --name "Build-001" --product 1 --project 5
 ```
+

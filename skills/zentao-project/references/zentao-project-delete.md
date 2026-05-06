@@ -1,10 +1,10 @@
-# project +delete
+# project delete
 
 删除项目。
 
 ## Command
 ```bash
-zentao-cli project +delete <id>
+zentao-cli project delete <id>
 ```
 
 ## Options
@@ -17,10 +17,11 @@ zentao-cli project +delete <id>
 
 ```bash
 # Delete a project
-zentao-cli project +delete 1
+zentao-cli project delete 1
 ```
 
 ## Notes
 
 - Only projects in wait status can be deleted
 - This action cannot be undone
+

@@ -1,11 +1,11 @@
-# product +list
+# product list
 
 列出所有有权限访问的产品列表，支持分页和多种输出格式。
 
 ## Command
 
 ```bash
-zentao-cli product +list
+zentao-cli product list
 ```
 
 ## Output Fields
@@ -17,3 +17,4 @@ zentao-cli product +list
 | code | string | 产品代号（英文标识） |
 | status | string | 产品状态：normal（正常）/ closed（关闭） |
 | desc | string | 产品描述（可选） |
+

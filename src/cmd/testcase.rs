@@ -1,282 +1,194 @@
 //! ZenTao Testcase(测试用例)命令模块
-//!
-//! CLI 命令入口，调用 TestcaseApi 处理用户请求
 
-use crate::api::testcase::{
-    CreateTestcaseRequest, TestcaseApi, TestcaseResultRequest, UpdateTestcaseRequest,
+use crate::api::testcase::{CreateTestcaseRequest, TestcaseResultRequest, UpdateTestcaseRequest};
+use crate::cmd::common::{
+    log_command, print_deleted, print_dry_run, print_dry_run_with_body, print_error, print_json,
 };
-use crate::api::ApiClient;
 use crate::cmd::root::TestcaseSubcommand;
-use crate::core::{Config, OutputFormat};
-use crate::safe_println;
+use crate::core::{AppContext, OutputFormat};
+use crate::service::testcase::TestcaseService;
 
-/// 执行测试用例相关命令
-///
-/// 根据子命令类型调用对应的 API 并输出结果
-pub fn run(cmd: &TestcaseSubcommand, config: &Config, _format: OutputFormat, dry_run: bool) {
-    let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
-
-    rt.block_on(async {
-        let client = ApiClient::new(&config.url, config.token.clone())
-            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
-
-        match cmd {
-            // -------------------- list --------------------
-            TestcaseSubcommand::List {
-                product,
-                project,
-                type_,
-                status,
-            } => {
-                let product_id = config.product_id(*product);
-                let project_id = config.project_id(*project);
-
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call TestcaseApi::list()");
-                    println!("  URL: {}/api.php/v1/testcases", config.url);
-                    safe_println("  Params:");
-                    if let Some(p) = product_id {
-                        println!("    product: {}", p);
-                    }
-                    if let Some(p) = project_id {
-                        println!("    project: {}", p);
-                    }
-                    if let Some(t) = type_ {
-                        println!("    type: {}", t);
-                    }
-                    if let Some(s) = status {
-                        println!("    status: {}", s);
-                    }
-                    return;
+pub async fn run(cmd: &TestcaseSubcommand, ctx: &AppContext) {
+    log_command("testcase", format!("{:?}", cmd));
+    match cmd {
+        TestcaseSubcommand::List {
+            product,
+            project,
+            type_,
+            status,
+        } => {
+            let product_id = ctx.product_id(*product);
+            let project_id = ctx.project_id(*project);
+            if ctx.dry_run {
+                print_dry_run(
+                    "TestcaseService::list()",
+                    &format!("{}/api.php/v1/testcases", ctx.config.url),
+                );
+                println!("  Params:");
+                if let Some(p) = product_id {
+                    println!("    product: {}", p);
                 }
-                match TestcaseApi::list(&client, product_id, project_id, type_.clone(), status.clone())
-                    .await
-                {
-                    Ok(testcases) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&testcases).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+                if let Some(p) = project_id {
+                    println!("    project: {}", p);
                 }
+                if let Some(t) = type_ {
+                    println!("    type: {}", t);
+                }
+                if let Some(s) = status {
+                    println!("    status: {}", s);
+                }
+                return;
             }
-
-            // -------------------- get --------------------
-            TestcaseSubcommand::Get { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call TestcaseApi::get()");
-                    println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
-                    return;
-                }
-                match TestcaseApi::get(&client, *id).await {
-                    Ok(testcase) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&testcase).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- create --------------------
-            TestcaseSubcommand::Create {
-                product,
-                title,
-                type_,
-                severity,
-                pri,
-                steps,
-                expectation,
-                story,
-                project,
-            } => {
-                let product_id = config.product_id(*product).unwrap_or_else(|| {
-                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
-                    std::process::exit(1);
-                });
-                let project_id = config.project_id(*project);
-
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call TestcaseApi::create()");
-                    println!(
-                        "  URL: {}/api.php/v1/products/{}/testcases",
-                        config.url, product_id
-                    );
-                    safe_println("  Body:");
-                    println!("    title: {}", title);
-                    println!("    product: {}", product_id);
-                    if let Some(t) = type_ {
-                        println!("    type: {}", t);
-                    }
-                    if let Some(s) = severity {
-                        println!("    severity: {}", s);
-                    }
-                    if let Some(p) = pri {
-                        println!("    pri: {}", p);
-                    }
-                    if let Some(s) = steps {
-                        println!("    steps: {}", s);
-                    }
-                    if let Some(e) = expectation {
-                        println!("    expectation: {}", e);
-                    }
-                    if let Some(s) = story {
-                        println!("    story: {}", s);
-                    }
-                    if let Some(p) = project_id {
-                        println!("    project: {}", p);
-                    }
-                    return;
-                }
-                let req = CreateTestcaseRequest {
-                    title: title.clone(),
-                    product: product_id,
-                    type_: type_.clone(),
-                    severity: *severity,
-                    pri: *pri,
-                    steps: steps.clone(),
-                    expectation: expectation.clone(),
-                    story: *story,
-                    project: project_id,
-                };
-                match TestcaseApi::create(&client, product_id, &req).await {
-                    Ok(testcase) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&testcase).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- update --------------------
-            TestcaseSubcommand::Update {
-                id,
-                title,
-                status,
-                pri,
-                severity,
-                type_,
-                steps,
-                expectation,
-            } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call TestcaseApi::update()");
-                    println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
-                    safe_println("  Body:");
-                    if let Some(t) = title {
-                        println!("    title: {}", t);
-                    }
-                    if let Some(s) = status {
-                        println!("    status: {}", s);
-                    }
-                    if let Some(p) = pri {
-                        println!("    pri: {}", p);
-                    }
-                    if let Some(s) = severity {
-                        println!("    severity: {}", s);
-                    }
-                    if let Some(t) = type_ {
-                        println!("    type: {}", t);
-                    }
-                    if let Some(s) = steps {
-                        println!("    steps: {}", s);
-                    }
-                    if let Some(e) = expectation {
-                        println!("    expectation: {}", e);
-                    }
-                    return;
-                }
-                let req = UpdateTestcaseRequest {
-                    title: title.clone(),
-                    status: status.clone(),
-                    pri: *pri,
-                    severity: *severity,
-                    type_: type_.clone(),
-                    steps: steps.clone(),
-                    expectation: expectation.clone(),
-                };
-                match TestcaseApi::update(&client, *id, &req).await {
-                    Ok(testcase) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&testcase).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- delete --------------------
-            TestcaseSubcommand::Delete { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call TestcaseApi::delete()");
-                    println!("  URL: {}/api.php/v1/testcases/{}", config.url, id);
-                    return;
-                }
-                match TestcaseApi::delete(&client, *id).await {
-                    Ok(_) => {
-                        println!("Testcase {} deleted successfully", id);
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- result --------------------
-            TestcaseSubcommand::Result {
-                id,
-                result,
-                consumed,
-                remark,
-                build,
-            } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call TestcaseApi::create_result()");
-                    println!("  URL: {}/api.php/v1/testcases/{}/results", config.url, id);
-                    safe_println("  Body:");
-                    println!("    result: {}", result);
-                    if let Some(c) = consumed {
-                        println!("    consumed: {}", c);
-                    }
-                    if let Some(r) = remark {
-                        println!("    remark: {}", r);
-                    }
-                    if let Some(b) = build {
-                        println!("    build: {}", b);
-                    }
-                    return;
-                }
-                let req = TestcaseResultRequest {
-                    result: result.clone(),
-                    consumed: *consumed,
-                    remark: remark.clone(),
-                    build: *build,
-                };
-                match TestcaseApi::create_result(&client, *id, &req).await {
-                    Ok(testcase) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&testcase).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
+            match TestcaseService::list(ctx, *product, *project, type_.clone(), status.clone())
+                .await
+            {
+                Ok(testcases) => print_testcase_list(&testcases, ctx.format.clone()),
+                Err(e) => print_error(&e),
             }
         }
-    });
+        TestcaseSubcommand::Get { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "TestcaseService::get()",
+                    &format!("{}/api.php/v1/testcases/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match TestcaseService::get(ctx, *id).await {
+                Ok(testcase) => print_json(&testcase),
+                Err(e) => print_error(&e),
+            }
+        }
+        TestcaseSubcommand::Create {
+            product,
+            title,
+            type_,
+            severity,
+            pri,
+            steps,
+            expectation,
+            story,
+            project,
+        } => {
+            let product_id = match ctx.require_product_id(*product) {
+                Ok(id) => id,
+                Err(e) => {
+                    print_error(&e);
+                    return;
+                }
+            };
+            let req = CreateTestcaseRequest {
+                title: title.clone(),
+                product: product_id,
+                type_: type_.clone(),
+                severity: *severity,
+                pri: *pri,
+                steps: steps.clone(),
+                expectation: expectation.clone(),
+                story: *story,
+                project: ctx.project_id(*project),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TestcaseService::create()",
+                    &format!(
+                        "{}/api.php/v1/products/{}/testcases",
+                        ctx.config.url, product_id
+                    ),
+                    &req,
+                );
+                return;
+            }
+            match TestcaseService::create(ctx, *product, req).await {
+                Ok(testcase) => print_json(&testcase),
+                Err(e) => print_error(&e),
+            }
+        }
+        TestcaseSubcommand::Update {
+            id,
+            title,
+            status,
+            pri,
+            severity,
+            type_,
+            steps,
+            expectation,
+        } => {
+            let req = UpdateTestcaseRequest {
+                title: title.clone(),
+                status: status.clone(),
+                pri: *pri,
+                severity: *severity,
+                type_: type_.clone(),
+                steps: steps.clone(),
+                expectation: expectation.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TestcaseService::update()",
+                    &format!("{}/api.php/v1/testcases/{}", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match TestcaseService::update(ctx, *id, req).await {
+                Ok(testcase) => print_json(&testcase),
+                Err(e) => print_error(&e),
+            }
+        }
+        TestcaseSubcommand::Delete { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "TestcaseService::delete()",
+                    &format!("{}/api.php/v1/testcases/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match TestcaseService::delete(ctx, *id).await {
+                Ok(_) => print_deleted("Testcase", *id),
+                Err(e) => print_error(&e),
+            }
+        }
+        TestcaseSubcommand::Result {
+            id,
+            result,
+            consumed,
+            remark,
+            build,
+        } => {
+            let req = TestcaseResultRequest {
+                result: result.clone(),
+                consumed: *consumed,
+                remark: remark.clone(),
+                build: *build,
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TestcaseService::create_result()",
+                    &format!("{}/api.php/v1/testcases/{}/results", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match TestcaseService::create_result(ctx, *id, req).await {
+                Ok(testcase) => print_json(&testcase),
+                Err(e) => print_error(&e),
+            }
+        }
+    }
+}
+
+fn print_testcase_list(items: &[crate::api::Testcase], format: OutputFormat) {
+    match format {
+        OutputFormat::Table => {
+            println!("Testcases:");
+            for item in items {
+                println!("  [{}] {} - {}", item.id, item.title, item.status);
+            }
+        }
+        _ => println!(
+            "{}",
+            serde_json::to_string_pretty(items).unwrap_or_default()
+        ),
+    }
 }

@@ -1,10 +1,10 @@
-# testcase +update
+# testcase update
 
 更新测试用例信息。
 
 ## Command
 ```bash
-zentao-cli testcase +update <id> [--title <title>] [--status <status>] [--pri <priority>] [--severity <level>] [--type <type>] [--steps <steps>] [--expectation <expectation>]
+zentao-cli testcase update <id> [--title <title>] [--status <status>] [--pri <priority>] [--severity <level>] [--type <type>] [--steps <steps>] [--expectation <expectation>]
 ```
 
 ## Options
@@ -24,13 +24,13 @@ zentao-cli testcase +update <id> [--title <title>] [--status <status>] [--pri <p
 
 ```bash
 # Update testcase status
-zentao-cli testcase +update 123 --status normal
+zentao-cli testcase update 123 --status normal
 
 # Update testcase priority
-zentao-cli testcase +update 123 --pri 3 --severity 2
+zentao-cli testcase update 123 --pri 3 --severity 2
 
 # Update testcase content
-zentao-cli testcase +update 123 --steps "1. 新步骤" --expectation "新期望结果"
+zentao-cli testcase update 123 --steps "1. 新步骤" --expectation "新期望结果"
 ```
 
 ## API Endpoint
@@ -38,3 +38,4 @@ zentao-cli testcase +update 123 --steps "1. 新步骤" --expectation "新期望�
 ```
 PUT /api.php/v1/testcases/{id}
 ```
+

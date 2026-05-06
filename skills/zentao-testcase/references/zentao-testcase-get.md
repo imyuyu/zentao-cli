@@ -1,10 +1,10 @@
-# testcase +get
+# testcase get
 
 获取单个测试用例的详细信息。
 
 ## Command
 ```bash
-zentao-cli testcase +get <id>
+zentao-cli testcase get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli testcase +get <id>
 
 ```bash
 # Get testcase details
-zentao-cli testcase +get 123
+zentao-cli testcase get 123
 ```
 
 ## Output Fields
@@ -36,3 +36,4 @@ zentao-cli testcase +get 123
 | project | u64 | Project ID |
 | openedBy | string | Creator |
 | version | u64 | Version number |
+

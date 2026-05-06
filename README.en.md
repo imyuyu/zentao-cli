@@ -18,7 +18,7 @@ zentao-cli - A CLI tool for both humans and AI Agents to operate ZenTao. Covers 
 - **Open Source, Zero Barriers** — MIT license, ready to use, just `npm install`
 - **Up and Running in 3 Minutes** — One-click install, interactive configuration, from install to first API call in just 3 steps
 - **Secure & Controllable** — Token authentication, configuration validation, security prompts
-- **Three-Layer Architecture** — Shortcuts (human & AI friendly) → API Commands → Raw API (full coverage), choose the right granularity
+- **Three-Layer Architecture** — Shortcuts (high-value workflow and browse commands) → API Commands → Raw API (full coverage), choose the right granularity
 
 ## Features
 
@@ -41,7 +41,7 @@ zentao-cli - A CLI tool for both humans and AI Agents to operate ZenTao. Covers 
 ### Requirements
 
 - Node.js `>=16` (`npm`/`npx`)
-- Rust `v1.70`+ (only required for building from source)
+- Rust `v1.70`+ (required only for source builds)
 
 ### Quick Start (Human Users)
 
@@ -67,7 +67,6 @@ npx skills add imyuyu/zentao-cli -y -g
 git clone https://github.com/imyuyu/zentao-cli.git
 cd zentao-cli
 cargo build --release
-cp target/release/zentao-cli.exe bin/zentao.exe
 npm install -g .
 
 # Install AI Agent Skills (required)
@@ -88,7 +87,7 @@ zentao-cli config init
 zentao-cli auth login --account admin --password 123456
 
 # 3. Start using
-zentao-cli story +list --product 1
+zentao-cli story list --product 1
 ```
 
 ## Quick Start (AI Agent)
@@ -172,32 +171,33 @@ The CLI provides three levels of granularity, covering everything from quick ope
 
 ### 1. Shortcuts
 
-Prefixed with `+`, designed to be friendly for both humans and AI, with smart defaults, table output, and dry-run previews.
+Shortcuts keep only high-value workflow and browse entry points. Regular CRUD should use API commands.
 
 ```bash
-zentao-cli story +list --product 1
-zentao-cli bug +list --product 1
-zentao-cli task +list --project 1
+zentao-cli bug-browse --product 1
+zentao-cli story-browse --product 1
 ```
-
-Run `zentao-cli <service> --help` to see all shortcut commands.
 
 ### 2. API Commands
 
-Curated commands mapped to ZenTao API endpoints - covering all business domains.
+Curated commands mapped to ZenTao API endpoints.
 
 ```bash
 zentao-cli story list --product 1
-zentao-cli bug list --product 1
+zentao-cli bug get 123
+zentao-cli task update 456 --status done
 ```
 
 ### 3. Raw API Calls
 
-Call any ZenTao API endpoint directly.
+For connectivity checks, schema inspection, and raw API calls.
 
 ```bash
 zentao-cli api test
 zentao-cli api endpoints
+zentao-cli api schema --service story --output json
+zentao-cli api GET /api.php/v1/stories --params '{"product":1}'
+zentao-cli api POST /api.php/v1/stories --data '{"title":"New Story","product":1}'
 ```
 
 ## Advanced Usage
@@ -212,13 +212,22 @@ zentao-cli api endpoints
 --format csv       # Comma-separated values
 ```
 
-### Pagination
+### Logging
 
 ```bash
---page-all                  # Auto-paginate through all pages
---page-limit 5              # Max 5 pages
---page-delay 500            # Delay between page requests (ms)
+--debug                  # Enable debug logging
+--log-level info         # Explicit level: error/warn/info/debug
 ```
+
+When logging is enabled, output is written to both `stderr` and a system log file. Default paths:
+
+Logs rotate daily with the filename pattern `zentao-cli.log.YYYY-MM-DD`. Default directories:
+
+- Windows: `%LOCALAPPDATA%\\zentao-cli\\logs\\`
+- macOS: `~/Library/Logs/zentao-cli/`
+- Linux: `$XDG_STATE_HOME/zentao-cli/logs/` or `~/.local/state/zentao-cli/logs/`
+
+`--debug` is equivalent to `--log-level debug`. Without either flag, the CLI stays quiet and only prints necessary errors.
 
 ### Config Commands
 
@@ -263,3 +272,4 @@ Community contributions are welcome! If you find a bug or have feature suggestio
 ## License
 
 This project is licensed under the **MIT License**.
+

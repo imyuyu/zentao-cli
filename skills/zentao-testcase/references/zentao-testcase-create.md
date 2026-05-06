@@ -1,10 +1,10 @@
-# testcase +create
+# testcase create
 
 创建新测试用例。
 
 ## Command
 ```bash
-zentao-cli testcase +create --product <id> --title <title> [--type <type>] [--severity <level>] [--pri <priority>] [--steps <steps>] [--expectation <expectation>] [--story <story_id>] [--project <project_id>]
+zentao-cli testcase create --product <id> --title <title> [--type <type>] [--severity <level>] [--pri <priority>] [--steps <steps>] [--expectation <expectation>] [--story <story_id>] [--project <project_id>]
 ```
 
 ## Options
@@ -25,10 +25,10 @@ zentao-cli testcase +create --product <id> --title <title> [--type <type>] [--se
 
 ```bash
 # Basic testcase creation
-zentao-cli testcase +create --product 1 --title "验证登录功能"
+zentao-cli testcase create --product 1 --title "验证登录功能"
 
 # Full testcase creation
-zentao-cli testcase +create \
+zentao-cli testcase create \
   --product 1 \
   --title "用户登录测试" \
   --type feature \
@@ -43,3 +43,4 @@ zentao-cli testcase +create \
 ```
 POST /api.php/v1/products/{productId}/testcases
 ```
+

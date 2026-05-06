@@ -54,26 +54,14 @@ metadata:
 | 3 | Normal | 普通测试用例 |
 | 4 | Minor | 轻微问题/界面测试 |
 
-## Shortcuts
+## Commands
 
-- [`+testcase-list`](./references/zentao-testcase-list.md) — List test cases for a product/project
-- [`+testcase-get`](./references/zentao-testcase-get.md) — Get test case details
-- [`+testcase-create`](./references/zentao-testcase-create.md) — Create a test case
-- [`+testcase-update`](./references/zentao-testcase-update.md) — Update a test case
-- [`+testcase-delete`](./references/zentao-testcase-delete.md) — Delete a test case
-- [`+testcase-result`](./references/zentao-testcase-result.md) — Record test case execution result
-
-## API Resources
-
-```bash
-zentao-cli testcase +list --product <id>         # 列出产品的测试用例
-zentao-cli testcase +list --product <id> --project <id>  # 列出产品+项目的测试用例
-zentao-cli testcase +get <id>                   # 获取测试用例详情
-zentao-cli testcase +create --product <id> --title <title>  # 创建测试用例
-zentao-cli testcase +update <id> [flags]        # 更新测试用例
-zentao-cli testcase +delete <id>                # 删除测试用例
-zentao-cli testcase +result <id> --result pass   # 执行测试用例
-```
+- [`testcase list`](./references/zentao-testcase-list.md) — List test cases for a product/project
+- [`testcase get`](./references/zentao-testcase-get.md) — Get test case details
+- [`testcase create`](./references/zentao-testcase-create.md) — Create a test case
+- [`testcase update`](./references/zentao-testcase-update.md) — Update a test case
+- [`testcase delete`](./references/zentao-testcase-delete.md) — Delete a test case
+- [`testcase result`](./references/zentao-testcase-result.md) — Record test case execution result
 
 ## Common Use Cases
 
@@ -81,27 +69,27 @@ zentao-cli testcase +result <id> --result pass   # 执行测试用例
 
 ```bash
 # 列出产品 1 下的所有测试用例
-zentao-cli testcase +list --product 1
+zentao-cli testcase list --product 1
 
 # 列出产品 1 下状态为正常的测试用例
-zentao-cli testcase +list --product 1 --status normal
+zentao-cli testcase list --product 1 --status normal
 ```
 
 ### 场景 2：按项目查询测试用例
 
 ```bash
 # 列出产品 1 下项目 5 的所有测试用例
-zentao-cli testcase +list --product 1 --project 5
+zentao-cli testcase list --product 1 --project 5
 
 # 列出项目 5 的所有功能测试用例
-zentao-cli testcase +list --product 1 --project 5 --type feature
+zentao-cli testcase list --product 1 --project 5 --type feature
 ```
 
 ### 场景 3：获取测试用例详情
 
 ```bash
 # 获取测试用例详细信息
-zentao-cli testcase +get 123
+zentao-cli testcase get 123
 ```
 
 ## Output Fields
@@ -155,4 +143,5 @@ echo $ZENTAO_TOKEN
 
 4. **version 字段**：ZenTao 测试用例有版本概念，每次修改会用例版本递增。获取详情时可以查看是哪个版本的用例。
 
-5. **CLI 当前仅支持 list 和 get**：目前 zentao-testcase 模块的 CLI 支持列出和获取操作，不支持创建、更新、删除用例（通常在 ZenTao Web 端或测试管理工具中操作）。
+5. **执行结果命令名**：执行测试用例结果时使用 `zentao-cli testcase result <id> --result pass`，不是旧的 `execute` 子命令。
+

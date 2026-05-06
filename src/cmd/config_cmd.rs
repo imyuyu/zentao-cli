@@ -15,6 +15,7 @@ use ratatui::{
 use std::io::stdout;
 
 use crate::api::{ApiClient, Auth, ProductApi, ProjectApi};
+use crate::cmd::common::log_command;
 use crate::core::{
     global_config_path, load_config, project_config_path, unset_config, update_config, Config,
     GlobalConfig,
@@ -602,6 +603,7 @@ fn render_wizard_frame(
 
 /// 执行配置命令
 pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
+    log_command("config", format!("{:?}", config_cmd));
     match config_cmd {
         ConfigSubcommand::Init { global } => {
             // 启用原始模式

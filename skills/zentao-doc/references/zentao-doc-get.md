@@ -1,10 +1,10 @@
-# doc +get
+# doc get
 
 获取文档详情。
 
 ## Command
 ```bash
-zentao-cli doc +get <id>
+zentao-cli doc get <id>
 ```
 
 ## Options
@@ -16,7 +16,7 @@ zentao-cli doc +get <id>
 ## Examples
 
 ```bash
-zentao-cli doc +get 10
+zentao-cli doc get 10
 ```
 
 ## Output Fields
@@ -35,3 +35,4 @@ zentao-cli doc +get 10
 | added_date | string | Creation date |
 | edited_date | string | Last edit date |
 | deleted | string | Deletion flag |
+

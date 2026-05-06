@@ -22,7 +22,7 @@ metadata:
 >
 > **状态与解决方案**：Bug 有三个主状态 `active`(激活) / `resolved`(已解决) / `closed`(已关闭)，以及对应的 resolution。resolved 状态的 Bug 需要指定 resolution（fixed/duplicate/notrepro/wonfix/bysdesign），closed 状态需要先 resolved 再关闭。
 >
-> **指派与流转**：Bug 创建后可以通过 `+bug-update` 指派给开发人员。当 Bug 被修复后，状态变为 resolved；当 Bug 被确认关闭后，状态变为 closed。
+> **指派与流转**：Bug 创建后可以通过 `bug update` 指派给开发人员。当 Bug 被修复后，状态变为 resolved；当 Bug 被确认关闭后，状态变为 closed。
 >
 > **友好输出**：在输出 Bug 详情时，建议同时输出 Bug 的 URL 链接（ZenTao web UI 地址），便于用户直接点击查看。
 
@@ -56,31 +56,17 @@ active (激活) ──[修复]──> resolved (已解决) ──[确认]──>
 | 4 | Minor | 轻微问题，界面/体验类 | 文字显示不全 |
 | 5 | Wishlist | 功能建议/优化项 | 希望增加某功能 |
 
-## Shortcuts
+## Commands
 
-- [`+bug-list`](./references/zentao-bug-list.md) — List bugs for a product
-- [`+bug-get`](./references/zentao-bug-get.md) — Get bug details
-- [`+bug-create`](./references/zentao-bug-create.md) — Create a new bug
-- [`+bug-update`](./references/zentao-bug-update.md) — Update bug fields
-- [`+bug-resolve`](./references/zentao-bug-resolve.md) — Resolve a bug
-- [`+bug-confirm`](./references/zentao-bug-confirm.md) — Confirm a bug
-- [`+bug-close`](./references/zentao-bug-close.md) — Close a bug
-- [`+bug-activate`](./references/zentao-bug-activate.md) — Activate a bug
-- [`+bug-delete`](./references/zentao-bug-delete.md) — Delete a bug
-
-## API Resources
-
-```bash
-zentao-cli bug +list --product <id>        # 列出产品下的 Bug
-zentao-cli bug +get <id>                  # 获取 Bug 详情
-zentao-cli bug +create --title <title>... # 创建 Bug
-zentao-cli bug +update <id> --status ...  # 更新 Bug
-zentao-cli bug +resolve <id> --resolution fixed --resolved-build trunk  # 解决 Bug
-zentao-cli bug +confirm <id>              # 确认 Bug
-zentao-cli bug +close <id>                # 关闭 Bug
-zentao-cli bug +activate <id>             # 激活 Bug
-zentao-cli bug +delete <id>              # 删除 Bug
-```
+- [`bug list`](./references/zentao-bug-list.md) — List bugs for a product
+- [`bug get`](./references/zentao-bug-get.md) — Get bug details
+- [`bug create`](./references/zentao-bug-create.md) — Create a new bug
+- [`bug update`](./references/zentao-bug-update.md) — Update bug fields
+- [`bug resolve`](./references/zentao-bug-resolve.md) — Resolve a bug
+- [`bug confirm`](./references/zentao-bug-confirm.md) — Confirm a bug
+- [`bug close`](./references/zentao-bug-close.md) — Close a bug
+- [`bug activate`](./references/zentao-bug-activate.md) — Activate a bug
+- [`bug delete`](./references/zentao-bug-delete.md) — Delete a bug
 
 ## Common Use Cases
 
@@ -88,17 +74,17 @@ zentao-cli bug +delete <id>              # 删除 Bug
 
 ```bash
 # 按产品 ID 列出所有激活状态的 Bug
-zentao-cli bug +list --product 1 --status active
+zentao-cli bug list --product 1 --status active
 ```
 
 ### 场景 2：创建新 Bug
 
 ```bash
 # 创建严重性为 1 的紧急 Bug
-zentao-cli bug +create --title "用户登录页面崩溃" --product 1 --severity 1 --pri 1
+zentao-cli bug create --title "用户登录页面崩溃" --product 1 --severity 1 --pri 1
 
 # 创建带有详细复现步骤的 Bug
-zentao-cli bug +create \
+zentao-cli bug create \
   --title "上传头像失败" \
   --product 1 \
   --severity 2 \
@@ -110,20 +96,20 @@ zentao-cli bug +create \
 
 ```bash
 # 标记 Bug 为已修复
-zentao-cli bug +update 123 --status resolved --resolution fixed
+zentao-cli bug update 123 --status resolved --resolution fixed
 
 # 指派给开发人员
-zentao-cli bug +update 123 --assigned-to developer-name
+zentao-cli bug update 123 --assigned-to developer-name
 
 # 重打开 Bug
-zentao-cli bug +update 123 --status active
+zentao-cli bug update 123 --status active
 ```
 
 ### 场景 4：按指派人筛选 Bug
 
 ```bash
 # 查看指定人员的待办 Bug
-zentao-cli bug +list --product 1 --assigned-to developer-name
+zentao-cli bug list --product 1 --assigned-to developer-name
 ```
 
 ## Error Handling
@@ -160,3 +146,4 @@ echo $ZENTAO_TOKEN
 4. **steps 字段格式**：复现步骤建议使用 `\n` 分隔多行，便于阅读和解析。
 
 5. **关联需求和项目**：创建 Bug 时可以通过 `--story` 和 `--project` 关联到已有的需求或项目。
+

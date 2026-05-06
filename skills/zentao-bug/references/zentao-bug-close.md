@@ -1,10 +1,10 @@
-# bug +close
+# bug close
 
 关闭 Bug。
 
 ## Command
 ```bash
-zentao-cli bug +close <id>
+zentao-cli bug close <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli bug +close <id>
 
 ```bash
 # 关闭 Bug
-zentao-cli bug +close 5703
+zentao-cli bug close 5703
 ```
 
 ## API Endpoint
@@ -25,3 +25,4 @@ zentao-cli bug +close 5703
 ```
 POST /api.php/v1/bugs/{bug_id}/close
 ```
+

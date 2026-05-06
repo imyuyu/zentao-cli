@@ -1,10 +1,10 @@
-# project +update
+# project update
 
 更新项目信息。
 
 ## Command
 ```bash
-zentao-cli project +update <id> [--name <name>] [--code <code>] [--status <status>] [--desc <description>]
+zentao-cli project update <id> [--name <name>] [--code <code>] [--status <status>] [--desc <description>]
 ```
 
 ## Options
@@ -21,11 +21,12 @@ zentao-cli project +update <id> [--name <name>] [--code <code>] [--status <statu
 
 ```bash
 # Update project name
-zentao-cli project +update 1 --name "New Project Name"
+zentao-cli project update 1 --name "New Project Name"
 
 # Close a project
-zentao-cli project +update 1 --status closed
+zentao-cli project update 1 --status closed
 
 # Update multiple fields
-zentao-cli project +update 1 --name "Updated" --desc "New description"
+zentao-cli project update 1 --name "Updated" --desc "New description"
 ```
+

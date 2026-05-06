@@ -1,10 +1,10 @@
-# task +delete
+# task delete
 
 删除任务。
 
 ## Command
 ```bash
-zentao-cli task +delete <id>
+zentao-cli task delete <id>
 ```
 
 ## Options
@@ -17,10 +17,11 @@ zentao-cli task +delete <id>
 
 ```bash
 # Delete a task
-zentao-cli task +delete 123
+zentao-cli task delete 123
 ```
 
 ## Notes
 
 - Only tasks in wait status can be deleted
 - This action cannot be undone
+

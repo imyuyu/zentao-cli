@@ -18,7 +18,7 @@ zentao-cli - 让人类和 AI Agent 都能在终端中操作禅道。覆盖需求
 - **开源零门槛** — MIT 许可证，下载即用，`npm install` 即可
 - **三步上手** — 一键安装、交互式配置，从安装到首次 API 调用仅需三步
 - **安全可控** — Token 认证、配置验证、安全提示
-- **三层架构** — Shortcuts（人类 & AI 友好）→ API 命令 → Raw API（全覆盖），选择合适的粒度
+- **三层架构** — 高价值 Shortcuts（工作流/浏览）→ API Commands（主命令面）→ Raw API/Schema 工具，按场景选择合适粒度
 
 ## 功能
 
@@ -67,7 +67,6 @@ npx skills add imyuyu/zentao-cli -y -g
 git clone https://github.com/imyuyu/zentao-cli.git
 cd zentao-cli
 cargo build --release
-cp target/release/zentao-cli.exe bin/zentao.exe
 npm install -g .
 
 # 安装 AI Agent Skills（必需）
@@ -88,7 +87,7 @@ zentao-cli config init
 zentao-cli auth login --account admin --password 123456
 
 # 3. 开始使用
-zentao-cli story +list --product 1
+zentao-cli story list --product 1
 ```
 
 ## 快速开始（AI Agent）
@@ -168,36 +167,37 @@ zentao-cli auth logout
 
 ## 三层命令系统
 
-CLI 提供三个层次的粒度，从快速操作到完全自定义 API 调用：
+CLI 提供三个层次的粒度，从快捷操作到 API 自省与调试：
 
 ### 1. Shortcuts（快捷命令）
 
-以 `+` 为前缀，为人类和 AI 设计，智能默认值、表格输出、dry-run 预览。
+只保留高价值工作流或浏览入口，不再和常规 CRUD 命令重复。
 
 ```bash
-zentao-cli story +list --product 1
-zentao-cli bug +list --product 1
-zentao-cli task +list --project 1
+zentao-cli bug-browse --product 1
+zentao-cli story-browse --product 1
 ```
 
-运行 `zentao-cli <service> --help` 查看所有快捷命令。
+### 2. API Commands
 
-### 2. API 命令
-
-映射到禅道 API 端点的精选命令 - 覆盖所有业务域的 100+ 命令。
+资源 CRUD 和状态变更默认走这层。
 
 ```bash
 zentao-cli story list --product 1
-zentao-cli bug list --product 1
+zentao-cli bug get 123
+zentao-cli task update 456 --status done
 ```
 
-### 3. Raw API 调用
+### 3. Raw API / 调试入口
 
-直接调用任意禅道 API 端点。
+用于连通性测试、schema 自省和原始 API 调用。
 
 ```bash
 zentao-cli api test
 zentao-cli api endpoints
+zentao-cli api schema --service story --output json
+zentao-cli api GET /api.php/v1/stories --params '{"product":1}'
+zentao-cli api POST /api.php/v1/stories --data '{"title":"New Story","product":1}'
 ```
 
 ## 进阶用法
@@ -210,15 +210,23 @@ zentao-cli api endpoints
 --format table     # 表格输出（默认）
 --format ndjson    # 换行分隔 JSON（适合管道处理）
 --format csv       # 逗号分隔值
+--dry-run          # 只显示将执行的操作，不实际调用 API
 ```
 
-### 分页
+### 日志
 
 ```bash
---page-all                  # 自动翻页获取所有数据
---page-limit 5              # 最多 5 页
---page-delay 500            # 页面请求间隔（毫秒）
+--debug                  # 开启 debug 日志
+--log-level info         # 显式指定日志级别：error/warn/info/debug
 ```
+
+启用日志后，会同时输出到 `stderr` 和系统日志文件。日志按天滚动，文件名模式为 `zentao-cli.log.YYYY-MM-DD`。默认目录：
+
+- Windows: `%LOCALAPPDATA%\\zentao-cli\\logs\\`
+- macOS: `~/Library/Logs/zentao-cli/`
+- Linux: `$XDG_STATE_HOME/zentao-cli/logs/` 或 `~/.local/state/zentao-cli/logs/`
+
+`--debug` 等价于 `--log-level debug`。未显式开启时，CLI 默认只输出必要错误，不打印调试日志。
 
 ### 配置命令
 
@@ -263,3 +271,4 @@ zentao-cli doctor
 ## 许可证
 
 本项目基于 **MIT 许可证**。
+

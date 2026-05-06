@@ -1,10 +1,10 @@
-# execution +delete
+# execution delete
 
 删除执行。
 
 ## Command
 ```bash
-zentao-cli execution +delete <id>
+zentao-cli execution delete <id>
 ```
 
 ## Options
@@ -17,10 +17,11 @@ zentao-cli execution +delete <id>
 
 ```bash
 # Delete an execution
-zentao-cli execution +delete 100
+zentao-cli execution delete 100
 ```
 
 ## Notes
 
 - Only executions in wait status can be deleted
 - This action cannot be undone
+

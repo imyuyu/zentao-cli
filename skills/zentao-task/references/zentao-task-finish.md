@@ -1,10 +1,10 @@
-# task +finish
+# task finish
 
 完成任务。
 
 ## Command
 ```bash
-zentao-cli task +finish <id>
+zentao-cli task finish <id>
 ```
 
 ## Options
@@ -17,9 +17,10 @@ zentao-cli task +finish <id>
 
 ```bash
 # Finish a task
-zentao-cli task +finish 123
+zentao-cli task finish 123
 ```
 
 ## Status Transition
 
 - Changes task status from `doing` to `done`
+

@@ -1,11 +1,13 @@
 use crate::cmd::api_cmd::ApiSubcommand;
 use crate::cmd::auth::AuthSubcommand;
+use crate::cmd::common::log_command;
 use crate::cmd::config_cmd::ConfigSubcommand;
 use crate::cmd::{
     api_cmd, auth, browse, bug, build, config_cmd, doc, doctor, execution, product, project,
     release, story, task, testcase, user,
 };
-use crate::core::{load_config, Config, OutputFormat};
+use crate::core::logging;
+use crate::core::{load_config, AppContext, Config, OutputFormat};
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
@@ -29,6 +31,14 @@ struct Cli {
     /// 预执行模式：只显示将要执行的操作，不实际调用 API
     #[arg(long, global = true)]
     dry_run: bool,
+
+    /// 输出内部调试日志到 stderr
+    #[arg(long, global = true)]
+    debug: bool,
+
+    /// 设置日志级别并写入系统日志文件
+    #[arg(long, global = true, value_enum)]
+    log_level: Option<logging::LogLevel>,
 }
 
 #[derive(Clone, Debug, Subcommand)]
@@ -119,8 +129,8 @@ enum Commands {
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum StorySubcommand {
-    /// 列出需求列表
-    #[command(name = "+list")]
+    /// 列出需求列表（API Commands）
+    #[command(name = "list")]
     List {
         #[arg(long)]
         product: Option<u64>,
@@ -129,11 +139,11 @@ pub enum StorySubcommand {
         #[arg(long)]
         status: Option<String>,
     },
-    /// 获取需求详情
-    #[command(name = "+get")]
+    /// 获取需求详情（API Commands）
+    #[command(name = "get")]
     Get { id: u64 },
-    /// 创建需求
-    #[command(name = "+create")]
+    /// 创建需求（API Commands）
+    #[command(name = "create")]
     Create {
         #[arg(long)]
         title: String,
@@ -148,8 +158,8 @@ pub enum StorySubcommand {
         #[arg(long)]
         estimate: Option<f64>,
     },
-    /// 更新需求
-    #[command(name = "+update")]
+    /// 更新需求（API Commands）
+    #[command(name = "update")]
     Update {
         id: u64,
         #[arg(long)]
@@ -161,8 +171,8 @@ pub enum StorySubcommand {
         #[arg(long)]
         assigned_to: Option<String>,
     },
-    /// 变更需求
-    #[command(name = "+change")]
+    /// 变更需求（API Commands）
+    #[command(name = "change")]
     Change {
         id: u64,
         #[arg(long)]
@@ -174,18 +184,18 @@ pub enum StorySubcommand {
         #[arg(long)]
         assigned_to: Option<String>,
     },
-    /// 删除需求
-    #[command(name = "+delete")]
+    /// 删除需求（API Commands）
+    #[command(name = "delete")]
     Delete { id: u64 },
-    /// 关闭需求
-    #[command(name = "+close")]
+    /// 关闭需求（API Commands）
+    #[command(name = "close")]
     Close { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum BugSubcommand {
-    /// 列出 Bug 列表
-    #[command(name = "+list")]
+    /// 列出 Bug 列表（API Commands）
+    #[command(name = "list")]
     List {
         #[arg(long)]
         product: Option<u64>,
@@ -194,11 +204,11 @@ pub enum BugSubcommand {
         #[arg(long)]
         assigned_to: Option<String>,
     },
-    /// 获取 Bug 详情
-    #[command(name = "+get")]
+    /// 获取 Bug 详情（API Commands）
+    #[command(name = "get")]
     Get { id: u64 },
-    /// 创建 Bug
-    #[command(name = "+create")]
+    /// 创建 Bug（API Commands）
+    #[command(name = "create")]
     Create {
         #[arg(long)]
         title: String,
@@ -215,8 +225,8 @@ pub enum BugSubcommand {
         #[arg(long)]
         story: Option<u64>,
     },
-    /// 更新 Bug
-    #[command(name = "+update")]
+    /// 更新 Bug（API Commands）
+    #[command(name = "update")]
     Update {
         id: u64,
         #[arg(long)]
@@ -230,8 +240,8 @@ pub enum BugSubcommand {
         #[arg(long)]
         assigned_to: Option<String>,
     },
-    /// 解决 Bug
-    #[command(name = "+resolve")]
+    /// 解决 Bug（API Commands）
+    #[command(name = "resolve")]
     Resolve {
         id: u64,
         #[arg(long)]
@@ -239,24 +249,24 @@ pub enum BugSubcommand {
         #[arg(long)]
         resolved_build: String,
     },
-    /// 确认 Bug
-    #[command(name = "+confirm")]
+    /// 确认 Bug（API Commands）
+    #[command(name = "confirm")]
     Confirm { id: u64 },
-    /// 关闭 Bug
-    #[command(name = "+close")]
+    /// 关闭 Bug（API Commands）
+    #[command(name = "close")]
     Close { id: u64 },
-    /// 激活 Bug
-    #[command(name = "+activate")]
+    /// 激活 Bug（API Commands）
+    #[command(name = "activate")]
     Activate { id: u64 },
-    /// 删除 Bug
-    #[command(name = "+delete")]
+    /// 删除 Bug（API Commands）
+    #[command(name = "delete")]
     Delete { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum TestcaseSubcommand {
     /// 列出测试用例
-    #[command(name = "+list")]
+    #[command(name = "list")]
     List {
         #[arg(long)]
         product: Option<u64>,
@@ -268,10 +278,10 @@ pub enum TestcaseSubcommand {
         status: Option<String>,
     },
     /// 获取用例详情
-    #[command(name = "+get")]
+    #[command(name = "get")]
     Get { id: u64 },
     /// 创建测试用例
-    #[command(name = "+create")]
+    #[command(name = "create")]
     Create {
         /// 产品 ID（必填）
         #[arg(long)]
@@ -302,7 +312,7 @@ pub enum TestcaseSubcommand {
         project: Option<u64>,
     },
     /// 更新测试用例
-    #[command(name = "+update")]
+    #[command(name = "update")]
     Update {
         /// 用例 ID（必填）
         id: u64,
@@ -329,13 +339,13 @@ pub enum TestcaseSubcommand {
         expectation: Option<String>,
     },
     /// 删除测试用例
-    #[command(name = "+delete")]
+    #[command(name = "delete")]
     Delete {
         /// 用例 ID（必填）
         id: u64,
     },
     /// 执行测试用例
-    #[command(name = "+result")]
+    #[command(name = "result")]
     Result {
         /// 用例 ID（必填）
         id: u64,
@@ -357,7 +367,7 @@ pub enum TestcaseSubcommand {
 #[derive(Subcommand, Clone, Debug)]
 pub enum ReleaseSubcommand {
     /// 列出发布
-    #[command(name = "+list")]
+    #[command(name = "list")]
     List {
         /// 按产品 ID 筛选
         #[arg(long)]
@@ -367,12 +377,19 @@ pub enum ReleaseSubcommand {
         project: Option<u64>,
     },
     /// 获取发布详情
-    #[command(name = "+get")]
+    #[command(name = "get")]
     Get { id: u64 },
 }
 
 pub fn run() -> Result<()> {
     let cli = Cli::parse();
+    logging::init(cli.debug, cli.log_level);
+    if (cli.debug || cli.log_level.is_some()) && logging::current_log_path().is_some() {
+        eprintln!(
+            "zentao-cli logging to {}",
+            logging::current_log_path().unwrap().display()
+        );
+    }
 
     // Extract CLI args first (before they get moved)
     let cli_url = cli.url.as_deref();
@@ -398,63 +415,70 @@ pub fn run() -> Result<()> {
         project_id: file_config.project_id,
         api_version: file_config.api_version.clone(),
     };
+    let ctx = AppContext::new(config.clone(), cli.format.clone(), cli.dry_run);
+    let rt = tokio::runtime::Runtime::new()
+        .expect("Failed to create Tokio runtime - system may be out of memory");
 
     match cli.command {
         Commands::Story { action } => {
-            story::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch story {:?}", action));
+            rt.block_on(story::run(&action, &ctx));
         }
         Commands::Bug { action } => {
-            bug::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch bug {:?}", action));
+            rt.block_on(bug::run(&action, &ctx));
         }
         Commands::Auth { action } => {
-            let rt = tokio::runtime::Runtime::new()
-                .expect("Failed to create Tokio runtime - system may be out of memory");
-            rt.block_on(auth::run(&action, cli_url, cli_token))
-                .expect("Auth command failed");
+            log_command("root", format!("dispatch auth {:?}", action));
+            rt.block_on(auth::run(&action, cli_url, cli_token))?;
         }
         Commands::Config { action } => {
-            let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
-            rt.block_on(config_cmd::run(&action))
-                .expect("Config command failed");
+            log_command("root", format!("dispatch config {:?}", action));
+            rt.block_on(config_cmd::run(&action))?;
         }
         Commands::Api { action } => {
-            let rt = tokio::runtime::Runtime::new()
-                .expect("Failed to create Tokio runtime - system may be out of memory");
-            rt.block_on(api_cmd::run(&action, &config))
-                .expect("API command failed");
+            log_command("root", format!("dispatch api {:?}", action));
+            rt.block_on(api_cmd::run(&action, &config))?;
         }
         Commands::Product { action } => {
-            product::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch product {:?}", action));
+            rt.block_on(product::run(&action, &ctx));
         }
         Commands::Project { action } => {
-            project::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch project {:?}", action));
+            rt.block_on(project::run(&action, &ctx));
         }
         Commands::Task { action } => {
-            task::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch task {:?}", action));
+            rt.block_on(task::run(&action, &ctx));
         }
         Commands::User { action } => {
-            user::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch user {:?}", action));
+            rt.block_on(user::run(&action, &ctx));
         }
         Commands::Testcase { action } => {
-            testcase::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch testcase {:?}", action));
+            rt.block_on(testcase::run(&action, &ctx));
         }
         Commands::Release { action } => {
-            release::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch release {:?}", action));
+            rt.block_on(release::run(&action, &ctx));
         }
         Commands::Build { action } => {
-            build::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch build {:?}", action));
+            rt.block_on(build::run(&action, &ctx));
         }
         Commands::Execution { action } => {
-            execution::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch execution {:?}", action));
+            rt.block_on(execution::run(&action, &ctx));
         }
         Commands::Doc { action } => {
-            doc::run(&action, &config, cli.format, cli.dry_run);
+            log_command("root", format!("dispatch doc {:?}", action));
+            rt.block_on(doc::run(&action, &ctx));
         }
         Commands::Doctor => {
-            let rt = tokio::runtime::Runtime::new()
-                .expect("Failed to create Tokio runtime - system may be out of memory");
-            rt.block_on(doctor::run_doctor())
-                .expect("Doctor command failed");
+            log_command("root", "dispatch doctor");
+            rt.block_on(doctor::run_doctor())?;
         }
         Commands::BugBrowse { product } => {
             let mut cfg = config.clone();

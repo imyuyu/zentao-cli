@@ -1,10 +1,10 @@
-# execution +get
+# execution get
 
 获取执行详情。
 
 ## Command
 ```bash
-zentao-cli execution +get <id>
+zentao-cli execution get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli execution +get <id>
 
 ```bash
 # Get execution details
-zentao-cli execution +get 100
+zentao-cli execution get 100
 ```
 
 ## Output Fields
@@ -35,3 +35,4 @@ zentao-cli execution +get 100
 | desc | string | 执行描述（可选） |
 | opened_by | string | 创建人（可选） |
 | opened_date | string | 创建时间（可选） |
+

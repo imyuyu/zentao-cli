@@ -1,10 +1,10 @@
-# testcase +list
+# testcase list
 
 列出某个产品或项目下的测试用例列表。
 
 ## Command
 ```bash
-zentao-cli testcase +list --product <id> [--project <id>] [--type <type>] [--status <status>]
+zentao-cli testcase list --product <id> [--project <id>] [--type <type>] [--status <status>]
 ```
 
 ## Options
@@ -20,13 +20,13 @@ zentao-cli testcase +list --product <id> [--project <id>] [--type <type>] [--sta
 
 ```bash
 # List all testcases for product 1
-zentao-cli testcase +list --product 1
+zentao-cli testcase list --product 1
 
 # List normal status testcases
-zentao-cli testcase +list --product 1 --status normal
+zentao-cli testcase list --product 1 --status normal
 
 # List testcases by project
-zentao-cli testcase +list --product 1 --project 5
+zentao-cli testcase list --product 1 --project 5
 ```
 
 ## Output Fields
@@ -43,3 +43,4 @@ zentao-cli testcase +list --product 1 --project 5
 | pri | u8 | Priority (0-5) |
 | openedBy | string | Creator |
 | version | u64 | Version number |
+

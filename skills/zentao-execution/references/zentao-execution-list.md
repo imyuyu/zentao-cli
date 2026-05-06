@@ -1,10 +1,10 @@
-# execution +list
+# execution list
 
 列出执行（迭代/里程碑）列表。
 
 ## Command
 ```bash
-zentao-cli execution +list [--project <id>]
+zentao-cli execution list [--project <id>]
 ```
 
 ## Options
@@ -17,10 +17,10 @@ zentao-cli execution +list [--project <id>]
 
 ```bash
 # List executions for a specific project (推荐)
-zentao-cli execution +list --project 1
+zentao-cli execution list --project 1
 
 # List all executions (可能需要较大权限)
-zentao-cli execution +list
+zentao-cli execution list
 ```
 
 ## API Endpoint
@@ -44,3 +44,4 @@ GET /api.php/v1/projects/{projectId}/executions
 | desc | string | 执行描述（可选） |
 | opened_by | string | 创建人（可选） |
 | opened_date | string | 创建时间（可选） |
+

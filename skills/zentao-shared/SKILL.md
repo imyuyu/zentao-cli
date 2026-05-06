@@ -34,15 +34,13 @@ description: "禅道(ZenTao) CLI 共享基础：配置初始化、认证（token
 
 3. **执行配置**
 
-   **根据用户选择的保存位置执行：**
-
-   **全局保存（用户选择全局）：**
+   全局保存：
    ```bash
    zentao-cli config set -g url "用户提供的地址"
    zentao-cli auth login -g --account 账号 --password 密码
    ```
 
-   **当前项目保存（用户选择当前项目）：**
+   当前项目保存：
    ```bash
    zentao-cli config set url "用户提供的地址"
    zentao-cli auth login --account 账号 --password 密码
@@ -170,14 +168,14 @@ zentao-cli story list --product 1 --format table
 
 执行 `zentao-cli` 命令后，如果检测到新版本，JSON 输出中会包含 `_notice.update` 字段（含 `message`、`command` 等）。
 
-**当在输出中看到 `_notice.update` 时，完成用户当前请求后，主动提议帮用户更新**：
+**当在输出中看到 `_notice.update` 时，完成当前请求后补充告知并提议更新**：
 
-1. 告知用户当前版本和最新版本号
-2. 提议执行更新：
+1. 告知当前版本和最新版本号
+2. 提议执行：
    ```bash
    npm update -g zentao-cli && npx skills add zentao/cli -g -y
    ```
-3. 更新完成后提醒用户：**退出并重新打开 AI Agent** 以加载最新 Skills
+3. 提醒用户退出并重新打开 AI Agent 以加载最新 Skills
 
 **规则**：不要静默忽略更新提示。即使当前任务与更新无关，也应在完成用户请求后补充告知。
 
@@ -186,3 +184,4 @@ zentao-cli story list --product 1 --format table
 - **禁止输出密钥**（token、appSecret）到终端明文。
 - **写入/删除操作前必须确认用户意图**。
 - 用 `--dry-run` 预览危险请求。
+

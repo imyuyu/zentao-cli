@@ -1,8 +1,10 @@
 use crate::api::ApiClient;
+use crate::cmd::common::{log_command, log_debug};
 use crate::safe_println;
 use crate::tui::api_selector::run_selector;
 use anyhow::Result;
 use clap::Subcommand;
+use serde_json::Value;
 
 // ============================================================
 // Schema 结构定义 (AI-friendly API 自省)
@@ -743,6 +745,39 @@ impl ApiEndpoint {
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum ApiSubcommand {
+    /// 直接调用原始 API GET
+    #[command(name = "GET")]
+    Get {
+        /// API 路径，如 /api.php/v1/stories
+        path: String,
+        /// JSON 格式查询参数
+        #[arg(long)]
+        params: Option<String>,
+    },
+    /// 直接调用原始 API POST
+    #[command(name = "POST")]
+    Post {
+        /// API 路径，如 /api.php/v1/stories
+        path: String,
+        /// JSON 格式请求体
+        #[arg(long)]
+        data: Option<String>,
+    },
+    /// 直接调用原始 API PUT
+    #[command(name = "PUT")]
+    Put {
+        /// API 路径，如 /api.php/v1/stories/1
+        path: String,
+        /// JSON 格式请求体
+        #[arg(long)]
+        data: Option<String>,
+    },
+    /// 直接调用原始 API DELETE
+    #[command(name = "DELETE")]
+    Delete {
+        /// API 路径，如 /api.php/v1/stories/1
+        path: String,
+    },
     /// 测试 API 连接是否正常
     #[command(name = "test")]
     Test,
@@ -769,7 +804,12 @@ pub enum ApiSubcommand {
 }
 
 pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Result<()> {
+    log_command("api", format!("{:?}", api_cmd));
     match api_cmd {
+        ApiSubcommand::Get { path, params } => raw_get(config, path, params.as_deref()).await,
+        ApiSubcommand::Post { path, data } => raw_post(config, path, data.as_deref()).await,
+        ApiSubcommand::Put { path, data } => raw_put(config, path, data.as_deref()).await,
+        ApiSubcommand::Delete { path } => raw_delete(config, path).await,
         ApiSubcommand::Test => {
             safe_println("Testing ZenTao API connection...");
             println!("URL: {}", config.url);
@@ -948,7 +988,111 @@ pub async fn run(api_cmd: &ApiSubcommand, config: &crate::core::Config) -> Resul
     }
 }
 
+fn raw_client(config: &crate::core::Config) -> Result<ApiClient> {
+    if config.url.is_empty() {
+        anyhow::bail!("ZENTAO_URL is not set");
+    }
+
+    Ok(ApiClient::new(&config.url, config.token.clone())
+        .with_api_version(config.api_version.as_deref().unwrap_or("v1")))
+}
+
+fn merge_query_params(path: &str, params: Option<&str>) -> Result<String> {
+    let Some(params) = params else {
+        return Ok(path.to_string());
+    };
+
+    let params = params.trim();
+    if params.is_empty() {
+        return Ok(path.to_string());
+    }
+
+    let value: Value = serde_json::from_str(params)?;
+    let obj = value
+        .as_object()
+        .ok_or_else(|| anyhow::anyhow!("--params must be a JSON object"))?;
+
+    let mut serializer = url::form_urlencoded::Serializer::new(String::new());
+    for (key, value) in obj {
+        match value {
+            Value::Null => {}
+            Value::String(s) => {
+                serializer.append_pair(key, s);
+            }
+            _ => {
+                serializer.append_pair(key, &value.to_string());
+            }
+        }
+    }
+
+    let query = serializer.finish();
+    if query.is_empty() {
+        return Ok(path.to_string());
+    }
+
+    let separator = if path.contains('?') { "&" } else { "?" };
+    Ok(format!("{}{}{}", path, separator, query))
+}
+
+fn parse_body(data: Option<&str>) -> Result<Value> {
+    match data {
+        Some(body) if !body.trim().is_empty() => Ok(serde_json::from_str(body)?),
+        _ => Ok(serde_json::json!({})),
+    }
+}
+
+async fn raw_get(config: &crate::core::Config, path: &str, params: Option<&str>) -> Result<()> {
+    let client = raw_client(config)?;
+    let final_path = merge_query_params(path, params)?;
+    log_debug("api", format!("raw GET {}", final_path));
+    let data: Value = client.get(&final_path).await?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&data).unwrap_or_default()
+    );
+    Ok(())
+}
+
+async fn raw_post(config: &crate::core::Config, path: &str, data: Option<&str>) -> Result<()> {
+    let client = raw_client(config)?;
+    let body = parse_body(data)?;
+    log_debug("api", format!("raw POST {}", path));
+    let result: Value = client.post(path, &body).await?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&result).unwrap_or_default()
+    );
+    Ok(())
+}
+
+async fn raw_put(config: &crate::core::Config, path: &str, data: Option<&str>) -> Result<()> {
+    let client = raw_client(config)?;
+    let body = parse_body(data)?;
+    log_debug("api", format!("raw PUT {}", path));
+    let result: Value = client.put(path, &body).await?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&result).unwrap_or_default()
+    );
+    Ok(())
+}
+
+async fn raw_delete(config: &crate::core::Config, path: &str) -> Result<()> {
+    let client = raw_client(config)?;
+    log_debug("api", format!("raw DELETE {}", path));
+    let result: Value = client.delete(path).await?;
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&result).unwrap_or_default()
+    );
+    Ok(())
+}
+
 async fn call_api_endpoint(config: &crate::core::Config, endpoint: &ApiEndpoint) -> Result<()> {
+    log_debug(
+        "api",
+        format!("call endpoint {} {}", endpoint.method, endpoint.path),
+    );
     if config.url.is_empty() {
         safe_println("✗ Error: ZENTAO_URL is not set");
         return Ok(());

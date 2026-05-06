@@ -12,13 +12,13 @@ metadata:
 
 **CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md)，其中包含认证、环境变量配置、错误处理和通用选项说明。**
 
-## Shortcuts
+## Commands
 
-- [`+project-list`](./references/zentao-project-list.md) — 列出所有项目
-- [`+project-get`](./references/zentao-project-get.md) — 获取项目详情
-- [`+project-create`](./references/zentao-project-create.md) — 创建新项目
-- [`+project-update`](./references/zentao-project-update.md) — 更新项目信息
-- [`+project-delete`](./references/zentao-project-delete.md) — 删除项目
+- [`project list`](./references/zentao-project-list.md) — 列出所有项目
+- [`project get`](./references/zentao-project-get.md) — 获取项目详情
+- [`project create`](./references/zentao-project-create.md) — 创建新项目
+- [`project update`](./references/zentao-project-update.md) — 更新项目信息
+- [`project delete`](./references/zentao-project-delete.md) — 删除项目
 
 ## Core Concepts
 
@@ -43,17 +43,7 @@ metadata:
 | team | string | 团队名称 |
 | users | array | 团队成员列表 |
 
-## API Resources
-
-```bash
-zentao-cli project +list           # 列出所有项目
-zentao-cli project +get <id>      # 获取项目详情
-zentao-cli project +create --name <name> --code <code>  # 创建项目
-zentao-cli project +update <id> [flags]  # 更新项目
-zentao-cli project +delete <id>   # 删除项目
-```
-
-> **重要**：使用原生命令时，可以先运行 `zentao-cli project --help` 查看完整选项。
+> 使用前可先运行 `zentao-cli project --help` 查看完整选项。
 
 ## Common Use Cases
 
@@ -61,14 +51,14 @@ zentao-cli project +delete <id>   # 删除项目
 
 ```bash
 # 列出所有项目
-zentao-cli project +list
+zentao-cli project list
 ```
 
 ### 2. 查看特定项目详情
 
 ```bash
 # 获取项目详情
-zentao-cli project +get 1
+zentao-cli project get 1
 ```
 
 ### 4. 结合 Story 和 Task 使用
@@ -117,3 +107,4 @@ zentao-cli task list --project 1
 5. **Project Manager**：PM 字段只返回项目经理的用户 ID，需要时可结合 `zentao-cli user get <id>` 获取更多信息。
 
 6. **Opened Date Format**：返回的日期格式为 ZenTao API 标准格式，可能需要转换本地时区显示。
+

@@ -12,31 +12,21 @@ metadata:
 
 **CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md)，其中包含认证、权限处理、配置说明**
 
-> **任务搜索技巧**：先区分用户是否**特地指定使用搜索 skill**，以及是否真的提供了**查询关键字**（例如任务名称、关键词、片段描述）。如果用户特地指定使用搜索 skill，或明确给出了任务查询关键字，则优先使用搜索型 shortcut。如果用户没有特地指定使用搜索 skill，且意图里没有查询关键字，只有范围条件（例如"已完成""由我创建""指派给我"），应优先使用列表型能力（`+task-list`）。
+> **任务搜索技巧**：先区分用户是否**特地指定使用搜索 skill**，以及是否真的提供了**查询关键字**（例如任务名称、关键词、片段描述）。如果用户特地指定使用搜索 skill，或明确给出了任务查询关键字，则优先使用搜索型命令。如果用户没有特地指定使用搜索 skill，且意图里没有查询关键字，只有范围条件（例如"已完成""由我创建""指派给我"），应优先使用列表型能力（`task list`）。
 >
-> **意图区分补充**：像"搜索任务"这类表达，虽然字面带有"搜索"，但如果没有真正的查询关键字，且本质是在限定范围条件，应优先走 `+task-list`。
+> **意图区分补充**：像"搜索任务"这类表达，虽然字面带有"搜索"，但如果没有真正的查询关键字，且本质是在限定范围条件，应优先走 `task list`。
 >
 > **用户身份识别**：在用户身份场景下，如果用户提到了"我"（例如"分配给我"、"由我创建"），请获取当前登录用户的相关信息。
 >
 > **友好输出**：在输出任务详情时，建议同时提取并输出命令返回结果中的相关链接字段（如果有），以便用户可以直接点击跳转查看详情。
 
-## Shortcuts
+## Commands
 
-- [`+task-list`](./references/zentao-task-list.md) — List tasks
-- [`+task-get`](./references/zentao-task-get.md) — Get task details
-- [`+task-create`](./references/zentao-task-create.md) — Create a task
-- [`+task-update`](./references/zentao-task-update.md) — Update a task
-- [`+task-delete`](./references/zentao-task-delete.md) — Delete a task
-
-## API Resources
-
-```bash
-zentao-cli task +list --project <id>    # 列出任务
-zentao-cli task +get <task_id>    # 获取任务详情
-zentao-cli task +create --name <name> --project <id> --pri <priority>  # 创建任务
-zentao-cli task +update <task_id> [flags]  # 更新任务
-zentao-cli task +delete <task_id>  # 删除任务
-```
+- [`task list`](./references/zentao-task-list.md) — List tasks
+- [`task get`](./references/zentao-task-get.md) — Get task details
+- [`task create`](./references/zentao-task-create.md) — Create a task
+- [`task update`](./references/zentao-task-update.md) — Update a task
+- [`task delete`](./references/zentao-task-delete.md) — Delete a task
 
 ## Common Use Cases
 
@@ -44,39 +34,39 @@ zentao-cli task +delete <task_id>  # 删除任务
 
 ```bash
 # 列出项目所有任务
-zentao-cli task +list --project 1
+zentao-cli task list --project 1
 
 # 只看我被指派的任务
-zentao-cli task +list --project 1 --assigned-to me
+zentao-cli task list --project 1 --assigned-to me
 ```
 
 ### 获取任务详情
 
 ```bash
-zentao-cli task +get 456
+zentao-cli task get 456
 ```
 
 ### 创建任务
 
 ```bash
 # 创建简单任务
-zentao-cli task +create --name "实现登录功能" --project 1 --pri 3
+zentao-cli task create --name "实现登录功能" --project 1 --pri 3
 
 # 创建任务并指定负责人、预估工时
-zentao-cli task +create --name "代码评审" --project 1 --pri 2 --assigned-to developer-name --estimate 4
+zentao-cli task create --name "代码评审" --project 1 --pri 2 --assigned-to developer-name --estimate 4
 ```
 
 ### 更新任务
 
 ```bash
 # 更新任务状态
-zentao-cli task +update 456 --status done
+zentao-cli task update 456 --status done
 
 # 更新任务负责人
-zentao-cli task +update 456 --assigned-to another-user
+zentao-cli task update 456 --assigned-to another-user
 
 # 更新任务状态为进行中
-zentao-cli task +update 456 --status doing
+zentao-cli task update 456 --status doing
 ```
 
 ## 任务状态值
@@ -142,3 +132,4 @@ echo $ZENTAO_TOKEN
 | due | string | 截止时间 |
 | created_by | string | 创建人 |
 | created_date | string | 创建时间 |
+

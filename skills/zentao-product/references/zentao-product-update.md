@@ -1,10 +1,10 @@
-# product +update
+# product update
 
 更新产品信息。
 
 ## Command
 ```bash
-zentao-cli product +update <id> [--name <name>] [--code <code>] [--status <status>] [--desc <description>]
+zentao-cli product update <id> [--name <name>] [--code <code>] [--status <status>] [--desc <description>]
 ```
 
 ## Options
@@ -21,8 +21,9 @@ zentao-cli product +update <id> [--name <name>] [--code <code>] [--status <statu
 
 ```bash
 # Update product name
-zentao-cli product +update 1 --name "New Product Name"
+zentao-cli product update 1 --name "New Product Name"
 
 # Close a product
-zentao-cli product +update 1 --status closed
+zentao-cli product update 1 --status closed
 ```
+

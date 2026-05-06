@@ -1,11 +1,11 @@
-# project +list
+# project list
 
 列出所有项目。
 
 ## Command
 
 ```bash
-zentao-cli project +list
+zentao-cli project list
 ```
 
 ## Output Fields
@@ -17,3 +17,4 @@ zentao-cli project +list
 | code | string | Project code |
 | status | string | Project status：wait / doing / closed / suspended |
 | desc | string | Project description（可选） |
+

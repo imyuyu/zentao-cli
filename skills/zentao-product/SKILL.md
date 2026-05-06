@@ -12,13 +12,13 @@ metadata:
 
 **CRITICAL — 开始前 MUST 先用 Read 工具读取 [`../zentao-shared/SKILL.md`](../zentao-shared/SKILL.md)，其中包含认证、环境变量配置、错误处理和通用选项说明。**
 
-## Shortcuts
+## Commands
 
-- [`+product-list`](./references/zentao-product-list.md) — 列出所有可访问的产品
-- [`+product-get`](./references/zentao-product-get.md) — 获取产品详情
-- [`+product-create`](./references/zentao-product-create.md) — 创建新产品
-- [`+product-update`](./references/zentao-product-update.md) — 更新产品信息
-- [`+product-delete`](./references/zentao-product-delete.md) — 删除产品
+- [`product list`](./references/zentao-product-list.md) — 列出所有可访问的产品
+- [`product get`](./references/zentao-product-get.md) — 获取产品详情
+- [`product create`](./references/zentao-product-create.md) — 创建新产品
+- [`product update`](./references/zentao-product-update.md) — 更新产品信息
+- [`product delete`](./references/zentao-product-delete.md) — 删除产品
 
 ## Core Concepts
 
@@ -33,17 +33,7 @@ metadata:
 | `normal` | 正常 | 产品处于正常可用状态 |
 | `closed` | 关闭 | 产品已关闭，不再接收新需求 |
 
-## API Resources
-
-```bash
-zentao-cli product +list          # 列出所有产品
-zentao-cli product +get <id>      # 获取产品详情
-zentao-cli product +create --name <name> [--code <code>]  # 创建产品
-zentao-cli product +update <id> [flags]  # 更新产品
-zentao-cli product +delete <id>   # 删除产品
-```
-
-> **重要**：使用原生命令时，可以先运行 `zentao-cli product --help` 查看完整选项。
+> 使用前可先运行 `zentao-cli product --help` 查看完整选项。
 
 ## Common Use Cases
 
@@ -51,14 +41,14 @@ zentao-cli product +delete <id>   # 删除产品
 
 ```bash
 # 列出所有产品
-zentao-cli product +list
+zentao-cli product list
 ```
 
 ### 2. 查看特定产品详情
 
 ```bash
 # 获取产品详情
-zentao-cli product +get 1
+zentao-cli product get 1
 ```
 
 ### 3. 结合 Story 使用
@@ -96,3 +86,4 @@ zentao-cli story list --product 1
 4. **Product ACL**：产品有权限控制，只有被分配了产品权限的用户才能查看或操作该产品下的资源。
 
 5. **Closed Product**：已关闭的产品（status=closed）通常不再接收新的需求或 Bug。
+

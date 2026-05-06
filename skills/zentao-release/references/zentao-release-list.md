@@ -1,10 +1,10 @@
-# release +list
+# release list
 
 列出所有发布。
 
 ## Command
 ```bash
-zentao-cli release +list [--product <id>] [--project <id>]
+zentao-cli release list [--product <id>] [--project <id>]
 ```
 
 ## Options
@@ -18,13 +18,13 @@ zentao-cli release +list [--product <id>] [--project <id>]
 
 ```bash
 # List all releases
-zentao-cli release +list
+zentao-cli release list
 
 # List releases for a specific product
-zentao-cli release +list --product 1
+zentao-cli release list --product 1
 
 # List releases for a specific project
-zentao-cli release +list --project 1
+zentao-cli release list --project 1
 ```
 
 ## Output Fields
@@ -38,3 +38,4 @@ zentao-cli release +list --project 1
 | status | string | Release status (normal/closed) |
 | marker | string | Release marker (e.g., "stable", "beta") |
 | date | string | Release date |
+

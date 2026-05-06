@@ -1,10 +1,10 @@
-# bug +resolve
+# bug resolve
 
 解决 Bug。
 
 ## Command
 ```bash
-zentao-cli bug +resolve <id> --resolution <resolution> --resolved-build <build>
+zentao-cli bug resolve <id> --resolution <resolution> --resolved-build <build>
 ```
 
 ## Options
@@ -32,13 +32,13 @@ zentao-cli bug +resolve <id> --resolution <resolution> --resolved-build <build>
 
 ```bash
 # 解决 Bug（使用 trunk 主干）
-zentao-cli bug +resolve 5703 --resolution fixed --resolved-build trunk
+zentao-cli bug resolve 5703 --resolution fixed --resolved-build trunk
 
 # 解决 Bug（使用版本 ID）
-zentao-cli bug +resolve 5703 --resolution fixed --resolved-build 1
+zentao-cli bug resolve 5703 --resolution fixed --resolved-build 1
 
 # 设计如此
-zentao-cli bug +resolve 5703 --resolution bydesign --resolved-build trunk
+zentao-cli bug resolve 5703 --resolution bydesign --resolved-build trunk
 ```
 
 ## API Endpoint
@@ -46,3 +46,4 @@ zentao-cli bug +resolve 5703 --resolution bydesign --resolved-build trunk
 ```
 POST /api.php/v1/bugs/{bug_id}/resolve
 ```
+

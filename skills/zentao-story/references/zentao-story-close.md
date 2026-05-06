@@ -1,10 +1,10 @@
-# story +close
+# story close
 
 关闭需求。
 
 ## Command
 ```bash
-zentao-cli story +close <id>
+zentao-cli story close <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli story +close <id>
 
 ```bash
 # Close a story
-zentao-cli story +close 123
+zentao-cli story close 123
 ```
 
 ## Valid Status Transitions
@@ -28,3 +28,4 @@ zentao-cli story +close 123
 | active | changed, closed |
 | changed | active, closed |
 | closed | active |
+

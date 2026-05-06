@@ -1,9 +1,11 @@
 use crate::api::Auth;
+use crate::cmd::common::log_command;
 use crate::core::{global_config_path, load_config, project_config_path};
 use crate::safe_println;
 use anyhow::Result;
 
 pub async fn run_doctor() -> Result<()> {
+    log_command("doctor", "run");
     safe_println("ZenTao CLI Doctor");
     safe_println("=================");
     println!();

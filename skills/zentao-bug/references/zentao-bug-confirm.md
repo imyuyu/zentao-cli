@@ -1,10 +1,10 @@
-# bug +confirm
+# bug confirm
 
 确认 Bug。
 
 ## Command
 ```bash
-zentao-cli bug +confirm <id>
+zentao-cli bug confirm <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli bug +confirm <id>
 
 ```bash
 # 确认 Bug
-zentao-cli bug +confirm 5703
+zentao-cli bug confirm 5703
 ```
 
 ## API Endpoint
@@ -25,3 +25,4 @@ zentao-cli bug +confirm 5703
 ```
 POST /api.php/v1/bugs/{bug_id}/confirm
 ```
+

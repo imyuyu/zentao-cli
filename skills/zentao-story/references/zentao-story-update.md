@@ -1,10 +1,10 @@
-# story +update
+# story update
 
 更新需求信息。
 
 ## Command
 ```bash
-zentao-cli story +update <id> [--title <title>] [--status <status>] [--pri <priority>] [--assigned-to <user>]
+zentao-cli story update <id> [--title <title>] [--status <status>] [--pri <priority>] [--assigned-to <user>]
 ```
 
 ## Options
@@ -21,13 +21,13 @@ zentao-cli story +update <id> [--title <title>] [--status <status>] [--pri <prio
 
 ```bash
 # Close a story
-zentao-cli story +update 123 --status closed
+zentao-cli story update 123 --status closed
 
 # Update priority
-zentao-cli story +update 123 --pri 2
+zentao-cli story update 123 --pri 2
 
 # Change status and assignee
-zentao-cli story +update 123 --status changed --assigned-to developer-name
+zentao-cli story update 123 --status changed --assigned-to developer-name
 ```
 
 ## Valid Status Transitions
@@ -38,3 +38,4 @@ zentao-cli story +update 123 --status changed --assigned-to developer-name
 | active | changed, closed |
 | changed | active, closed |
 | closed | active |
+

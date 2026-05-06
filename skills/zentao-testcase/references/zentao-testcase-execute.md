@@ -1,10 +1,10 @@
-# testcase +execute
+# testcase result
 
 执行测试用例。
 
 ## Command
 ```bash
-zentao-cli testcase +execute <id> --result <result> [--consumed <minutes>] [--remark <remark>] [--build <build_id>]
+zentao-cli testcase result <id> --result <result> [--consumed <minutes>] [--remark <remark>] [--build <build_id>]
 ```
 
 ## Options
@@ -21,13 +21,13 @@ zentao-cli testcase +execute <id> --result <result> [--consumed <minutes>] [--re
 
 ```bash
 # Mark testcase as passed
-zentao-cli testcase +execute 123 --result pass
+zentao-cli testcase result 123 --result pass
 
 # Mark testcase as failed with details
-zentao-cli testcase +execute 123 --result fail --remark "实际结果与期望不符" --consumed 5
+zentao-cli testcase result 123 --result fail --remark "实际结果与期望不符" --consumed 5
 
 # Mark testcase as blocked
-zentao-cli testcase +execute 123 --result blocked --build 1
+zentao-cli testcase result 123 --result blocked --build 1
 ```
 
 ## API Endpoint
@@ -35,3 +35,4 @@ zentao-cli testcase +execute 123 --result blocked --build 1
 ```
 POST /api.php/v1/testcases/{id}/results
 ```
+

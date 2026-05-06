@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 permissions:
   contents: write
@@ -21,16 +21,28 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
-            artifact_name: zentao-cli-linux-x86_64
+            artifact_name: zentao-cli-linux-x64
+            binary_name: zentao-cli
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+            artifact_name: zentao-cli-linux-arm64
+            binary_name: zentao-cli
           - target: x86_64-apple-darwin
             runner: macos-latest
-            artifact_name: zentao-cli-darwin-x86_64
+            artifact_name: zentao-cli-darwin-x64
+            binary_name: zentao-cli
           - target: aarch64-apple-darwin
             runner: macos-latest
             artifact_name: zentao-cli-darwin-arm64
-          - target: x86_64-pc-windows-gnu
+            binary_name: zentao-cli
+          - target: x86_64-pc-windows-msvc
             runner: windows-latest
-            artifact_name: zentao-cli-windows-x86_64.exe
+            artifact_name: zentao-cli-win32-x64
+            binary_name: zentao-cli.exe
+          - target: aarch64-pc-windows-msvc
+            runner: windows-11-arm
+            artifact_name: zentao-cli-win32-arm64
+            binary_name: zentao-cli.exe
 
     steps:
       - uses: actions/checkout@v4
@@ -43,35 +55,39 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Package for Linux/macOS
-        if: matrix.runner != 'windows-latest'
+      - name: Prepare release archive
         shell: bash
         run: |
           mkdir -p release
-          cd target/${{ matrix.target }}/release
-          tar czf ../../../release/${{ matrix.artifact_name }}.tar.gz zentao-cli
+          if [[ "${{ matrix.runner }}" == "windows-latest" ]]; then
+            cp "target/${{ matrix.target }}/release/${{ matrix.binary_name }}" "release/${{ matrix.binary_name }}"
+            powershell -Command "Compress-Archive -Path 'release/${{ matrix.binary_name }}' -DestinationPath 'release/${{ matrix.artifact_name }}.zip'"
+            rm "release/${{ matrix.binary_name }}"
+          else
+            tar czf "release/${{ matrix.artifact_name }}.tar.gz" -C "target/${{ matrix.target }}/release" "${{ matrix.binary_name }}"
+          fi
 
-      - name: Package for Windows
-        if: matrix.runner == 'windows-latest'
+      - name: Prepare npm vendor payload
         shell: bash
         run: |
-          mkdir -p release
-          cp target/${{ matrix.target }}/release/zentao-cli.exe release/${{ matrix.artifact_name }}
+          mkdir -p "npm-vendor/${{ matrix.target }}/zentao-cli"
+          cp "target/${{ matrix.target }}/release/${{ matrix.binary_name }}" "npm-vendor/${{ matrix.target }}/zentao-cli/${{ matrix.binary_name }}"
+          if [[ "${{ matrix.runner }}" != "windows-latest" ]]; then
+            chmod +x "npm-vendor/${{ matrix.target }}/zentao-cli/${{ matrix.binary_name }}"
+          fi
 
-      - name: Upload artifact (Linux/macOS)
-        if: matrix.runner != 'windows-latest'
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: release/${{ matrix.artifact_name }}.tar.gz
+          path: release/*
           if-no-files-found: error
 
-      - name: Upload artifact (Windows)
-        if: matrix.runner == 'windows-latest'
+      - name: Upload npm vendor payload
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact_name }}
-          path: release/${{ matrix.artifact_name }}
+          name: npm-vendor-${{ matrix.target }}
+          path: npm-vendor/${{ matrix.target }}
           if-no-files-found: error
 
   package-skills:
@@ -104,20 +120,20 @@ jobs:
 
       - name: Get version
         id: get_version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          name: ZenTao CLI ${{ github.ref }}
+          tag_name: ${{ github.ref_name }}
+          name: ZenTao CLI ${{ github.ref_name }}
           draft: false
           prerelease: false
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  publish:
+  publish-assets:
     name: Publish Assets
     needs: [release, package-skills, create-release]
     runs-on: ubuntu-latest
@@ -126,98 +142,68 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
           merge-multiple: true
 
-      - name: Upload install script
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ needs.create-release.outputs.version }}
-          files: install.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Linux x86_64
+      - name: Upload release artifacts
         run: |
-          gh release upload ${{ needs.create-release.outputs.version }} artifacts/zentao-cli-linux-x86_64.tar.gz --clobber
-
-      - name: Upload macOS x86_64
-        run: |
-          gh release upload ${{ needs.create-release.outputs.version }} artifacts/zentao-cli-darwin-x86_64.tar.gz --clobber
-
-      - name: Upload macOS arm64
-        run: |
-          gh release upload ${{ needs.create-release.outputs.version }} artifacts/zentao-cli-darwin-arm64.tar.gz --clobber
-
-      - name: Upload Windows
-        run: |
-          gh release upload ${{ needs.create-release.outputs.version }} artifacts/zentao-cli-windows-x86_64.exe --clobber
-
-      - name: Upload Skills
-        run: |
-          gh release upload ${{ needs.create-release.outputs.version }} artifacts/skills.tar.gz --clobber
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          mkdir -p release
+          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-linux-x64.tar.gz --clobber
+          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-linux-arm64.tar.gz --clobber
+          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-darwin-x64.tar.gz --clobber
+          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-darwin-arm64.tar.gz --clobber
+          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-win32-x64.zip --clobber
+          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-win32-arm64.zip --clobber
+          gh release upload "${{ github.ref_name }}" artifacts/skills.tar.gz --clobber
 
   publish-npm:
     name: Publish to npm
-    needs: [release, package-skills]
+    needs: [release, create-release]
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download all artifacts
+      - name: Download npm vendor payloads
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: vendor-artifacts
+          pattern: npm-vendor-*
           merge-multiple: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
 
-      - name: Extract binaries for npm
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Stage npm packages
         run: |
-          mkdir -p bin
-          tar xzf artifacts/zentao-cli-linux-x86_64.tar.gz -C bin
-          mv bin/zentao-cli bin/zentao-cli-linux-x86_64
-          tar xzf artifacts/zentao-cli-darwin-x86_64.tar.gz -C bin
-          mv bin/zentao-cli bin/zentao-cli-darwin-x86_64
-          tar xzf artifacts/zentao-cli-darwin-arm64.tar.gz -C bin
-          mv bin/zentao-cli bin/zentao-cli-darwin-arm64
-          cp artifacts/zentao-cli-windows-x86_64.exe bin/zentao-cli.exe
+          python scripts/stage_npm_packages.py \
+            --release-version "${{ needs.create-release.outputs.version }}" \
+            --package zentao-cli \
+            --vendor-src vendor-artifacts \
+            --output-dir dist/npm
 
-      - name: Package for npm
+      - name: Publish root npm package
+        run: npm publish dist/npm/zentao-cli-npm-${{ needs.create-release.outputs.version }}.tgz --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish platform npm packages
         run: |
-          # Create a clean npm package structure
-          mkdir -p npm-pkg
-          cp -r bin/* npm-pkg/
-          cp package.json npm-pkg/
-          cp README.md npm-pkg/
-          cp LICENSE npm-pkg/
-          # Update package.json for npm publication
-          node -e "
-            const fs = require('fs');
-            const pkg = JSON.parse(fs.readFileSync('npm-pkg/package.json'));
-            // Remove preinstall/build scripts - we distribute binaries
-            delete pkg.scripts;
-            // Update bin to point to current platform binary
-            pkg.bin = {'zentao-cli': './zentao-cli.exe'};
-            pkg.files = ['.', 'LICENSE', 'README.md'];
-            fs.writeFileSync('npm-pkg/package.json', JSON.stringify(pkg, null, 2));
-          "
-
-      - name: Publish to npm
-        working-directory: npm-pkg
-        run: npm publish --access public
+          npm publish dist/npm/zentao-cli-npm-linux-x64-${{ needs.create-release.outputs.version }}.tgz --access public
+          npm publish dist/npm/zentao-cli-npm-linux-arm64-${{ needs.create-release.outputs.version }}.tgz --access public
+          npm publish dist/npm/zentao-cli-npm-darwin-x64-${{ needs.create-release.outputs.version }}.tgz --access public
+          npm publish dist/npm/zentao-cli-npm-darwin-arm64-${{ needs.create-release.outputs.version }}.tgz --access public
+          npm publish dist/npm/zentao-cli-npm-win32-x64-${{ needs.create-release.outputs.version }}.tgz --access public
+          npm publish dist/npm/zentao-cli-npm-win32-arm64-${{ needs.create-release.outputs.version }}.tgz --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

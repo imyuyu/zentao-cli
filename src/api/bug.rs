@@ -238,7 +238,6 @@ impl BugApi {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::types::BugListQuery;
 
     #[test]
     fn test_create_bug_request_serialization() {

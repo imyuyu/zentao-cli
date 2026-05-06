@@ -4,6 +4,7 @@
 //! 类似 Java 的 @Service 层，封装认证业务逻辑
 
 use crate::api::Auth;
+use crate::cmd::common::log_command;
 use crate::core::{load_config, update_config}; // 导入配置模块
 use crate::safe_println;
 use anyhow::Result; // anyhow: 错误处理库，类似 Go 的 error 但更灵活
@@ -59,6 +60,7 @@ pub async fn run(
     cli_url: Option<&str>,
     _cli_token: Option<&str>,
 ) -> Result<()> {
+    log_command("auth", format!("{:?}", auth_cmd));
     match auth_cmd {
         // -------------------- 登录 --------------------
         AuthSubcommand::Login {

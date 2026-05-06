@@ -1,10 +1,10 @@
-# story +change
+# story change
 
 变更需求状态。
 
 ## Command
 ```bash
-zentao-cli story +change <id> --status <status>
+zentao-cli story change <id> --status <status>
 ```
 
 ## Options
@@ -18,7 +18,7 @@ zentao-cli story +change <id> --status <status>
 
 ```bash
 # Mark story as changed
-zentao-cli story +change 123 --status changed
+zentao-cli story change 123 --status changed
 ```
 
 ## Valid Status Transitions
@@ -29,3 +29,4 @@ zentao-cli story +change 123 --status changed
 | active | changed, closed |
 | changed | active, closed |
 | closed | active |
+

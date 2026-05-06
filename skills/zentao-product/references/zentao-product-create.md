@@ -1,10 +1,10 @@
-# product +create
+# product create
 
 创建产品。
 
 ## Command
 ```bash
-zentao-cli product +create --name <name> --code <code> [--desc <description>]
+zentao-cli product create --name <name> --code <code> [--desc <description>]
 ```
 
 ## Options
@@ -19,8 +19,9 @@ zentao-cli product +create --name <name> --code <code> [--desc <description>]
 
 ```bash
 # Create a product
-zentao-cli product +create --name "My Product" --code "my-product"
+zentao-cli product create --name "My Product" --code "my-product"
 
 # Create with description
-zentao-cli product +create --name "Enterprise ERP" --code "erp" --desc "Enterprise resource planning system"
+zentao-cli product create --name "Enterprise ERP" --code "erp" --desc "Enterprise resource planning system"
 ```
+

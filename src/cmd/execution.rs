@@ -1,293 +1,190 @@
 //! ZenTao Execution(执行)命令模块
-//!
-//! CLI 命令入口，调用 ExecutionApi 处理用户请求
-//!
-//! # 禅道概念解释
-//! - Execution（执行）：也称为迭代或里程碑，是项目中的具体执行单元
-//! - 执行类型包括：iteration（迭代）、milestone（里程碑）
 
 use clap::Subcommand;
 
 use crate::api::execution::{CreateExecutionRequest, UpdateExecutionRequest};
-use crate::api::{ApiClient, ExecutionApi};
-use crate::core::{Config, OutputFormat};
-use crate::safe_println;
+use crate::cmd::common::{
+    log_command, print_deleted, print_dry_run, print_dry_run_with_body, print_error, print_json,
+};
+use crate::core::{AppContext, OutputFormat};
+use crate::service::execution::ExecutionService;
 
-// ============================================================
-// 子命令定义
-// ============================================================
-
-/// Execution 子命令枚举
-///
-/// 定义 execution 命令支持的子命令：
-/// - list: 列出执行
-/// - get: 获取执行详情
-/// - create: 创建执行
-/// - update: 更新执行
-/// - delete: 删除执行
 #[derive(Subcommand, Clone, Debug)]
 pub enum ExecutionAction {
-    /// 列出项目下的执行
-    #[command(name = "+list")]
+    #[command(name = "list")]
     List {
-        /// 项目 ID（必填）
         #[arg(long)]
         project: Option<u64>,
     },
-    /// 获取执行详情
-    #[command(name = "+get")]
-    Get {
-        /// 执行 ID
-        id: u64,
-    },
-    /// 创建执行
-    #[command(name = "+create")]
+    #[command(name = "get")]
+    Get { id: u64 },
+    #[command(name = "create")]
     Create {
-        /// 执行名称（必填）
         #[arg(long)]
         name: String,
-        /// 所属项目 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
         project: Option<u64>,
-        /// 执行类型：iteration/milestone
         #[arg(long)]
         type_: Option<String>,
-        /// 开始日期，格式：2024-01-01
         #[arg(long)]
         begin: Option<String>,
-        /// 结束日期，格式：2024-01-14
         #[arg(long)]
         end: Option<String>,
-        /// 预计工期（天）
         #[arg(long)]
         days: Option<u64>,
-        /// 执行描述
         #[arg(long)]
         desc: Option<String>,
     },
-    /// 更新执行
-    #[command(name = "+update")]
+    #[command(name = "update")]
     Update {
-        /// 执行 ID（必填）
         id: u64,
-        /// 新名称
         #[arg(long)]
         name: Option<String>,
-        /// 新状态：wait/doing/closed/suspended
         #[arg(long)]
         status: Option<String>,
-        /// 开始日期
         #[arg(long)]
         begin: Option<String>,
-        /// 结束日期
         #[arg(long)]
         end: Option<String>,
-        /// 预计工期（天）
         #[arg(long)]
         days: Option<u64>,
-        /// 执行描述
         #[arg(long)]
         desc: Option<String>,
     },
-    /// 删除执行
-    #[command(name = "+delete")]
-    Delete {
-        /// 执行 ID（必填）
-        id: u64,
-    },
+    #[command(name = "delete")]
+    Delete { id: u64 },
 }
 
-// ============================================================
-// 命令执行入口
-// ============================================================
-
-/// 执行 Execution 相关命令
-pub fn run(cmd: &ExecutionAction, config: &Config, _format: OutputFormat, dry_run: bool) {
-    let rt = tokio::runtime::Runtime::new()
-        .expect("Failed to create Tokio runtime - system may be out of memory");
-
-    rt.block_on(async {
-        let client = ApiClient::new(&config.url, config.token.clone())
-            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
-
-        match cmd {
-            // -------------------- list 命令 --------------------
-            ExecutionAction::List { project } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call ExecutionApi::list()");
-                    println!("  URL: {}/api.php/v1/executions", config.url);
-                    safe_println("  Params:");
-                    if let Some(p) = project {
-                        println!("    project: {}", p);
-                    }
-                    return;
+pub async fn run(cmd: &ExecutionAction, ctx: &AppContext) {
+    log_command("execution", format!("{:?}", cmd));
+    match cmd {
+        ExecutionAction::List { project } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "ExecutionService::list()",
+                    &format!("{}/api.php/v1/executions", ctx.config.url),
+                );
+                if let Some(p) = project {
+                    println!("  project: {}", p);
                 }
-                match ExecutionApi::list(&client, *project).await {
-                    Ok(executions) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&executions).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
+                return;
             }
-
-            // -------------------- get 命令 --------------------
-            ExecutionAction::Get { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call ExecutionApi::get()");
-                    println!("  URL: {}/api.php/v1/executions/{}", config.url, id);
-                    return;
-                }
-                match ExecutionApi::get(&client, *id).await {
-                    Ok(execution) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&execution).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- create 命令 --------------------
-            ExecutionAction::Create {
-                name,
-                project,
-                type_,
-                begin,
-                end,
-                days,
-                desc,
-            } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call ExecutionApi::create()");
-                    println!(
-                        "  URL: {}/api.php/v1/projects/{}/executions",
-                        config.url, config.project_id(*project).unwrap_or(0)
-                    );
-                    safe_println("  Body:");
-                    println!("    name: {}", name);
-                    println!("    project: {}", config.project_id(*project).unwrap_or(0));
-                    if let Some(t) = type_ {
-                        println!("    type: {}", t);
-                    }
-                    if let Some(b) = begin {
-                        println!("    begin: {}", b);
-                    }
-                    if let Some(e) = end {
-                        println!("    end: {}", e);
-                    }
-                    if let Some(d) = days {
-                        println!("    days: {}", d);
-                    }
-                    if let Some(d) = desc {
-                        println!("    desc: {}", d);
-                    }
-                    return;
-                }
-                let project_id = config.project_id(*project).unwrap_or_else(|| {
-                    eprintln!("Error: project ID is required. Provide via --project or set ZENTAO_PROJECT_ID");
-                    std::process::exit(1);
-                });
-                let req = CreateExecutionRequest {
-                    name: name.clone(),
-                    project: project_id,
-                    type_: type_.clone(),
-                    begin: begin.clone(),
-                    end: end.clone(),
-                    days: *days,
-                    desc: desc.clone(),
-                };
-                match ExecutionApi::create(&client, project_id, &req).await {
-                    Ok(execution) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&execution).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- update 命令 --------------------
-            ExecutionAction::Update {
-                id,
-                name,
-                status,
-                begin,
-                end,
-                days,
-                desc,
-            } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call ExecutionApi::update()");
-                    println!("  URL: {}/api.php/v1/executions/{}", config.url, id);
-                    safe_println("  Body:");
-                    if let Some(n) = name {
-                        println!("    name: {}", n);
-                    }
-                    if let Some(s) = status {
-                        println!("    status: {}", s);
-                    }
-                    if let Some(b) = begin {
-                        println!("    begin: {}", b);
-                    }
-                    if let Some(e) = end {
-                        println!("    end: {}", e);
-                    }
-                    if let Some(d) = days {
-                        println!("    days: {}", d);
-                    }
-                    if let Some(d) = desc {
-                        println!("    desc: {}", d);
-                    }
-                    return;
-                }
-                let req = UpdateExecutionRequest {
-                    name: name.clone(),
-                    status: status.clone(),
-                    begin: begin.clone(),
-                    end: end.clone(),
-                    days: *days,
-                    desc: desc.clone(),
-                };
-                match ExecutionApi::update(&client, *id, &req).await {
-                    Ok(execution) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&execution).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            // -------------------- delete 命令 --------------------
-            ExecutionAction::Delete { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call ExecutionApi::delete()");
-                    println!("  URL: {}/api.php/v1/executions/{}", config.url, id);
-                    return;
-                }
-                match ExecutionApi::delete(&client, *id).await {
-                    Ok(()) => {
-                        println!("Execution {} deleted successfully", id);
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
+            match ExecutionService::list(ctx, *project).await {
+                Ok(executions) => print_execution_list(&executions, ctx.format.clone()),
+                Err(e) => print_error(&e),
             }
         }
-    })
+        ExecutionAction::Get { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "ExecutionService::get()",
+                    &format!("{}/api.php/v1/executions/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match ExecutionService::get(ctx, *id).await {
+                Ok(execution) => print_json(&execution),
+                Err(e) => print_error(&e),
+            }
+        }
+        ExecutionAction::Create {
+            name,
+            project,
+            type_,
+            begin,
+            end,
+            days,
+            desc,
+        } => {
+            let project_id = match ctx.require_project_id(*project) {
+                Ok(id) => id,
+                Err(e) => {
+                    print_error(&e);
+                    return;
+                }
+            };
+            let req = CreateExecutionRequest {
+                name: name.clone(),
+                project: project_id,
+                type_: type_.clone(),
+                begin: begin.clone(),
+                end: end.clone(),
+                days: *days,
+                desc: desc.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "ExecutionService::create()",
+                    &format!(
+                        "{}/api.php/v1/projects/{}/executions",
+                        ctx.config.url, project_id
+                    ),
+                    &req,
+                );
+                return;
+            }
+            match ExecutionService::create(ctx, *project, req).await {
+                Ok(execution) => print_json(&execution),
+                Err(e) => print_error(&e),
+            }
+        }
+        ExecutionAction::Update {
+            id,
+            name,
+            status,
+            begin,
+            end,
+            days,
+            desc,
+        } => {
+            let req = UpdateExecutionRequest {
+                name: name.clone(),
+                status: status.clone(),
+                begin: begin.clone(),
+                end: end.clone(),
+                days: *days,
+                desc: desc.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "ExecutionService::update()",
+                    &format!("{}/api.php/v1/executions/{}", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match ExecutionService::update(ctx, *id, req).await {
+                Ok(execution) => print_json(&execution),
+                Err(e) => print_error(&e),
+            }
+        }
+        ExecutionAction::Delete { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "ExecutionService::delete()",
+                    &format!("{}/api.php/v1/executions/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match ExecutionService::delete(ctx, *id).await {
+                Ok(_) => print_deleted("Execution", *id),
+                Err(e) => print_error(&e),
+            }
+        }
+    }
+}
+
+fn print_execution_list(items: &[crate::api::Execution], format: OutputFormat) {
+    match format {
+        OutputFormat::Table => {
+            println!("Executions:");
+            for item in items {
+                println!("  [{}] {} - {}", item.id, item.name, item.status);
+            }
+        }
+        _ => println!(
+            "{}",
+            serde_json::to_string_pretty(items).unwrap_or_default()
+        ),
+    }
 }

@@ -1,10 +1,10 @@
-# build +delete
+# build delete
 
 删除版本。
 
 ## Command
 ```bash
-zentao-cli build +delete <id>
+zentao-cli build delete <id>
 ```
 
 ## Options
@@ -17,9 +17,10 @@ zentao-cli build +delete <id>
 
 ```bash
 # Delete a build
-zentao-cli build +delete 1
+zentao-cli build delete 1
 ```
 
 ## Notes
 
 - This action cannot be undone
+

@@ -1,10 +1,10 @@
-# project +get
+# project get
 
 获取项目详情。
 
 ## Command
 ```bash
-zentao-cli project +get <id>
+zentao-cli project get <id>
 ```
 
 ## Options
@@ -16,7 +16,7 @@ zentao-cli project +get <id>
 ## Examples
 
 ```bash
-zentao-cli project +get 1
+zentao-cli project get 1
 ```
 
 ## Output Fields
@@ -34,3 +34,4 @@ zentao-cli project +get 1
 |PM | u64 | Project manager ID |
 | team | string | Team name |
 | users | array | Team members |
+

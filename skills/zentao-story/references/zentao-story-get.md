@@ -1,10 +1,10 @@
-# story +get
+# story get
 
 获取需求详情。
 
 ## Command
 ```bash
-zentao-cli story +get <id>
+zentao-cli story get <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli story +get <id>
 
 ```bash
 # Get story details
-zentao-cli story +get 123
+zentao-cli story get 123
 ```
 
 ## Output Fields
@@ -37,3 +37,4 @@ zentao-cli story +get 123
 | opened_by | string | 创建者（可选） |
 | estimate | f64 | 预估工时（小时）（可选） |
 | version | u64 | 版本号（可选，用于乐观锁） |
+

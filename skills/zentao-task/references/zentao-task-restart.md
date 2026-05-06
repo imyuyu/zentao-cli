@@ -1,10 +1,10 @@
-# task +restart
+# task restart
 
 继续任务。
 
 ## Command
 ```bash
-zentao-cli task +restart <id>
+zentao-cli task restart <id>
 ```
 
 ## Options
@@ -17,9 +17,10 @@ zentao-cli task +restart <id>
 
 ```bash
 # Restart a paused task
-zentao-cli task +restart 123
+zentao-cli task restart 123
 ```
 
 ## Status Transition
 
 - Changes task status from `wait` to `doing`
+

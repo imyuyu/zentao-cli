@@ -1,304 +1,212 @@
 //! ZenTao Build(版本)命令模块
-//!
-//! CLI 命令入口，调用 BuildApi 处理用户请求
 
 use clap::Subcommand;
 
-use crate::api::{ApiClient, BuildApi};
-use crate::core::{Config, OutputFormat};
-use crate::safe_println;
+use crate::api::{CreateBuildRequest, UpdateBuildRequest};
+use crate::cmd::common::{
+    log_command, print_deleted, print_dry_run, print_dry_run_with_body, print_error, print_json,
+};
+use crate::core::{AppContext, OutputFormat};
+use crate::service::build::BuildService;
 
-// ============================================================
-// 子命令定义
-// ============================================================
-
-/// Build 子命令枚举
-///
-/// 定义 build 命令支持的子命令：
-/// - list: 列出所有版本
-/// - get: 获取单个版本详情
 #[derive(Subcommand, Clone, Debug)]
 pub enum BuildAction {
-    /// 列出所有版本
-    #[command(name = "+list")]
+    #[command(name = "list")]
     List {
-        /// 按项目 ID 筛选
         #[arg(long)]
         project: Option<u64>,
-        /// 按产品 ID 筛选
         #[arg(long)]
         product: Option<u64>,
-        /// 按执行 ID 筛选
         #[arg(long)]
         execution: Option<u64>,
     },
-    /// 获取指定版本的详细信息
-    #[command(name = "+get")]
-    Get {
-        /// 版本 ID
-        id: u64,
-    },
-    /// 创建版本
-    #[command(name = "+create")]
+    #[command(name = "get")]
+    Get { id: u64 },
+    #[command(name = "create")]
     Create {
-        /// 版本名称
         #[arg(long)]
         name: String,
-        /// 所属项目 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
         project: Option<u64>,
-        /// 所属产品 ID（可选，未提供时使用配置文件中的值）
         #[arg(long)]
         product: Option<u64>,
-        /// 分支/平台 ID
         #[arg(long)]
         branch: Option<u64>,
-        /// SCM 路径
         #[arg(long)]
         scm_path: Option<String>,
-        /// CI 名称
         #[arg(long)]
         ci: Option<String>,
-        /// 包路径
         #[arg(long)]
         pkg: Option<String>,
     },
-    /// 更新版本
-    #[command(name = "+update")]
+    #[command(name = "update")]
     Update {
-        /// 版本 ID
         id: u64,
-        /// 版本名称
         #[arg(long)]
         name: Option<String>,
-        /// SCM 路径
         #[arg(long)]
         scm_path: Option<String>,
-        /// CI 名称
         #[arg(long)]
         ci: Option<String>,
-        /// 包路径
         #[arg(long)]
         pkg: Option<String>,
     },
-    /// 删除版本
-    #[command(name = "+delete")]
-    Delete {
-        /// 版本 ID
-        id: u64,
-    },
+    #[command(name = "delete")]
+    Delete { id: u64 },
 }
 
-// ============================================================
-// 命令执行入口
-// ============================================================
-
-/// 执行 Build 相关命令
-pub fn run(cmd: &BuildAction, config: &Config, _format: OutputFormat, dry_run: bool) {
-    let rt = tokio::runtime::Runtime::new()
-        .expect("Failed to create Tokio runtime - system may be out of memory");
-
-    rt.block_on(async {
-        let client = ApiClient::new(&config.url, config.token.clone())
-            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
-
-        match cmd {
-            BuildAction::List {
-                project,
-                product,
-                execution,
-            } => {
-                let project_id = config.project_id(*project);
-                let product_id = config.product_id(*product);
-
-                if dry_run {
-                    if let Some(eid) = execution {
-                        safe_println("[DRY-RUN] Would call BuildApi::list_by_execution()");
-                        println!("  URL: {}/api.php/v1/executions/{}/builds", config.url, eid);
-                    } else {
-                        safe_println("[DRY-RUN] Would call BuildApi::list()");
-                        println!("  URL: {}/api.php/v1/builds", config.url);
-                        safe_println("  Params:");
-                        if let Some(p) = project_id {
-                            println!("    project: {}", p);
-                        }
-                        if let Some(p) = product_id {
-                            println!("    product: {}", p);
-                        }
-                    }
-                    return;
-                }
-
-                let builds = if let Some(eid) = *execution {
-                    BuildApi::list_by_execution(&client, eid).await
-                } else {
-                    BuildApi::list(&client, project_id, product_id).await
-                };
-
-                match builds {
-                    Ok(builds) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&builds).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            BuildAction::Get { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call BuildApi::get()");
-                    println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
-                    return;
-                }
-                match BuildApi::get(&client, *id).await {
-                    Ok(build) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&build).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            BuildAction::Create {
-                name,
-                project,
-                product,
-                branch,
-                scm_path,
-                ci,
-                pkg,
-            } => {
-                let project_id = config.project_id(*project).unwrap_or_else(|| {
-                    eprintln!("Error: project ID is required. Provide via --project or set ZENTAO_PROJECT_ID");
-                    std::process::exit(1);
-                });
-                let product_id = config.product_id(*product).unwrap_or_else(|| {
-                    eprintln!("Error: product ID is required. Provide via --product or set ZENTAO_PRODUCT_ID");
-                    std::process::exit(1);
-                });
-
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call BuildApi::create()");
-                    println!(
-                        "  URL: {}/api.php/v1/projects/{}/builds",
-                        config.url, project_id
+pub async fn run(cmd: &BuildAction, ctx: &AppContext) {
+    log_command("build", format!("{:?}", cmd));
+    match cmd {
+        BuildAction::List {
+            project,
+            product,
+            execution,
+        } => {
+            let project_id = ctx.project_id(*project);
+            let product_id = ctx.product_id(*product);
+            if ctx.dry_run {
+                if let Some(eid) = execution {
+                    print_dry_run(
+                        "BuildService::list() via execution",
+                        &format!("{}/api.php/v1/executions/{}/builds", ctx.config.url, eid),
                     );
-                    safe_println("  Body: {{");
-                    println!("    name: {}", name);
-                    println!("    project: {}", project_id);
-                    println!("    product: {}", product_id);
-                    if let Some(b) = branch {
-                        println!("    branch: {}", b);
+                } else {
+                    print_dry_run(
+                        "BuildService::list()",
+                        &format!("{}/api.php/v1/builds", ctx.config.url),
+                    );
+                    println!("  Params:");
+                    if let Some(p) = project_id {
+                        println!("    project: {}", p);
                     }
-                    if let Some(ref s) = scm_path {
-                        println!("    scm_path: {}", s);
-                    }
-                    if let Some(ref c) = ci {
-                        println!("    ci: {}", c);
-                    }
-                    if let Some(ref p) = pkg {
-                        println!("    pkg: {}", p);
-                    }
-                    safe_println("  }}");
-                    return;
-                }
-
-                let req = crate::api::build::CreateBuildRequest {
-                    name: name.clone(),
-                    project: project_id,
-                    product: product_id,
-                    branch: *branch,
-                    scm_path: scm_path.clone(),
-                    ci: ci.clone(),
-                    pkg: pkg.clone(),
-                };
-
-                match BuildApi::create(&client, project_id, &req).await {
-                    Ok(build) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&build).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
+                    if let Some(p) = product_id {
+                        println!("    product: {}", p);
                     }
                 }
+                return;
             }
-
-            BuildAction::Update {
-                id,
-                name,
-                scm_path,
-                ci,
-                pkg,
-            } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call BuildApi::update()");
-                    println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
-                    safe_println("  Body: {{");
-                    if let Some(ref n) = name {
-                        println!("    name: {}", n);
-                    }
-                    if let Some(ref s) = scm_path {
-                        println!("    scm_path: {}", s);
-                    }
-                    if let Some(ref c) = ci {
-                        println!("    ci: {}", c);
-                    }
-                    if let Some(ref p) = pkg {
-                        println!("    pkg: {}", p);
-                    }
-                    safe_println("  }}");
-                    return;
-                }
-
-                let req = crate::api::build::UpdateBuildRequest {
-                    name: name.clone(),
-                    scm_path: scm_path.clone(),
-                    ci: ci.clone(),
-                    pkg: pkg.clone(),
-                    file_size: None,
-                    generated_at: None,
-                };
-
-                match BuildApi::update(&client, *id, &req).await {
-                    Ok(build) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&build).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
-            }
-
-            BuildAction::Delete { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call BuildApi::delete()");
-                    println!("  URL: {}/api.php/v1/builds/{}", config.url, id);
-                    return;
-                }
-
-                match BuildApi::delete(&client, *id).await {
-                    Ok(_) => {
-                        println!("Build {} deleted successfully", id);
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
+            match BuildService::list(ctx, *project, *product, *execution).await {
+                Ok(builds) => print_build_list(&builds, ctx.format.clone()),
+                Err(e) => print_error(&e),
             }
         }
-    })
+        BuildAction::Get { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "BuildService::get()",
+                    &format!("{}/api.php/v1/builds/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match BuildService::get(ctx, *id).await {
+                Ok(build) => print_json(&build),
+                Err(e) => print_error(&e),
+            }
+        }
+        BuildAction::Create {
+            name,
+            project,
+            product,
+            branch,
+            scm_path,
+            ci,
+            pkg,
+        } => {
+            let project_id = match ctx.require_project_id(*project) {
+                Ok(id) => id,
+                Err(e) => {
+                    print_error(&e);
+                    return;
+                }
+            };
+            let product_id = match ctx.require_product_id(*product) {
+                Ok(id) => id,
+                Err(e) => {
+                    print_error(&e);
+                    return;
+                }
+            };
+            let req = CreateBuildRequest {
+                name: name.clone(),
+                project: project_id,
+                product: product_id,
+                branch: *branch,
+                scm_path: scm_path.clone(),
+                ci: ci.clone(),
+                pkg: pkg.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "BuildService::create()",
+                    &format!(
+                        "{}/api.php/v1/projects/{}/builds",
+                        ctx.config.url, project_id
+                    ),
+                    &req,
+                );
+                return;
+            }
+            match BuildService::create(ctx, *project, req).await {
+                Ok(build) => print_json(&build),
+                Err(e) => print_error(&e),
+            }
+        }
+        BuildAction::Update {
+            id,
+            name,
+            scm_path,
+            ci,
+            pkg,
+        } => {
+            let req = UpdateBuildRequest {
+                name: name.clone(),
+                scm_path: scm_path.clone(),
+                ci: ci.clone(),
+                pkg: pkg.clone(),
+                file_size: None,
+                generated_at: None,
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "BuildService::update()",
+                    &format!("{}/api.php/v1/builds/{}", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match BuildService::update(ctx, *id, req).await {
+                Ok(build) => print_json(&build),
+                Err(e) => print_error(&e),
+            }
+        }
+        BuildAction::Delete { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "BuildService::delete()",
+                    &format!("{}/api.php/v1/builds/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match BuildService::delete(ctx, *id).await {
+                Ok(_) => print_deleted("Build", *id),
+                Err(e) => print_error(&e),
+            }
+        }
+    }
+}
+
+fn print_build_list(builds: &[crate::api::Build], format: OutputFormat) {
+    match format {
+        OutputFormat::Table => {
+            println!("Builds:");
+            for item in builds {
+                println!("  [{}] {}", item.id, item.name);
+            }
+        }
+        _ => println!(
+            "{}",
+            serde_json::to_string_pretty(builds).unwrap_or_default()
+        ),
+    }
 }

@@ -1,81 +1,73 @@
 //! ZenTao 用户(User)命令模块
-//!
-//! CLI 命令入口，调用 UserApi 处理用户请求
 
-use crate::api::{ApiClient, UserApi};
-use crate::core::{Config, OutputFormat};
-use crate::safe_println;
+use crate::cmd::common::{log_command, print_dry_run, print_error, print_json};
+use crate::core::{AppContext, OutputFormat};
+use crate::service::user::UserService;
 use clap::Subcommand;
 
 #[derive(Subcommand, Clone, Debug)]
 pub enum UserAction {
-    /// 列出用户
-    #[command(name = "+list")]
+    #[command(name = "list")]
     List {
         #[arg(long)]
         dept: Option<u64>,
         #[arg(long)]
         role: Option<String>,
     },
-    /// 获取用户详情
-    #[command(name = "+get")]
+    #[command(name = "get")]
     Get { id: u64 },
 }
 
-/// 执行 User 相关命令
-///
-/// 根据子命令类型调用对应的 API 并输出结果
-pub fn run(cmd: &UserAction, config: &Config, _format: OutputFormat, dry_run: bool) {
-    let rt = tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime");
-
-    rt.block_on(async {
-        let client = ApiClient::new(&config.url, config.token.clone())
-            .with_api_version(config.api_version.as_deref().unwrap_or("v1"));
-
-        match cmd {
-            UserAction::List { dept, role } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call UserApi::list()");
-                    println!("  URL: {}/api.php/v1/users", config.url);
-                    safe_println("  Params:");
-                    if let Some(d) = dept {
-                        println!("    dept: {}", d);
-                    }
-                    if let Some(r) = role {
-                        println!("    role: {}", r);
-                    }
-                    return;
+pub async fn run(cmd: &UserAction, ctx: &AppContext) {
+    log_command("user", format!("{:?}", cmd));
+    match cmd {
+        UserAction::List { dept, role } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "UserService::list()",
+                    &format!("{}/api.php/v1/users", ctx.config.url),
+                );
+                println!("  Params:");
+                if let Some(d) = dept {
+                    println!("    dept: {}", d);
                 }
-                match UserApi::list(&client, *dept, role.clone()).await {
-                    Ok(users) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&users).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
+                if let Some(r) = role {
+                    println!("    role: {}", r);
                 }
+                return;
             }
-            UserAction::Get { id } => {
-                if dry_run {
-                    safe_println("[DRY-RUN] Would call UserApi::get()");
-                    println!("  URL: {}/api.php/v1/users/{}", config.url, id);
-                    return;
-                }
-                match UserApi::get(&client, *id).await {
-                    Ok(user) => {
-                        println!(
-                            "{}",
-                            serde_json::to_string_pretty(&user).unwrap_or_default()
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!("Error: {}", e);
-                    }
-                }
+            match UserService::list(ctx, *dept, role.clone()).await {
+                Ok(users) => print_user_list(&users, ctx.format.clone()),
+                Err(e) => print_error(&e),
             }
         }
-    });
+        UserAction::Get { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "UserService::get()",
+                    &format!("{}/api.php/v1/users/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match UserService::get(ctx, *id).await {
+                Ok(user) => print_json(&user),
+                Err(e) => print_error(&e),
+            }
+        }
+    }
+}
+
+fn print_user_list(users: &[crate::api::User], format: OutputFormat) {
+    match format {
+        OutputFormat::Table => {
+            println!("Users:");
+            for item in users {
+                println!("  [{}] {} ({})", item.id, item.realname, item.account);
+            }
+        }
+        _ => println!(
+            "{}",
+            serde_json::to_string_pretty(users).unwrap_or_default()
+        ),
+    }
 }

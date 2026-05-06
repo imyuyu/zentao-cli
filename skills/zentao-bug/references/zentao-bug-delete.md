@@ -1,10 +1,10 @@
-# bug +delete
+# bug delete
 
 删除 Bug。
 
 ## Command
 ```bash
-zentao-cli bug +delete <id>
+zentao-cli bug delete <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli bug +delete <id>
 
 ```bash
 # 删除 Bug
-zentao-cli bug +delete 5703
+zentao-cli bug delete 5703
 ```
 
 ## API Endpoint
@@ -25,3 +25,4 @@ zentao-cli bug +delete 5703
 ```
 DELETE /api.php/v1/bugs/{bug_id}
 ```
+

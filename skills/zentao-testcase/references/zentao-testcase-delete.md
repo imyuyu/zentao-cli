@@ -1,10 +1,10 @@
-# testcase +delete
+# testcase delete
 
 删除测试用例。
 
 ## Command
 ```bash
-zentao-cli testcase +delete <id>
+zentao-cli testcase delete <id>
 ```
 
 ## Options
@@ -17,7 +17,7 @@ zentao-cli testcase +delete <id>
 
 ```bash
 # Delete testcase
-zentao-cli testcase +delete 123
+zentao-cli testcase delete 123
 ```
 
 ## API Endpoint
@@ -25,3 +25,4 @@ zentao-cli testcase +delete 123
 ```
 DELETE /api.php/v1/testcases/{id}
 ```
+

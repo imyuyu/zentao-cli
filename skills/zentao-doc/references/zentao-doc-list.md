@@ -1,10 +1,10 @@
-# doc +list
+# doc list
 
 列出文档库中的文档列表。
 
 ## Command
 ```bash
-zentao-cli doc +list
+zentao-cli doc list
 ```
 
 ## Options
@@ -15,7 +15,7 @@ zentao-cli doc +list
 
 ```bash
 # List all documents
-zentao-cli doc +list
+zentao-cli doc list
 ```
 
 ## Output Fields
@@ -33,3 +33,4 @@ zentao-cli doc +list
 | added_date | string | Creation date |
 | edited_date | string | Last edit date |
 | deleted | string | Deletion flag |
+

@@ -1,10 +1,10 @@
-# build +get
+# build get
 
 获取指定版本的详细信息。
 
 ## Command
 ```bash
-zentao-cli build +get <id>
+zentao-cli build get <id>
 ```
 
 ## Options
@@ -17,10 +17,10 @@ zentao-cli build +get <id>
 
 ```bash
 # Get build details by ID
-zentao-cli build +get 10
+zentao-cli build get 10
 
 # Get build details by ID 5
-zentao-cli build +get 5
+zentao-cli build get 5
 ```
 
 ## Output Fields
@@ -46,3 +46,4 @@ zentao-cli build +get 5
 | consumed_cards | string | Number of consumed cards |
 | stories | string | Number of linked stories |
 | bugs | string | Number of linked bugs |
+

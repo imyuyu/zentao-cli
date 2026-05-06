@@ -21,25 +21,25 @@ metadata:
 - **Release ID**: Unique identifier for a release
 - **Build**: The build/version ID that the release references
 
-## Shortcuts (推荐优先使用)
-
-| Shortcut | 说明 |
-|----------|------|
-| `+release-list` | List all releases |
-| `+release-get` | Get release details |
-
 ## Commands
+
+| Command | 说明 |
+|----------|------|
+| `release list` | List all releases |
+| `release get` | Get release details |
+
+## Common Use Cases
 
 ### List Releases
 ```bash
-zentao-cli release +list
-zentao-cli release +list --product 1
-zentao-cli release +list --project 1
+zentao-cli release list
+zentao-cli release list --product 1
+zentao-cli release list --project 1
 ```
 
 ### Get Release
 ```bash
-zentao-cli release +get 1
+zentao-cli release get 1
 ```
 
 ## Output Fields
@@ -58,8 +58,9 @@ zentao-cli release +get 1
 
 ```bash
 # List all releases
-zentao-cli release +list
+zentao-cli release list
 
 # Get release details
-zentao-cli release +get 1
+zentao-cli release get 1
 ```
+

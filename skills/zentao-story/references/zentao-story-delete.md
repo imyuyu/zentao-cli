@@ -1,10 +1,10 @@
-# story +delete
+# story delete
 
 删除需求。
 
 ## Command
 ```bash
-zentao-cli story +delete <id>
+zentao-cli story delete <id>
 ```
 
 ## Options
@@ -17,10 +17,11 @@ zentao-cli story +delete <id>
 
 ```bash
 # Delete a story
-zentao-cli story +delete 123
+zentao-cli story delete 123
 ```
 
 ## Notes
 
 - Only stories in draft status can be deleted
 - This action cannot be undone
+
