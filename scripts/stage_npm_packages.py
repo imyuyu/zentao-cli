@@ -115,9 +115,12 @@ def main() -> int:
 
 def run_command(cmd: list[str]) -> None:
     import subprocess
+    import sys
 
     print("+", " ".join(cmd))
-    subprocess.run(cmd, cwd=REPO_ROOT, check=True)
+    # Run via python interpreter to avoid needing execute permissions on scripts
+    full_cmd = [sys.executable, *cmd]
+    subprocess.run(full_cmd, cwd=REPO_ROOT, check=True)
 
 
 if __name__ == "__main__":
