@@ -208,27 +208,22 @@ def compute_platform_package_version(version: str, platform_tag: str) -> str:
 def copy_native_binaries(vendor_src: Path, staging_dir: Path, package: str) -> None:
     platform_package = PLATFORM_PACKAGES[package]
     target_triple = platform_package["target_triple"]
+    binary_name = "zentao-cli"
     vendor_src = vendor_src.resolve()
 
-    # Try multiple possible paths for the binary
-    possible_paths = [
-        vendor_src / target_triple / "zentao-cli",
-        vendor_src / "npm-vendor" / target_triple / "zentao-cli",
-        vendor_src / "zentao-cli",  # fallback
-    ]
-
-    source_binary = None
-    for path in possible_paths:
-        if path.exists():
-            source_binary = path
-            break
-
-    if source_binary is None:
-        raise RuntimeError(f"Missing native payload for {package}, tried: {[str(p) for p in possible_paths]}")
-
-    vendor_dest = staging_dir / "vendor" / target_triple
-    vendor_dest.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(source_binary, vendor_dest / "zentao-cli")
+    import os
+    print(f"DEBUG: vendor_src={vendor_src}")
+    print(f"DEBUG: target_triple={target_triple}")
+    if vendor_src.exists():
+        for root, dirs, files in os.walk(vendor_src):
+            level = root.replace(str(vendor_src), '').count(os.sep)
+            indent = ' ' * 2 * level
+            print(f'{indent}{os.path.basename(root)}/')
+            subindent = ' ' * 2 * (level + 1)
+            for file in files:
+                print(f'{subindent}{file}')
+    else:
+        print(f"DEBUG: vendor_src does not exist!")
 
 
 def run_npm_pack(staging_dir: Path, output_path: Path) -> Path:
