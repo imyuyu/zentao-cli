@@ -184,7 +184,7 @@ def stage_sources(staging_dir: Path, version: str, package: str) -> None:
             shutil.copy2(readme_src, staging_dir / "README.md")
 
         package_json = {
-            "name": ROOT_NPM_NAME,
+            "name": platform_package["npm_name"],
             "version": platform_version,
             "license": root_package_json.get("license", "MIT"),
             "os": [platform_package["os"]],
@@ -208,22 +208,17 @@ def compute_platform_package_version(version: str, platform_tag: str) -> str:
 def copy_native_binaries(vendor_src: Path, staging_dir: Path, package: str) -> None:
     platform_package = PLATFORM_PACKAGES[package]
     target_triple = platform_package["target_triple"]
-    binary_name = "zentao-cli"
+    binary_name = platform_package["binary_name"] if "binary_name" in platform_package else "zentao-cli"
     vendor_src = vendor_src.resolve()
 
-    import os
-    print(f"DEBUG: vendor_src={vendor_src}")
-    print(f"DEBUG: target_triple={target_triple}")
-    if vendor_src.exists():
-        for root, dirs, files in os.walk(vendor_src):
-            level = root.replace(str(vendor_src), '').count(os.sep)
-            indent = ' ' * 2 * level
-            print(f'{indent}{os.path.basename(root)}/')
-            subindent = ' ' * 2 * (level + 1)
-            for file in files:
-                print(f'{subindent}{file}')
-    else:
-        print(f"DEBUG: vendor_src does not exist!")
+    binary_src = vendor_src / target_triple / "zentao-cli" / binary_name
+    if not binary_src.exists():
+        binary_src = vendor_src / target_triple / binary_name
+
+    vendor_dir = staging_dir / "vendor"
+    vendor_dir.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(binary_src, vendor_dir / binary_name)
+    print(f"Copied {binary_src} -> {vendor_dir / binary_name}")
 
 
 def run_npm_pack(staging_dir: Path, output_path: Path) -> Path:
