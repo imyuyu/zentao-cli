@@ -146,19 +146,26 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          path: release-artifacts
+          pattern: zentao-cli-*
           merge-multiple: true
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: skills-artifact
+          pattern: skills
 
       - name: Upload release artifacts
         run: |
           mkdir -p release
-          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-linux-x64.tar.gz --clobber
-          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-linux-arm64.tar.gz --clobber
-          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-darwin-x64.tar.gz --clobber
-          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-darwin-arm64.tar.gz --clobber
-          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-win32-x64.zip --clobber
-          gh release upload "${{ github.ref_name }}" artifacts/zentao-cli-win32-arm64.zip --clobber
-          gh release upload "${{ github.ref_name }}" artifacts/skills.tar.gz --clobber
+          mv release-artifacts/zentao-cli-linux-x64.tar.gz release/ 2>/dev/null || true
+          mv release-artifacts/zentao-cli-linux-arm64.tar.gz release/ 2>/dev/null || true
+          mv release-artifacts/zentao-cli-darwin-x64.tar.gz release/ 2>/dev/null || true
+          mv release-artifacts/zentao-cli-darwin-arm64.tar.gz release/ 2>/dev/null || true
+          mv release-artifacts/zentao-cli-win32-x64.zip release/ 2>/dev/null || true
+          mv release-artifacts/zentao-cli-win32-arm64.zip release/ 2>/dev/null || true
+          mv skills-artifact/skills.tar.gz release/ 2>/dev/null || true
+          gh release upload "${{ github.ref_name }}" release/* --clobber
 
   publish-npm:
     name: Publish to npm
@@ -171,7 +178,7 @@ jobs:
       - name: Download npm vendor payloads
         uses: actions/download-artifact@v4
         with:
-          path: vendor-artifacts/npm-vendor
+          path: vendor-artifacts
           pattern: npm-vendor-*
           merge-multiple: true
 
