@@ -29,6 +29,3 @@ package-lock.json
 # Claude Code
 .claude/
 .omc/
-
-# Build artifacts
-bin/
