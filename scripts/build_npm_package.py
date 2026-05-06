@@ -208,12 +208,12 @@ def compute_platform_package_version(version: str, platform_tag: str) -> str:
 def copy_native_binaries(vendor_src: Path, staging_dir: Path, package: str) -> None:
     platform_package = PLATFORM_PACKAGES[package]
     target_triple = platform_package["target_triple"]
-    binary_name = platform_package["binary_name"] if "binary_name" in platform_package else "zentao-cli"
+    binary_name = platform_package.get("binary_name", "zentao-cli")
     vendor_src = vendor_src.resolve()
 
     binary_src = vendor_src / target_triple / "zentao-cli" / binary_name
     if not binary_src.exists():
-        binary_src = vendor_src / target_triple / binary_name
+        binary_src = vendor_src / target_triple / "zentao-cli" / binary_name
 
     vendor_dir = staging_dir / "vendor"
     vendor_dir.mkdir(parents=True, exist_ok=True)
