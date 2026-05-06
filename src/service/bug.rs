@@ -29,6 +29,7 @@ impl BugService {
         BugApi::get(&client, id).await
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn create(
         ctx: &AppContext,
         title: String,
