@@ -52,6 +52,7 @@ PLATFORM_PACKAGES: dict[str, dict[str, str]] = {
         "target_triple": "x86_64-pc-windows-msvc",
         "os": "win32",
         "cpu": "x64",
+        "binary_name": "zentao-cli.exe",
     },
     "zentao-cli-win32-arm64": {
         "npm_name": "@imyuyu/zentao-cli-win32-arm64",
@@ -59,6 +60,7 @@ PLATFORM_PACKAGES: dict[str, dict[str, str]] = {
         "target_triple": "aarch64-pc-windows-msvc",
         "os": "win32",
         "cpu": "arm64",
+        "binary_name": "zentao-cli.exe",
     },
 }
 
@@ -211,14 +213,26 @@ def copy_native_binaries(vendor_src: Path, staging_dir: Path, package: str) -> N
     binary_name = platform_package.get("binary_name", "zentao-cli")
     vendor_src = vendor_src.resolve()
 
+    # Try the exact path: vendor_src/target_triple/zentao-cli/binary_name
     binary_src = vendor_src / target_triple / "zentao-cli" / binary_name
     if not binary_src.exists():
-        binary_src = vendor_src / target_triple / "zentao-cli" / binary_name
+        # Fallback: maybe binary is directly in target_triple/zentao-cli/
+        alt_path = vendor_src / target_triple / "zentao-cli"
+        if alt_path.exists() and alt_path.is_dir():
+            # Find any file in that directory
+            files = list(alt_path.iterdir())
+            if files:
+                binary_src = files[0]
+            else:
+                raise RuntimeError(f"No files found in {alt_path}")
+        else:
+            raise RuntimeError(f"Vendor binary not found: {binary_src}")
 
     vendor_dir = staging_dir / "vendor"
     vendor_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copy2(binary_src, vendor_dir / binary_name)
-    print(f"Copied {binary_src} -> {vendor_dir / binary_name}")
+    final_binary_name = binary_name if binary_name else binary_src.name
+    shutil.copy2(binary_src, vendor_dir / final_binary_name)
+    print(f"Copied {binary_src} -> {vendor_dir / final_binary_name}")
 
 
 def run_npm_pack(staging_dir: Path, output_path: Path) -> Path:
