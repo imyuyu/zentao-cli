@@ -15,8 +15,8 @@ cargo clippy -- -D warnings  # Lint (warnings as errors)
 
 ## Workflow Notes
 
-- **Do NOT run `cargo fmt` before commit** - CI runs formatting checks; formatting locally can cause CRLF issues and CI failures.
-- Commit directly after making changes; let CI handle code formatting.
+- **Always run `cargo fmt` before commit** - CI checks formatting, failures block merge.
+- Commit directly after formatting; let CI verify.
 
 ## Architecture
 
