@@ -10,8 +10,8 @@
 //! 5. 更新配置文件
 //! 6. 重试原请求
 
-use crate::api::client::ApiClient;
 use crate::api::auth::Auth;
+use crate::api::client::ApiClient;
 use crate::core::{Config, Credentials, ZentaoError};
 use anyhow::Result;
 
@@ -28,10 +28,7 @@ pub struct AuthClient {
 impl AuthClient {
     /// 创建认证客户端
     pub fn new(config: Config) -> Self {
-        let api_client = ApiClient::new(
-            &config.url,
-            config.token.clone(),
-        );
+        let api_client = ApiClient::new(&config.url, config.token.clone());
         Self { api_client, config }
     }
 
@@ -40,17 +37,20 @@ impl AuthClient {
     /// 从系统凭据库获取用户名密码，然后调用登录 API
     pub async fn refresh_token(&mut self) -> Result<String> {
         // 获取当前账号名
-        let account = self.config.account.as_ref()
-            .ok_or_else(|| ZentaoError::Auth("No account configured. Please login first.".into()))?;
+        let account = self.config.account.as_ref().ok_or_else(|| {
+            ZentaoError::Auth("No account configured. Please login first.".into())
+        })?;
 
         // 获取保存的凭据
         let creds = Credentials::get(&self.config.url, account)
             .map_err(|e| ZentaoError::Config(format!("Failed to get credentials: {}", e)))?
-            .ok_or_else(|| ZentaoError::Auth("No credentials stored. Please login first.".into()))?;
+            .ok_or_else(|| {
+                ZentaoError::Auth("No credentials stored. Please login first.".into())
+            })?;
 
-        let password = creds.password.ok_or_else(|| {
-            ZentaoError::Auth("Password not found in credentials".into())
-        })?;
+        let password = creds
+            .password
+            .ok_or_else(|| ZentaoError::Auth("Password not found in credentials".into()))?;
 
         // 调用登录 API 获取新 token
         let auth = Auth::new(&self.config.url);

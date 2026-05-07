@@ -629,13 +629,17 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
             println!("  url: {}", config.url);
 
             // 脱敏显示 account
-            let masked_account = config.account.as_deref().map(|a| {
-                if a.len() <= 2 {
-                    "**".to_string()
-                } else {
-                    format!("{}**{}", &a[..1], &a[a.len()-1..])
-                }
-            }).unwrap_or_else(|| "(not set)".to_string());
+            let masked_account = config
+                .account
+                .as_deref()
+                .map(|a| {
+                    if a.len() <= 2 {
+                        "**".to_string()
+                    } else {
+                        format!("{}**{}", &a[..1], &a[a.len() - 1..])
+                    }
+                })
+                .unwrap_or_else(|| "(not set)".to_string());
             println!("  account: {}", masked_account);
 
             println!(

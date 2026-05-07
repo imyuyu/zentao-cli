@@ -7,8 +7,8 @@
 
 use crate::core::ZentaoError;
 use keyring;
-use keyring_core::Error;
 use keyring_core::Entry;
+use keyring_core::Error;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -44,8 +44,12 @@ impl Credentials {
     pub fn get(url: &str, account: &str) -> Result<Option<Credentials>, ZentaoError> {
         init_keyring_store();
         let target = format!("{}:{}:{}", SERVICE_NAME, url, account);
-        let entry = Entry::new_with_modifiers(SERVICE_NAME, account, &HashMap::from([("target", target.as_str())]))
-            .map_err(|e| ZentaoError::Config(format!("Failed to create keyring entry: {}", e)))?;
+        let entry = Entry::new_with_modifiers(
+            SERVICE_NAME,
+            account,
+            &HashMap::from([("target", target.as_str())]),
+        )
+        .map_err(|e| ZentaoError::Config(format!("Failed to create keyring entry: {}", e)))?;
 
         match entry.get_password() {
             Ok(password) => Ok(Some(Credentials {
@@ -73,8 +77,12 @@ impl Credentials {
     pub fn store(url: &str, account: &str, password: &str) -> Result<(), ZentaoError> {
         init_keyring_store();
         let target = format!("{}:{}:{}", SERVICE_NAME, url, account);
-        let entry = Entry::new_with_modifiers(SERVICE_NAME, account, &HashMap::from([("target", target.as_str()), ("persistence", "Local")]))
-            .map_err(|e| ZentaoError::Config(format!("Failed to create keyring entry: {}", e)))?;
+        let entry = Entry::new_with_modifiers(
+            SERVICE_NAME,
+            account,
+            &HashMap::from([("target", target.as_str()), ("persistence", "Local")]),
+        )
+        .map_err(|e| ZentaoError::Config(format!("Failed to create keyring entry: {}", e)))?;
 
         entry
             .set_password(password)
@@ -98,8 +106,12 @@ impl Credentials {
     pub fn delete(url: &str, account: &str) -> Result<(), ZentaoError> {
         init_keyring_store();
         let target = format!("{}:{}:{}", SERVICE_NAME, url, account);
-        let entry = Entry::new_with_modifiers(SERVICE_NAME, account, &HashMap::from([("target", target.as_str())]))
-            .map_err(|e| ZentaoError::Config(format!("Failed to create keyring entry: {}", e)))?;
+        let entry = Entry::new_with_modifiers(
+            SERVICE_NAME,
+            account,
+            &HashMap::from([("target", target.as_str())]),
+        )
+        .map_err(|e| ZentaoError::Config(format!("Failed to create keyring entry: {}", e)))?;
 
         match entry.delete_credential() {
             Ok(()) | Err(Error::NoEntry) => Ok(()),
@@ -113,7 +125,9 @@ impl Credentials {
     /// 检查凭据是否存在
     pub fn exists(url: &str, account: &str) -> bool {
         init_keyring_store();
-        Self::get(url, account).map(|opt| opt.is_some()).unwrap_or(false)
+        Self::get(url, account)
+            .map(|opt| opt.is_some())
+            .unwrap_or(false)
     }
 }
 
@@ -148,19 +162,15 @@ mod tests {
 
     #[test]
     fn test_exists_returns_false_on_error() {
-        let result = Credentials::exists(
-            "http://nonexistent.example.com",
-            "nonexistent_user_12345",
-        );
+        let result =
+            Credentials::exists("http://nonexistent.example.com", "nonexistent_user_12345");
         assert!(!result);
     }
 
     #[test]
     fn test_delete_nonexistent_returns_ok() {
-        let result = Credentials::delete(
-            "http://nonexistent.example.com",
-            "nonexistent_user_12345",
-        );
+        let result =
+            Credentials::delete("http://nonexistent.example.com", "nonexistent_user_12345");
         assert!(result.is_ok() || result.is_err());
     }
 }

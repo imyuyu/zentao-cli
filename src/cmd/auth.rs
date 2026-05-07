@@ -5,7 +5,7 @@
 
 use crate::api::Auth;
 use crate::cmd::common::log_command;
-use crate::core::{Credentials, load_config, update_config};
+use crate::core::{load_config, update_config, Credentials};
 use crate::safe_println;
 use anyhow::Result; // anyhow: 错误处理库，类似 Go 的 error 但更灵活
 use clap::Subcommand; // clap: 命令行参数解析库，类似 Java 的 JCommander 或 Python 的 argparse // 导入 API 认证客户端
@@ -207,7 +207,7 @@ pub async fn run(
                         let masked = if account.len() <= 2 {
                             "**".to_string()
                         } else {
-                            format!("{}**{}", &account[..1], &account[account.len()-1..])
+                            format!("{}**{}", &account[..1], &account[account.len() - 1..])
                         };
                         println!("  Account: {}", masked);
                     }
@@ -250,15 +250,19 @@ pub async fn run(
             if config.url.is_empty() {
                 anyhow::bail!("URL not configured. Run 'zentao auth login' first.");
             }
-            let account = config.account.as_ref()
-                .ok_or_else(|| anyhow::anyhow!("Account not configured. Run 'zentao auth login' first."))?;
+            let account = config.account.as_ref().ok_or_else(|| {
+                anyhow::anyhow!("Account not configured. Run 'zentao auth login' first.")
+            })?;
 
             // 从 keyring 获取凭据
             let creds = Credentials::get(&config.url, account)
                 .map_err(|e| anyhow::anyhow!("Failed to get credentials: {}", e))?
-                .ok_or_else(|| anyhow::anyhow!("No credentials found. Run 'zentao auth login' first."))?;
+                .ok_or_else(|| {
+                    anyhow::anyhow!("No credentials found. Run 'zentao auth login' first.")
+                })?;
 
-            let password = creds.password
+            let password = creds
+                .password
                 .ok_or_else(|| anyhow::anyhow!("Password not found in credentials"))?;
 
             // 重新登录获取新 token
