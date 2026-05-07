@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.1-beta.4] - 2026-05-07
+
+### Added
+
+- Secure credential storage using system keyring (Windows Credential Manager, macOS Keychain, Linux libsecret)
+- `zentao auth refresh` command to re-login from stored credentials
+- `zentao auth whoami` command to show current logged-in user
+- Token auto-refresh mechanism in API client
+
+### Changed
+
+- Credentials now stored with Local persistence (not Enterprise) for "本地计算机" scope
+- Account display masked in `config show` and `auth status` commands
+- Upgraded keyring from 2.0 to 4.0 with new `Entry::new_with_modifiers` API
+
+### Fixed
+
+- Credential username field now properly set in Windows Credential Manager
+
 ## [0.0.1-beta.3] - 2026-04-30
 
 ### Fixed
