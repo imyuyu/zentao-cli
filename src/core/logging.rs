@@ -235,4 +235,61 @@ mod tests {
             std::env::remove_var("ZENTAO_LOG");
         }
     }
+
+    #[test]
+    fn test_log_level_from_env() {
+        assert_eq!(LogLevel::from_env("error"), LogLevel::Error);
+        assert_eq!(LogLevel::from_env("warn"), LogLevel::Warn);
+        assert_eq!(LogLevel::from_env("warning"), LogLevel::Warn);
+        assert_eq!(LogLevel::from_env("info"), LogLevel::Info);
+        assert_eq!(LogLevel::from_env("debug"), LogLevel::Debug);
+        assert_eq!(LogLevel::from_env("unknown"), LogLevel::Info);
+    }
+
+    #[test]
+    fn test_log_level_as_tracing_level() {
+        assert_eq!(LogLevel::Error.as_tracing_level(), tracing::Level::ERROR);
+        assert_eq!(LogLevel::Warn.as_tracing_level(), tracing::Level::WARN);
+        assert_eq!(LogLevel::Info.as_tracing_level(), tracing::Level::INFO);
+        assert_eq!(LogLevel::Debug.as_tracing_level(), tracing::Level::DEBUG);
+    }
+
+    #[test]
+    fn test_log_level_as_filter() {
+        use tracing_subscriber::filter::LevelFilter;
+        assert_eq!(LogLevel::Error.as_filter(), LevelFilter::ERROR);
+        assert_eq!(LogLevel::Warn.as_filter(), LevelFilter::WARN);
+        assert_eq!(LogLevel::Info.as_filter(), LevelFilter::INFO);
+        assert_eq!(LogLevel::Debug.as_filter(), LevelFilter::DEBUG);
+    }
+
+    #[test]
+    fn test_effective_level_none_both() {
+        let _guard = env_lock().lock().unwrap();
+        unsafe {
+            std::env::remove_var("ZENTAO_LOG");
+        }
+        assert_eq!(effective_level(false, None), None);
+    }
+
+    #[test]
+    fn test_log_level_debug() {
+        let _guard = env_lock().lock().unwrap();
+        unsafe {
+            std::env::remove_var("ZENTAO_LOG");
+        }
+        assert_eq!(effective_level(true, None), Some(LogLevel::Debug));
+    }
+
+    #[test]
+    fn test_log_level_explicit() {
+        let _guard = env_lock().lock().unwrap();
+        unsafe {
+            std::env::remove_var("ZENTAO_LOG");
+        }
+        assert_eq!(
+            effective_level(false, Some(LogLevel::Error)),
+            Some(LogLevel::Error)
+        );
+    }
 }

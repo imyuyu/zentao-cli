@@ -133,6 +133,25 @@ zentao-cli story update 123 --status changed --assigned-to developer-name
 zentao-cli story list --product 1 --project 1
 ```
 
+## Examples
+
+```bash
+# 列出产品 1 下的所有需求
+zentao-cli story list --product 1
+
+# 只看活跃的需求
+zentao-cli story list --product 1 --status active
+
+# 获取需求详情
+zentao-cli story get 123
+
+# 创建新需求
+zentao-cli story create --title "用户登录功能" --product 1 --pri 1
+
+# 关闭需求
+zentao-cli story update 123 --status closed
+```
+
 ## Output Fields
 
 | Field | Type | Description |

@@ -98,6 +98,25 @@ echo $ZENTAO_URL
 echo $ZENTAO_TOKEN
 ```
 
+## Examples
+
+```bash
+# 列出所有版本
+zentao-cli build list
+
+# 列出某项目的版本
+zentao-cli build list --project 1
+
+# 列出某产品的版本
+zentao-cli build list --product 1
+
+# 获取版本详情
+zentao-cli build get 10
+
+# 获取版本详情（JSON 格式）
+zentao-cli build get 10 --format json
+```
+
 ## Gotchas
 
 1. **Build ID 是全局唯一标识**，不是本地展示编号

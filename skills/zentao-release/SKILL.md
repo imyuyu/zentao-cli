@@ -28,6 +28,19 @@ metadata:
 | `release list` | List all releases |
 | `release get` | Get release details |
 
+## Examples
+
+```bash
+# 列出所有发布
+zentao-cli release list
+
+# 获取发布详情
+zentao-cli release get 1
+
+# 按产品筛选发布
+zentao-cli release list --product 1
+```
+
 ## Common Use Cases
 
 ### List Releases

@@ -75,6 +75,22 @@ zentao-cli user get 123
 # 输出包括：账号、姓名、邮箱、部门、角色等
 ```
 
+## Examples
+
+```bash
+# 列出系统中的所有用户
+zentao-cli user list
+
+# 查看某部门下的所有用户
+zentao-cli user list --dept 1
+
+# 查看所有开发人员
+zentao-cli user list --role dev
+
+# 通过用户 ID 获取详细信息
+zentao-cli user get 123
+```
+
 ## Output Fields
 
 | Field | Type | Description |

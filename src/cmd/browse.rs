@@ -1,4 +1,4 @@
-use crate::core::{AppContext, Config, OutputFormat};
+use crate::core::{load_multi_account_config, AppContext, Config, OutputFormat};
 use crate::service::bug::BugService;
 use crate::service::story::StoryService;
 use crate::tui::{App, Browser};
@@ -9,12 +9,18 @@ pub fn bug_browse(config: &Config) -> Result<()> {
     let ctx = AppContext::new(config.clone(), OutputFormat::Table, false);
 
     rt.block_on(async {
-        let mut app = App::new();
+        let mut app = App::new(
+            config.clone(),
+            load_multi_account_config().unwrap_or_default(),
+        );
         app.set_loading("Fetching bugs...".to_string());
 
         match BugService::list(&ctx, config.product_id, Some("active".to_string()), None).await {
             Ok(bugs) => {
-                let mut app = App::new();
+                let mut app = App::new(
+                    config.clone(),
+                    load_multi_account_config().unwrap_or_default(),
+                );
                 app.set_bug_list(bugs);
 
                 let mut browser = Browser::new()?;
@@ -33,12 +39,18 @@ pub fn story_browse(config: &Config) -> Result<()> {
     let ctx = AppContext::new(config.clone(), OutputFormat::Table, false);
 
     rt.block_on(async {
-        let mut app = App::new();
+        let mut app = App::new(
+            config.clone(),
+            load_multi_account_config().unwrap_or_default(),
+        );
         app.set_loading("Fetching stories...".to_string());
 
         match StoryService::list(&ctx, config.product_id, config.project_id, None).await {
             Ok(stories) => {
-                let mut app = App::new();
+                let mut app = App::new(
+                    config.clone(),
+                    load_multi_account_config().unwrap_or_default(),
+                );
                 app.set_story_list(stories);
 
                 let mut browser = Browser::new()?;

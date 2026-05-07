@@ -92,6 +92,22 @@ zentao-cli testcase list --product 1 --project 5 --type feature
 zentao-cli testcase get 123
 ```
 
+## Examples
+
+```bash
+# 列出产品 1 下的所有测试用例
+zentao-cli testcase list --product 1
+
+# 列出状态为正常的测试用例
+zentao-cli testcase list --product 1 --status normal
+
+# 获取测试用例详情
+zentao-cli testcase get 123
+
+# 创建测试用例
+zentao-cli testcase create --title "登录功能测试" --product 1 --type feature
+```
+
 ## Output Fields
 
 | Field | Type | Description |

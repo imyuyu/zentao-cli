@@ -30,6 +30,22 @@ metadata:
 | `execution update` | Update an execution |
 | `execution delete` | Delete an execution |
 
+## Examples
+
+```bash
+# 列出项目下的所有执行
+zentao-cli execution list --project 1
+
+# 获取执行详情
+zentao-cli execution get 100
+
+# 创建执行
+zentao-cli execution create --name "Sprint 1" --project 1 --begin 2024-01-01 --end 2024-01-14
+
+# 更新执行状态
+zentao-cli execution update 100 --status closed
+```
+
 ## Common Use Cases
 
 ### List Executions

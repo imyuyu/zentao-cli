@@ -76,6 +76,22 @@ zentao-cli story list --product 1 --project 1
 zentao-cli task list --project 1
 ```
 
+## Examples
+
+```bash
+# 列出所有项目
+zentao-cli project list
+
+# 获取项目详情
+zentao-cli project get 1
+
+# 查看项目关联的需求
+zentao-cli story list --product 1 --project 1
+
+# 查看项目的任务
+zentao-cli task list --project 1
+```
+
 ## Output Fields
 
 | Field | Type | Description |

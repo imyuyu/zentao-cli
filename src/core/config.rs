@@ -77,6 +77,73 @@ pub struct Config {
     pub account: Option<String>,
 }
 
+/// 多账户配置结构
+///
+/// 存储多个命名账户的配置信息
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct MultiAccountConfig {
+    /// 账户名称到配置的映射
+    #[serde(default)]
+    pub accounts: std::collections::HashMap<String, Config>,
+
+    /// 默认激活的账户名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_account: Option<String>,
+}
+
+impl MultiAccountConfig {
+    /// 从文件加载多账户配置
+    pub fn load() -> Result<Self> {
+        let path = global_config_path();
+        if !path.exists() {
+            return Ok(MultiAccountConfig::default());
+        }
+        let content = std::fs::read_to_string(&path)?;
+        let config: MultiAccountConfig = toml::from_str(&content)?;
+        Ok(config)
+    }
+
+    /// 保存多账户配置到文件
+    pub fn save(&self) -> Result<PathBuf> {
+        let path = global_config_path();
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        let content = toml::to_string_pretty(self)?;
+        std::fs::write(&path, content)?;
+        Ok(path)
+    }
+
+    /// 获取默认账户配置
+    pub fn get_default_config(&self) -> Option<Config> {
+        self.default_account
+            .as_ref()
+            .and_then(|name| self.accounts.get(name).cloned())
+    }
+
+    /// 添加或更新账户
+    pub fn set_account(&mut self, name: String, config: Config) {
+        self.accounts.insert(name.clone(), config);
+        if self.default_account.is_none() {
+            self.default_account = Some(name);
+        }
+    }
+
+    /// 删除账户
+    pub fn remove_account(&mut self, name: &str) -> bool {
+        self.accounts.remove(name);
+        if self.default_account.as_deref() == Some(name) {
+            self.default_account = self.accounts.keys().next().cloned();
+        }
+        true
+    }
+
+    /// 列出所有账户名称
+    pub fn list_account_names(&self) -> Vec<&String> {
+        self.accounts.keys().collect()
+    }
+}
+
 impl Config {
     /// 获取产品 ID，优先使用传入的值，否则使用配置中的值
     pub fn product_id(&self, cli_value: Option<u64>) -> Option<u64> {
@@ -227,6 +294,13 @@ fn load_toml_config(path: &PathBuf) -> Result<Config> {
     Ok(config.default)
 }
 
+/// 从 TOML 文件加载多账户配置
+fn load_multiaccount_config(path: &PathBuf) -> Result<MultiAccountConfig> {
+    let content = std::fs::read_to_string(path)?;
+    let config: MultiAccountConfig = toml::from_str(&content)?;
+    Ok(config)
+}
+
 // ============================================================
 // 主要配置函数
 // ============================================================
@@ -266,6 +340,18 @@ fn load_toml_config(path: &PathBuf) -> Result<Config> {
 /// }
 /// ```
 pub fn load_config() -> Result<Config> {
+    // 优先尝试加载多账户配置
+    let global_path = global_config_path();
+    if global_path.exists() {
+        if let Ok(multi_config) = load_multiaccount_config(&global_path) {
+            if let Some(config) = multi_config.get_default_config() {
+                // 有多账户配置，使用默认账户并合并环境变量
+                return Ok(apply_env_overrides(config));
+            }
+        }
+    }
+
+    // 回退到单账户配置（向后兼容）
     // 配置优先级：环境变量 > 项目配置 > 全局配置
     // 先加载全局配置（最低优先级），然后项目配置覆盖，最后环境变量覆盖（最高优先级）
 
@@ -279,7 +365,6 @@ pub fn load_config() -> Result<Config> {
         account: None,
     };
 
-    let global_path = global_config_path();
     if global_path.exists() {
         if let Ok(global_config) = load_toml_config(&global_path) {
             config = merge_config(config, global_config);
@@ -295,6 +380,11 @@ pub fn load_config() -> Result<Config> {
     }
 
     // 第3步：环境变量覆盖（最高优先级）
+    Ok(apply_env_overrides(config))
+}
+
+/// 应用环境变量覆盖
+fn apply_env_overrides(mut config: Config) -> Config {
     if let Ok(url) = std::env::var("ZENTAO_URL") {
         if !url.is_empty() {
             config.url = url;
@@ -320,8 +410,7 @@ pub fn load_config() -> Result<Config> {
             config.api_version = Some(api_version);
         }
     }
-
-    Ok(config)
+    config
 }
 
 /// 保存配置到全局配置文件
@@ -369,6 +458,21 @@ fn save_config_to_file(config: &Config, global: bool) -> Result<PathBuf> {
 pub fn save_config(config: &Config) -> Result<()> {
     save_config_to_file(config, false)?;
     Ok(())
+}
+
+/// 保存配置到全局配置文件
+pub fn save_config_global(config: &Config) -> Result<PathBuf> {
+    save_config_to_file(config, true)
+}
+
+/// 保存多账户配置
+pub fn save_multi_account_config(multi: &MultiAccountConfig) -> Result<PathBuf> {
+    multi.save()
+}
+
+/// 加载多账户配置
+pub fn load_multi_account_config() -> Result<MultiAccountConfig> {
+    MultiAccountConfig::load()
 }
 
 /// 更新单个配置项并保存
@@ -514,5 +618,160 @@ mod tests {
         assert!(config.product_id.is_none());
         assert!(config.project_id.is_none());
         assert!(config.account.is_none());
+    }
+
+    /// 测试 Config::product_id 方法
+    #[test]
+    fn test_config_product_id() {
+        let config = Config {
+            url: "".to_string(),
+            token: None,
+            product_id: Some(100),
+            project_id: None,
+            api_version: None,
+            account: None,
+        };
+        // CLI value takes precedence
+        assert_eq!(config.product_id(Some(50)), Some(50));
+        // Falls back to config value
+        assert_eq!(config.product_id(None), Some(100));
+    }
+
+    /// 测试 Config::project_id 方法
+    #[test]
+    fn test_config_project_id() {
+        let config = Config {
+            url: "".to_string(),
+            token: None,
+            product_id: None,
+            project_id: Some(200),
+            api_version: None,
+            account: None,
+        };
+        assert_eq!(config.project_id(Some(50)), Some(50));
+        assert_eq!(config.project_id(None), Some(200));
+    }
+
+    /// 测试 GlobalConfig 序列化/反序列化
+    #[test]
+    fn test_global_config_serde() {
+        let global = GlobalConfig {
+            default: Config {
+                url: "https://test.com".to_string(),
+                token: Some("token123".to_string()),
+                product_id: Some(1),
+                project_id: Some(2),
+                api_version: None,
+                account: Some("user".to_string()),
+            },
+        };
+        let toml_str = toml::to_string_pretty(&global).unwrap();
+        assert!(toml_str.contains("https://test.com"));
+        let parsed: GlobalConfig = toml::from_str(&toml_str).unwrap();
+        assert_eq!(parsed.default.url, "https://test.com");
+        assert_eq!(parsed.default.token, Some("token123".to_string()));
+    }
+
+    /// 测试 MultiAccountConfig 默认值
+    #[test]
+    fn test_multi_account_config_default() {
+        let multi = MultiAccountConfig::default();
+        assert!(multi.accounts.is_empty());
+        assert!(multi.default_account.is_none());
+    }
+
+    /// 测试 MultiAccountConfig::get_default_config
+    #[test]
+    fn test_multi_account_get_default_config() {
+        let mut multi = MultiAccountConfig::default();
+        let config1 = Config {
+            url: "https://a.com".to_string(),
+            token: None,
+            product_id: None,
+            project_id: None,
+            api_version: None,
+            account: None,
+        };
+        let config2 = Config {
+            url: "https://b.com".to_string(),
+            token: None,
+            product_id: None,
+            project_id: None,
+            api_version: None,
+            account: None,
+        };
+        multi.set_account("acc1".to_string(), config1);
+        multi.set_account("acc2".to_string(), config2);
+
+        // First account becomes default
+        assert!(multi.default_account.is_some());
+        assert_eq!(multi.default_account.as_deref(), Some("acc1"));
+
+        let default = multi.get_default_config();
+        assert!(default.is_some());
+        assert_eq!(default.unwrap().url, "https://a.com");
+    }
+
+    /// 测试 MultiAccountConfig::list_account_names
+    #[test]
+    fn test_multi_account_list_names() {
+        let mut multi = MultiAccountConfig::default();
+        multi.set_account("alice".to_string(), Config::default());
+        multi.set_account("bob".to_string(), Config::default());
+
+        let names = multi.list_account_names();
+        assert_eq!(names.len(), 2);
+        assert!(names.contains(&&"alice".to_string()));
+        assert!(names.contains(&&"bob".to_string()));
+    }
+
+    /// 测试 MultiAccountConfig::remove_account
+    #[test]
+    fn test_multi_account_remove_account() {
+        let mut multi = MultiAccountConfig::default();
+        multi.set_account("alice".to_string(), Config::default());
+        multi.set_account("bob".to_string(), Config::default());
+        multi.default_account = Some("alice".to_string());
+
+        // Remove alice - should update default to bob
+        multi.remove_account("alice");
+        assert!(!multi.accounts.contains_key("alice"));
+        assert!(multi.accounts.contains_key("bob"));
+        assert_eq!(multi.default_account.as_deref(), Some("bob"));
+    }
+
+    /// 测试 project_config_path
+    #[test]
+    fn test_project_config_path() {
+        let path = project_config_path();
+        assert_eq!(path, PathBuf::from(".zentao-cli/config.toml"));
+    }
+
+    /// 测试 apply_env_overrides 空配置
+    #[test]
+    fn test_apply_env_overrides_empty() {
+        let config = Config::default();
+        // 环境变量未设置时应该保持原样
+        let result = apply_env_overrides(config);
+        assert!(result.url.is_empty());
+        assert!(result.token.is_none());
+    }
+
+    /// 测试 update_config 未知键
+    #[test]
+    fn test_update_config_unknown_key() {
+        let result = update_config("unknown_key", "value", false);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("Unknown config key"));
+    }
+
+    /// 测试 unset_config 未知键
+    #[test]
+    fn test_unset_config_unknown_key() {
+        let result = unset_config("unknown_key", false);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert!(err.to_string().contains("Unknown config key"));
     }
 }

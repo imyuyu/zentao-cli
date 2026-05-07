@@ -63,6 +63,19 @@ zentao-cli product list
 zentao-cli story list --product 1
 ```
 
+## Examples
+
+```bash
+# 列出所有产品
+zentao-cli product list
+
+# 获取产品详情
+zentao-cli product get 1
+
+# 查看某产品下的需求
+zentao-cli story list --product 1
+```
+
 ## Output Fields
 
 | Field | Type | Description |

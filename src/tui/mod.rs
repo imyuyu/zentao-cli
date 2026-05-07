@@ -3,9 +3,11 @@ pub mod app;
 pub mod browser;
 pub mod config;
 pub mod widgets;
+pub mod wizard;
 
 pub use api_selector::*;
 pub use app::*;
 pub use browser::*;
 pub use config::*;
 pub use widgets::*;
+pub use wizard::*;

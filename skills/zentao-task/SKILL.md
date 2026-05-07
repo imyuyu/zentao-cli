@@ -115,6 +115,25 @@ echo $ZENTAO_TOKEN
 3. **任务 ID 是全局唯一标识**，不是任务编号（例如 `t104121`）
 4. **删除操作不可恢复**，执行前请确认用户意图
 
+## Examples
+
+```bash
+# 列出项目所有任务
+zentao-cli task list --project 1
+
+# 只看我被指派的任务
+zentao-cli task list --project 1 --assigned-to me
+
+# 获取任务详情
+zentao-cli task get 456
+
+# 创建任务
+zentao-cli task create --name "实现登录功能" --project 1 --pri 3
+
+# 更新任务状态
+zentao-cli task update 456 --status done
+```
+
 ## Field Reference
 
 | 字段 | 类型 | 说明 |

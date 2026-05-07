@@ -293,4 +293,164 @@ mod tests {
         assert!(json.contains("TEST_ERR"));
         assert!(json.contains("Test message"));
     }
+
+    #[test]
+    fn test_output_format_is_json_like() {
+        assert!(OutputFormat::Json.is_json_like());
+        assert!(OutputFormat::Ndjson.is_json_like());
+        assert!(!OutputFormat::Pretty.is_json_like());
+        assert!(!OutputFormat::Table.is_json_like());
+        assert!(!OutputFormat::Csv.is_json_like());
+    }
+
+    #[test]
+    fn test_print_table_empty() {
+        let items: Vec<TestItem> = vec![];
+        let columns = &["id", "name"];
+        let result = print_table(&items, columns);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_print_table_with_data() {
+        let items = vec![
+            TestItem {
+                id: 1,
+                name: "Alice".to_string(),
+            },
+            TestItem {
+                id: 2,
+                name: "Bob".to_string(),
+            },
+        ];
+        let columns = &["id", "name"];
+        let result = print_table(&items, columns);
+        assert!(result.contains("id\tname"));
+        assert!(result.contains("1\tAlice"));
+        assert!(result.contains("2\tBob"));
+    }
+
+    #[test]
+    fn test_print_ndjson_empty() {
+        let items: Vec<TestItem> = vec![];
+        let result = print_ndjson(&items);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_print_ndjson_with_data() {
+        let items = vec![
+            TestItem {
+                id: 1,
+                name: "Alice".to_string(),
+            },
+            TestItem {
+                id: 2,
+                name: "Bob".to_string(),
+            },
+        ];
+        let result = print_ndjson(&items);
+        let lines: Vec<&str> = result.lines().collect();
+        assert_eq!(lines.len(), 2);
+        assert!(lines[0].contains("\"id\":1"));
+        assert!(lines[1].contains("\"id\":2"));
+    }
+
+    #[test]
+    fn test_print_csv_empty() {
+        let items: Vec<TestItem> = vec![];
+        let columns = &["id", "name"];
+        let result = print_csv(&items, columns);
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_print_csv_with_data() {
+        let items = vec![
+            TestItem {
+                id: 1,
+                name: "Alice".to_string(),
+            },
+            TestItem {
+                id: 2,
+                name: "Bob".to_string(),
+            },
+        ];
+        let columns = &["id", "name"];
+        let result = print_csv(&items, columns);
+        assert!(result.contains("id,name"));
+        // String values are quoted in CSV: 1,"Alice"
+        assert!(result.contains("1,\"Alice\""));
+        assert!(result.contains("2,\"Bob\""));
+    }
+
+    #[test]
+    fn test_print_csv_escapes_quotes() {
+        let items = vec![TestItem {
+            id: 1,
+            name: "Hello, \"World\"".to_string(),
+        }];
+        let columns = &["id", "name"];
+        let result = print_csv(&items, columns);
+        // Quotes should be escaped as double double-quotes
+        assert!(result.contains("\"Hello, \"\"World\"\"\""));
+    }
+
+    #[test]
+    fn test_format_output_json() {
+        let items = vec![TestItem {
+            id: 1,
+            name: "test".to_string(),
+        }];
+        let result = format_output(&items, OutputFormat::Json, &["id", "name"]);
+        // JSON array format
+        assert!(result.contains("["));
+        assert!(result.contains("\"id\""));
+        assert!(result.contains("1"));
+    }
+
+    #[test]
+    fn test_format_output_table() {
+        let items = vec![TestItem {
+            id: 1,
+            name: "test".to_string(),
+        }];
+        let result = format_output(&items, OutputFormat::Table, &["id", "name"]);
+        assert!(result.contains("id\tname"));
+    }
+
+    #[test]
+    fn test_format_output_ndjson() {
+        let items = vec![TestItem {
+            id: 1,
+            name: "test".to_string(),
+        }];
+        let result = format_output(&items, OutputFormat::Ndjson, &["id", "name"]);
+        // NDJSON produces one JSON object per line
+        assert!(result.contains("{"));
+        assert!(result.contains("}"));
+    }
+
+    #[test]
+    fn test_format_output_csv() {
+        let items = vec![TestItem {
+            id: 1,
+            name: "test".to_string(),
+        }];
+        let result = format_output(&items, OutputFormat::Csv, &["id", "name"]);
+        assert!(result.contains("id,name"));
+    }
+
+    #[test]
+    fn test_safe_println_does_not_panic() {
+        // Should not panic even with empty string
+        safe_println("");
+        safe_println("test message");
+    }
+
+    #[test]
+    fn test_safe_print_does_not_panic() {
+        safe_print("");
+        safe_print("test message");
+    }
 }

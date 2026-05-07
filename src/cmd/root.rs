@@ -119,11 +119,15 @@ enum Commands {
     BugBrowse {
         #[arg(long)]
         product: Option<u64>,
+        #[arg(long)]
+        account: Option<String>,
     },
     /// 故事浏览器 - TUI 模式浏览故事列表
     StoryBrowse {
         #[arg(long)]
         product: Option<u64>,
+        #[arg(long)]
+        account: Option<String>,
     },
     /// 查看当前登录的用户名
     Whoami,
@@ -484,17 +488,39 @@ pub fn run() -> Result<()> {
             log_command("root", "dispatch doctor");
             rt.block_on(doctor::run_doctor())?;
         }
-        Commands::BugBrowse { product } => {
+        Commands::BugBrowse { product, account } => {
             let mut cfg = config.clone();
             if let Some(pid) = product {
                 cfg.product_id = Some(pid);
             }
+            // If account is specified, use that account's config
+            if let Some(acc) = account {
+                if let Ok(multi) = crate::core::load_multi_account_config() {
+                    if let Some(acc_config) = multi.accounts.get(&acc) {
+                        cfg = acc_config.clone();
+                        if let Some(pid) = product {
+                            cfg.product_id = Some(pid);
+                        }
+                    }
+                }
+            }
             browse::bug_browse(&cfg).expect("Bug browse failed");
         }
-        Commands::StoryBrowse { product } => {
+        Commands::StoryBrowse { product, account } => {
             let mut cfg = config.clone();
             if let Some(pid) = product {
                 cfg.product_id = Some(pid);
+            }
+            // If account is specified, use that account's config
+            if let Some(acc) = account {
+                if let Ok(multi) = crate::core::load_multi_account_config() {
+                    if let Some(acc_config) = multi.accounts.get(&acc) {
+                        cfg = acc_config.clone();
+                        if let Some(pid) = product {
+                            cfg.product_id = Some(pid);
+                        }
+                    }
+                }
             }
             browse::story_browse(&cfg).expect("Story browse failed");
         }

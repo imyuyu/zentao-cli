@@ -1,15 +1,45 @@
-use crate::api::{Bug, Story};
+use crate::api::{Bug, Product, Story};
+use crate::core::config::{Config, MultiAccountConfig};
 
 #[derive(Debug, Clone)]
 pub enum AppState {
     Idle,
-    Loading { message: String },
-    BugList { bugs: Vec<Bug> },
-    BugDetail { bug: Bug },
-    StoryList { stories: Vec<Story> },
-    StoryDetail { story: Story },
-    Error { message: String },
+    Loading {
+        message: String,
+    },
+    BugList {
+        bugs: Vec<Bug>,
+    },
+    BugDetail {
+        bug: Bug,
+    },
+    StoryList {
+        stories: Vec<Story>,
+    },
+    StoryDetail {
+        story: Story,
+    },
+    Error {
+        message: String,
+    },
     Quit,
+    // 设置面板
+    Settings {
+        multi_config: MultiAccountConfig,
+        selected: usize,
+        current_account: String,
+    },
+    // 产品选择下拉
+    ProductSelect {
+        products: Vec<Product>,
+        selected: usize,
+        loading: bool,
+    },
+    // 账户选择
+    AccountSelect {
+        multi_config: MultiAccountConfig,
+        selected: usize,
+    },
 }
 
 impl AppState {
@@ -21,13 +51,23 @@ impl AppState {
 pub struct App {
     pub state: AppState,
     pub selected_index: usize,
+    pub search_active: bool,
+    pub search_query: String,
+    pub help_visible: bool,
+    pub config: crate::core::Config,
+    pub multi_config: MultiAccountConfig,
 }
 
 impl App {
-    pub fn new() -> Self {
+    pub fn new(config: crate::core::Config, multi_config: MultiAccountConfig) -> Self {
         Self {
             state: AppState::Idle,
             selected_index: 0,
+            search_active: false,
+            search_query: String::new(),
+            help_visible: false,
+            config,
+            multi_config,
         }
     }
 
@@ -97,6 +137,6 @@ impl App {
 
 impl Default for App {
     fn default() -> Self {
-        Self::new()
+        Self::new(Config::default(), MultiAccountConfig::default())
     }
 }

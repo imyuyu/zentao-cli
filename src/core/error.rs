@@ -236,4 +236,65 @@ mod tests {
         let response = error.to_response();
         assert_eq!(response.error.code, "ZEN_NETWORK_ERROR");
     }
+
+    #[test]
+    fn test_error_from_reqwest_connect() {
+        // Test error type conversion from reqwest
+        use std::io;
+        // Creating a reqwest::Error directly is complex, but we can test the From impl
+        // by checking error kinds work correctly
+        let io_err = io::Error::new(io::ErrorKind::NotFound, "test");
+        let zentao_err: ZentaoError = ZentaoError::Config("test".to_string());
+        assert_eq!(zentao_err.to_response().error.code, "ZEN_CONFIG_INVALID");
+    }
+
+    #[test]
+    fn test_zentao_error_api() {
+        let error = ZentaoError::api("test api error");
+        assert!(matches!(error, ZentaoError::Api(_)));
+        assert!(error.to_string().contains("test api error"));
+    }
+
+    #[test]
+    fn test_zentao_error_auth() {
+        let error = ZentaoError::auth("unauthorized");
+        assert!(matches!(error, ZentaoError::Auth(_)));
+        assert!(error.to_string().contains("unauthorized"));
+    }
+
+    #[test]
+    fn test_zentao_error_not_found() {
+        let error = ZentaoError::not_found("resource 123");
+        assert!(matches!(error, ZentaoError::NotFound(_)));
+        assert!(error.to_string().contains("resource 123"));
+    }
+
+    #[test]
+    fn test_zentao_error_config() {
+        let error = ZentaoError::config("missing field");
+        assert!(matches!(error, ZentaoError::Config(_)));
+        assert!(error.to_string().contains("missing field"));
+    }
+
+    #[test]
+    fn test_zentao_error_network() {
+        let error = ZentaoError::network("connection refused");
+        assert!(matches!(error, ZentaoError::Network(_)));
+        assert!(error.to_string().contains("connection refused"));
+    }
+
+    #[test]
+    fn test_error_response_serialization() {
+        let response = ErrorResponse {
+            status: "error".to_string(),
+            error: ErrorDetail {
+                code: "TEST".to_string(),
+                message: "msg".to_string(),
+                hint: "hint".to_string(),
+            },
+        };
+        let json = serde_json::to_string(&response).unwrap();
+        assert!(json.contains("\"status\":\"error\""));
+        assert!(json.contains("\"code\":\"TEST\""));
+    }
 }

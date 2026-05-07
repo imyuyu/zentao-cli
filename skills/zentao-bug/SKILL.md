@@ -135,6 +135,22 @@ echo $ZENTAO_URL
 echo $ZENTAO_TOKEN
 ```
 
+## Examples
+
+```bash
+# 列出产品 1 下的所有激活状态的 Bug
+zentao-cli bug list --product 1 --status active
+
+# 创建 Bug
+zentao-cli bug create --title "用户登录页面崩溃" --product 1 --severity 1 --pri 1
+
+# 标记 Bug 为已修复
+zentao-cli bug update 123 --status resolved --resolution fixed
+
+# 查看指定人员的待办 Bug
+zentao-cli bug list --product 1 --assigned-to developer-name
+```
+
 ## Gotchas
 
 1. **severity vs pri**：severity 表示缺陷严重程度（1-5），pri 表示优先级（1-4）。两者概念不同，创建 Bug 时需要分别设置。
