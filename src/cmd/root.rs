@@ -125,6 +125,8 @@ enum Commands {
         #[arg(long)]
         product: Option<u64>,
     },
+    /// 查看当前登录的用户名
+    Whoami,
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -403,6 +405,7 @@ pub fn run() -> Result<()> {
         product_id: None,
         project_id: None,
         api_version: None,
+        account: None,
     });
 
     // CLI 参数始终覆盖文件配置
@@ -414,6 +417,7 @@ pub fn run() -> Result<()> {
         product_id: file_config.product_id,
         project_id: file_config.project_id,
         api_version: file_config.api_version.clone(),
+        account: file_config.account.clone(),
     };
     let ctx = AppContext::new(config.clone(), cli.format.clone(), cli.dry_run);
     let rt = tokio::runtime::Runtime::new()
@@ -493,6 +497,14 @@ pub fn run() -> Result<()> {
                 cfg.product_id = Some(pid);
             }
             browse::story_browse(&cfg).expect("Story browse failed");
+        }
+        Commands::Whoami => {
+            if let Some(account) = &config.account {
+                println!("{}", account);
+            } else {
+                println!("Not logged in");
+                println!("  Run 'zentao auth login' to login");
+            }
         }
     }
 

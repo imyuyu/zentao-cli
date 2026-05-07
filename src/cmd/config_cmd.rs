@@ -300,6 +300,7 @@ async fn save_config(
         product_id,
         project_id,
         api_version: None,
+        account: None,
     };
 
     let global = GlobalConfig { default: config };
@@ -619,10 +620,24 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
             safe_println("ZenTao CLI Configuration");
             safe_println("======================");
             println!("Global config: {}", global_config_path().display());
-            println!("Project config: {}", project_config_path().display());
+            let project_config_abs = std::env::current_dir()
+                .unwrap_or_default()
+                .join(project_config_path());
+            println!("Project config: {}", project_config_abs.display());
             println!();
             safe_println("Current values:");
             println!("  url: {}", config.url);
+
+            // 脱敏显示 account
+            let masked_account = config.account.as_deref().map(|a| {
+                if a.len() <= 2 {
+                    "**".to_string()
+                } else {
+                    format!("{}**{}", &a[..1], &a[a.len()-1..])
+                }
+            }).unwrap_or_else(|| "(not set)".to_string());
+            println!("  account: {}", masked_account);
+
             println!(
                 "  token: {}",
                 config
@@ -668,6 +683,7 @@ pub async fn run(config_cmd: &ConfigSubcommand) -> Result<()> {
                 ),
                 "product_id" => println!("{:?}", config.product_id),
                 "project_id" => println!("{:?}", config.project_id),
+                "account" => println!("{:?}", config.account),
                 _ => println!("Unknown key: {}", key),
             }
             Ok(())

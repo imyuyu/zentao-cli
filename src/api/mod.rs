@@ -14,6 +14,7 @@
 //! - `testcase`: 测试用例 API
 
 pub mod auth;
+pub mod auth_client;
 pub mod bug;
 pub mod build;
 pub mod client;
@@ -30,6 +31,7 @@ pub mod user;
 
 // 导出公共 API
 pub use auth::Auth;
+pub use auth_client::AuthClient;
 pub use bug::{BugApi, CreateBugRequest, UpdateBugRequest};
 pub use build::{BuildApi, CreateBuildRequest, UpdateBuildRequest};
 pub use client::ApiClient;

@@ -71,6 +71,10 @@ pub struct Config {
     /// v2: Header "token: xxx" (小写 t)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub api_version: Option<String>,
+
+    /// 认证账号（用户名）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub account: Option<String>,
 }
 
 impl Config {
@@ -189,6 +193,9 @@ fn merge_config(mut base: Config, override_config: Config) -> Config {
     if override_config.api_version.is_some() {
         base.api_version = override_config.api_version;
     }
+    if override_config.account.is_some() {
+        base.account = override_config.account;
+    }
     base
 }
 
@@ -269,6 +276,7 @@ pub fn load_config() -> Result<Config> {
         product_id: None,
         project_id: None,
         api_version: None,
+        account: None,
     };
 
     let global_path = global_config_path();
@@ -400,6 +408,9 @@ pub fn update_config(key: &str, value: &str, global: bool) -> Result<PathBuf> {
         "api_version" => {
             config.api_version = Some(value.to_string());
         }
+        "account" => {
+            config.account = Some(value.to_string());
+        }
         _ => {
             anyhow::bail!("Unknown config key: {}", key); // 类似 Go 的 errors.New()
         }
@@ -443,6 +454,9 @@ pub fn unset_config(key: &str, global: bool) -> Result<PathBuf> {
         "api_version" => {
             config.api_version = None;
         }
+        "account" => {
+            config.account = None;
+        }
         _ => {
             anyhow::bail!("Unknown config key: {}", key);
         }
@@ -468,6 +482,7 @@ mod tests {
             product_id: Some(1),
             project_id: None,
             api_version: None,
+            account: Some("base_user".to_string()),
         };
 
         let override_config = Config {
@@ -476,6 +491,7 @@ mod tests {
             product_id: Some(2),
             project_id: Some(10),
             api_version: None,
+            account: Some("override_user".to_string()),
         };
 
         let result = merge_config(base, override_config);
@@ -486,6 +502,7 @@ mod tests {
         assert_eq!(result.token, Some("base_token".to_string()));
         assert_eq!(result.product_id, Some(2));
         assert_eq!(result.project_id, Some(10));
+        assert_eq!(result.account, Some("override_user".to_string()));
     }
 
     /// 测试默认配置
@@ -496,5 +513,6 @@ mod tests {
         assert!(config.token.is_none());
         assert!(config.product_id.is_none());
         assert!(config.project_id.is_none());
+        assert!(config.account.is_none());
     }
 }

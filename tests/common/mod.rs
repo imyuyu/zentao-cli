@@ -9,6 +9,7 @@ pub fn test_config() -> Config {
         product_id: Some(1),
         project_id: Some(1),
         api_version: None,
+        account: Some("test_user".to_string()),
     }
 }
 

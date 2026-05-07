@@ -1,4 +1,5 @@
 pub mod config;
+pub mod credentials;
 pub mod error;
 pub mod logging;
 pub mod output;
@@ -8,6 +9,7 @@ pub use config::{
     global_config_path, load_config, project_config_path, save_config, unset_config, update_config,
     Config, GlobalConfig,
 };
+pub use credentials::Credentials;
 pub use error::{
     ErrorDetail, ErrorResponse, ZentaoError, ERR_API_ERROR, ERR_AUTH_FAILED, ERR_CONFIG_INVALID,
     ERR_NOT_FOUND,

@@ -32,6 +32,8 @@ tracing = "0.1"
 tracing-appender = "0.2"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
 url = "2.5"
+keyring = "4.0"
+keyring-core = "1.0"
 
 [dev-dependencies]
 tokio-test = "0.4"
