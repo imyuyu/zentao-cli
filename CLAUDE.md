@@ -9,9 +9,14 @@ cargo build              # Debug build
 cargo build --release    # Release binary: target/release/zentao-cli.exe
 cargo check              # Fast compile check
 cargo test               # Run tests
-cargo fmt                # Format code
+cargo fmt                # Format code (CI runs fmt, don't run before commit)
 cargo clippy -- -D warnings  # Lint (warnings as errors)
 ```
+
+## Workflow Notes
+
+- **Do NOT run `cargo fmt` before commit** - CI runs formatting checks; formatting locally can cause CRLF issues and CI failures.
+- Commit directly after making changes; let CI handle code formatting.
 
 ## Architecture
 
