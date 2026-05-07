@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.1-beta.4] - 2026-05-07
+## [0.0.1-beta.5] - 2026-05-07
 
 ### Added
 
@@ -23,6 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Credential username field now properly set in Windows Credential Manager
+
+## [0.0.1-beta.4] - 2026-05-06
+
+### Fixed
+
+- Add binary_name for Windows and improve copy_native_binaries
+- Correct fallback path in copy_native_binaries
+- Resolve artifact path conflicts in release workflow
+- Use correct platform-specific npm package name
 
 ## [0.0.1-beta.3] - 2026-04-30
 
