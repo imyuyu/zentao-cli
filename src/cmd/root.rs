@@ -143,20 +143,6 @@ enum Commands {
     Doctor,
     /// 浏览器 - TUI 模式浏览所有模块（默认）
     Browse,
-    /// Bug 浏览器 - TUI 模式浏览 Bug 列表
-    BugBrowse {
-        #[arg(long)]
-        product: Option<u64>,
-        #[arg(long)]
-        account: Option<String>,
-    },
-    /// 故事浏览器 - TUI 模式浏览故事列表
-    StoryBrowse {
-        #[arg(long)]
-        product: Option<u64>,
-        #[arg(long)]
-        account: Option<String>,
-    },
     /// 查看当前登录的用户名
     Whoami,
 }
@@ -610,42 +596,6 @@ pub fn run() -> Result<()> {
         Commands::Browse => {
             log_command("root", "dispatch browse (home)");
             browse::run_tui(&config).expect("Browse failed");
-        }
-        Commands::BugBrowse { product, account } => {
-            let mut cfg = config.clone();
-            if let Some(pid) = product {
-                cfg.product_id = Some(pid);
-            }
-            // If account is specified, use that account's config
-            if let Some(acc) = account {
-                if let Ok(multi) = crate::core::load_multi_account_config() {
-                    if let Some(acc_config) = multi.accounts.get(&acc) {
-                        cfg = acc_config.clone();
-                        if let Some(pid) = product {
-                            cfg.product_id = Some(pid);
-                        }
-                    }
-                }
-            }
-            browse::bug_browse(&cfg).expect("Bug browse failed");
-        }
-        Commands::StoryBrowse { product, account } => {
-            let mut cfg = config.clone();
-            if let Some(pid) = product {
-                cfg.product_id = Some(pid);
-            }
-            // If account is specified, use that account's config
-            if let Some(acc) = account {
-                if let Ok(multi) = crate::core::load_multi_account_config() {
-                    if let Some(acc_config) = multi.accounts.get(&acc) {
-                        cfg = acc_config.clone();
-                        if let Some(pid) = product {
-                            cfg.product_id = Some(pid);
-                        }
-                    }
-                }
-            }
-            browse::story_browse(&cfg).expect("Story browse failed");
         }
         Commands::Whoami => {
             if let Some(account) = &config.account {
