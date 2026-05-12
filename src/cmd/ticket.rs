@@ -42,8 +42,14 @@ fn print_ticket_list(tickets: &[crate::api::Ticket], format: OutputFormat) {
         OutputFormat::Table => {
             println!("Tickets:");
             for item in tickets {
-                let pri = item.pri.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string());
-                println!("  [{}] {} (pri: {}) - {}", item.id, item.title, pri, item.status);
+                let pri = item
+                    .pri
+                    .map(|p| p.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                println!(
+                    "  [{}] {} (pri: {}) - {}",
+                    item.id, item.title, pri, item.status
+                );
             }
         }
         _ => println!(

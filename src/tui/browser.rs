@@ -13,15 +13,17 @@ use std::io::Stdout;
 use std::sync::mpsc;
 
 use super::app::{App, AppState};
-use crate::api::{Bug, Department, Feedback, Product, ProductPlan, Program, Project, Release, Story, Task, Testcase, Testtask, Ticket, User, Build, Execution};
+use crate::api::{
+    Bug, Build, Department, Execution, Feedback, Product, ProductPlan, Program, Project, Release,
+    Story, Task, Testcase, Testtask, Ticket, User,
+};
 use crate::core::{AppContext, OutputFormat};
 use crate::service::{
     bug::BugService, build::BuildService, department::DepartmentService,
-    execution::ExecutionService, feedback::FeedbackService,
-    product::ProductService, productplan::ProductPlanService, program::ProgramService,
-    project::ProjectService, release::ReleaseService, story::StoryService,
-    task::TaskService, testcase::TestcaseService, testtask::TesttaskService,
-    ticket::TicketService, user::UserService,
+    execution::ExecutionService, feedback::FeedbackService, product::ProductService,
+    productplan::ProductPlanService, program::ProgramService, project::ProjectService,
+    release::ReleaseService, story::StoryService, task::TaskService, testcase::TestcaseService,
+    testtask::TesttaskService, ticket::TicketService, user::UserService,
 };
 
 // Strip HTML tags from a string
@@ -45,7 +47,10 @@ fn strip_html_tags(html: &str) -> String {
                 in_tag = false;
                 // Check if it's a <br> tag and convert to newline
                 let tag_lower = tag_buf.to_lowercase();
-                if tag_lower.trim() == "br" || tag_lower.trim() == "br/>" || tag_lower.trim() == "br /" {
+                if tag_lower.trim() == "br"
+                    || tag_lower.trim() == "br/>"
+                    || tag_lower.trim() == "br /"
+                {
                     result.push('\n');
                 }
                 tag_buf.clear();
@@ -96,21 +101,55 @@ fn strip_html_tags(html: &str) -> String {
 }
 
 enum EnterAction {
-    BugDetail { bug: Bug, product_name: Option<String> },
-    StoryDetail { story: Story, product_name: Option<String> },
-    ExecutionDetail { execution: Execution, project_name: Option<String> },
-    ReleaseDetail { release: Release, product_name: Option<String> },
-    UserDetail { user: User },
-    DepartmentDetail { dept: Department },
-    ProductDetail { product: Product },
-    ProjectDetail { project: Project },
-    TaskDetail { task: Task },
-    TestcaseDetail { tc: Testcase },
-    TesttaskDetail { tt: Testtask },
-    FeedbackDetail { fb: Feedback },
-    TicketDetail { ticket: Ticket },
-    ProgramDetail { program: Program },
-    ProductPlanDetail { plan: ProductPlan },
+    BugDetail {
+        bug: Bug,
+        product_name: Option<String>,
+    },
+    StoryDetail {
+        story: Story,
+        product_name: Option<String>,
+    },
+    ExecutionDetail {
+        execution: Execution,
+        project_name: Option<String>,
+    },
+    ReleaseDetail {
+        release: Release,
+        product_name: Option<String>,
+    },
+    UserDetail {
+        user: User,
+    },
+    DepartmentDetail {
+        dept: Department,
+    },
+    ProductDetail {
+        product: Product,
+    },
+    ProjectDetail {
+        project: Project,
+    },
+    TaskDetail {
+        task: Task,
+    },
+    TestcaseDetail {
+        tc: Testcase,
+    },
+    TesttaskDetail {
+        tt: Testtask,
+    },
+    FeedbackDetail {
+        fb: Feedback,
+    },
+    TicketDetail {
+        ticket: Ticket,
+    },
+    ProgramDetail {
+        program: Program,
+    },
+    ProductPlanDetail {
+        plan: ProductPlan,
+    },
 }
 
 pub struct Browser {
@@ -175,26 +214,62 @@ impl Browser {
                     app.selected_index = 0;
                     app.list_state.borrow_mut().select(Some(0));
                     if let Some(name) = product_name {
-                        if let AppState::BugList { ref mut product_name, .. } = app.state {
+                        if let AppState::BugList {
+                            ref mut product_name,
+                            ..
+                        } = app.state
+                        {
                             *product_name = Some(name);
-                        } else if let AppState::StoryList { ref mut product_name, .. } = app.state {
+                        } else if let AppState::StoryList {
+                            ref mut product_name,
+                            ..
+                        } = app.state
+                        {
                             *product_name = Some(name);
-                        } else if let AppState::ReleaseList { ref mut product_name, .. } = app.state {
+                        } else if let AppState::ReleaseList {
+                            ref mut product_name,
+                            ..
+                        } = app.state
+                        {
                             *product_name = Some(name);
-                        } else if let AppState::TestcaseList { ref mut product_name, .. } = app.state {
+                        } else if let AppState::TestcaseList {
+                            ref mut product_name,
+                            ..
+                        } = app.state
+                        {
                             *product_name = Some(name);
                         }
                     }
                     if let Some(name) = project_name {
-                        if let AppState::ExecutionList { ref mut project_name, .. } = app.state {
+                        if let AppState::ExecutionList {
+                            ref mut project_name,
+                            ..
+                        } = app.state
+                        {
                             *project_name = Some(name);
-                        } else if let AppState::BuildList { ref mut project_name, .. } = app.state {
+                        } else if let AppState::BuildList {
+                            ref mut project_name,
+                            ..
+                        } = app.state
+                        {
                             *project_name = Some(name);
-                        } else if let AppState::TaskList { ref mut project_name, .. } = app.state {
+                        } else if let AppState::TaskList {
+                            ref mut project_name,
+                            ..
+                        } = app.state
+                        {
                             *project_name = Some(name);
-                        } else if let AppState::TesttaskList { ref mut project_name, .. } = app.state {
+                        } else if let AppState::TesttaskList {
+                            ref mut project_name,
+                            ..
+                        } = app.state
+                        {
                             *project_name = Some(name);
-                        } else if let AppState::ProductPlanList { ref mut product_name, .. } = app.state {
+                        } else if let AppState::ProductPlanList {
+                            ref mut product_name,
+                            ..
+                        } = app.state
+                        {
                             *product_name = Some(name);
                         }
                     }
@@ -203,17 +278,20 @@ impl Browser {
             }
 
             let selected = app.selected_index;
-            let current_module: Option<String> = if matches!(app.state, AppState::ModuleSelected { .. }) {
-                if let AppState::ModuleSelected { module_name } = &app.state {
-                    let name = module_name.clone();
-                    app.state = AppState::Loading { message: format!("Loading {}...", name) };
-                    Some(name)
+            let current_module: Option<String> =
+                if matches!(app.state, AppState::ModuleSelected { .. }) {
+                    if let AppState::ModuleSelected { module_name } = &app.state {
+                        let name = module_name.clone();
+                        app.state = AppState::Loading {
+                            message: format!("Loading {}...", name),
+                        };
+                        Some(name)
+                    } else {
+                        None
+                    }
                 } else {
                     None
-                }
-            } else {
-                None
-            };
+                };
 
             // Update spinner frame for loading animation
             if matches!(app.state, AppState::Loading { .. }) {
@@ -366,7 +444,12 @@ impl Browser {
                             Self::render_confirm_quit(f, area);
                         }
                         AppState::ModuleSelected { module_name } => {
-                            Self::render_loading(f, area, &format!("Loading {}...", module_name), self.spinner_frame);
+                            Self::render_loading(
+                                f,
+                                area,
+                                &format!("Loading {}...", module_name),
+                                self.spinner_frame,
+                            );
                         }
                         // States without custom rendering - use Idle as fallback
                         _ => {
@@ -385,12 +468,25 @@ impl Browser {
 
                     let result = match module_name.as_str() {
                         "Bug List" => {
-                            let bugs = match BugService::list(&ctx, config.product_id, Some("active".to_string()), None).await {
+                            let bugs = match BugService::list(
+                                &ctx,
+                                config.product_id,
+                                Some("active".to_string()),
+                                None,
+                            )
+                            .await
+                            {
                                 Ok(b) => Ok(b),
                                 Err(e) => {
                                     eprintln!("Error loading bugs (trying token refresh): {}", e);
                                     if ctx.refresh_token().await.is_ok() {
-                                        BugService::list(&ctx, config.product_id, Some("active".to_string()), None).await
+                                        BugService::list(
+                                            &ctx,
+                                            config.product_id,
+                                            Some("active".to_string()),
+                                            None,
+                                        )
+                                        .await
                                     } else {
                                         Err(e)
                                     }
@@ -400,20 +496,44 @@ impl Browser {
                                 Ok(bugs) => {
                                     let product_name = if let Some(id) = config.product_id {
                                         ProductService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = product_name.clone();
                                     (AppState::BugList { bugs, product_name }, pn, None)
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load bugs".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load bugs".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
                         "Story List" => {
-                            let stories = match StoryService::list(&ctx, config.product_id, config.project_id, None).await {
+                            let stories = match StoryService::list(
+                                &ctx,
+                                config.product_id,
+                                config.project_id,
+                                None,
+                            )
+                            .await
+                            {
                                 Ok(s) => Ok(s),
                                 Err(e) => {
-                                    eprintln!("Error loading stories (trying token refresh): {}", e);
+                                    eprintln!(
+                                        "Error loading stories (trying token refresh): {}",
+                                        e
+                                    );
                                     if ctx.refresh_token().await.is_ok() {
-                                        StoryService::list(&ctx, config.product_id, config.project_id, None).await
+                                        StoryService::list(
+                                            &ctx,
+                                            config.product_id,
+                                            config.project_id,
+                                            None,
+                                        )
+                                        .await
                                     } else {
                                         Err(e)
                                     }
@@ -423,43 +543,90 @@ impl Browser {
                                 Ok(stories) => {
                                     let product_name = if let Some(id) = config.product_id {
                                         ProductService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = product_name.clone();
-                                    (AppState::StoryList { stories, product_name }, pn, None)
+                                    (
+                                        AppState::StoryList {
+                                            stories,
+                                            product_name,
+                                        },
+                                        pn,
+                                        None,
+                                    )
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load stories".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load stories".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
                         "Execution List" => {
-                            let executions = match ExecutionService::list(&ctx, config.project_id).await {
-                                Ok(e) => Ok(e),
-                                Err(e) => {
-                                    eprintln!("Error loading executions (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        ExecutionService::list(&ctx, config.project_id).await
-                                    } else {
-                                        Err(e)
+                            let executions =
+                                match ExecutionService::list(&ctx, config.project_id).await {
+                                    Ok(e) => Ok(e),
+                                    Err(e) => {
+                                        eprintln!(
+                                            "Error loading executions (trying token refresh): {}",
+                                            e
+                                        );
+                                        if ctx.refresh_token().await.is_ok() {
+                                            ExecutionService::list(&ctx, config.project_id).await
+                                        } else {
+                                            Err(e)
+                                        }
                                     }
-                                }
-                            };
+                                };
                             match executions {
                                 Ok(executions) => {
                                     let project_name = if let Some(id) = config.project_id {
                                         ProjectService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = project_name.clone();
-                                    (AppState::ExecutionList { executions, project_name }, None, pn)
+                                    (
+                                        AppState::ExecutionList {
+                                            executions,
+                                            project_name,
+                                        },
+                                        None,
+                                        pn,
+                                    )
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load executions".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load executions".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
                         "Build List" => {
-                            let builds = match BuildService::list(&ctx, config.project_id, config.product_id, None).await {
+                            let builds = match BuildService::list(
+                                &ctx,
+                                config.project_id,
+                                config.product_id,
+                                None,
+                            )
+                            .await
+                            {
                                 Ok(b) => Ok(b),
                                 Err(e) => {
                                     eprintln!("Error loading builds (trying token refresh): {}", e);
                                     if ctx.refresh_token().await.is_ok() {
-                                        BuildService::list(&ctx, config.project_id, config.product_id, None).await
+                                        BuildService::list(
+                                            &ctx,
+                                            config.project_id,
+                                            config.product_id,
+                                            None,
+                                        )
+                                        .await
                                     } else {
                                         Err(e)
                                     }
@@ -469,24 +636,56 @@ impl Browser {
                                 Ok(builds) => {
                                     let product_name = if let Some(id) = config.product_id {
                                         ProductService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let project_name = if let Some(id) = config.project_id {
                                         ProjectService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = product_name.clone();
                                     let pjn = project_name.clone();
-                                    (AppState::BuildList { builds, product_name, project_name }, pn, pjn)
+                                    (
+                                        AppState::BuildList {
+                                            builds,
+                                            product_name,
+                                            project_name,
+                                        },
+                                        pn,
+                                        pjn,
+                                    )
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load builds".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load builds".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
                         "Release List" => {
-                            let releases = match ReleaseService::list(&ctx, config.product_id, config.project_id).await {
+                            let releases = match ReleaseService::list(
+                                &ctx,
+                                config.product_id,
+                                config.project_id,
+                            )
+                            .await
+                            {
                                 Ok(r) => Ok(r),
                                 Err(e) => {
-                                    eprintln!("Error loading releases (trying token refresh): {}", e);
+                                    eprintln!(
+                                        "Error loading releases (trying token refresh): {}",
+                                        e
+                                    );
                                     if ctx.refresh_token().await.is_ok() {
-                                        ReleaseService::list(&ctx, config.product_id, config.project_id).await
+                                        ReleaseService::list(
+                                            &ctx,
+                                            config.product_id,
+                                            config.project_id,
+                                        )
+                                        .await
                                     } else {
                                         Err(e)
                                     }
@@ -496,79 +695,146 @@ impl Browser {
                                 Ok(releases) => {
                                     let product_name = if let Some(id) = config.product_id {
                                         ProductService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = product_name.clone();
-                                    (AppState::ReleaseList { releases, product_name }, pn, None)
+                                    (
+                                        AppState::ReleaseList {
+                                            releases,
+                                            product_name,
+                                        },
+                                        pn,
+                                        None,
+                                    )
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load releases".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load releases".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
-                        "User List" => {
-                            match UserService::list(&ctx, None, None).await {
-                                Ok(users) => (AppState::UserList { users }, None, None),
-                                Err(e) => {
-                                    eprintln!("Error loading users (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match UserService::list(&ctx, None, None).await {
-                                            Ok(users) => (AppState::UserList { users }, None, None),
-                                            Err(_) => (AppState::Error { message: "Failed to load users".to_string() }, None, None)
-                                        }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load users".to_string() }, None, None)
+                        "User List" => match UserService::list(&ctx, None, None).await {
+                            Ok(users) => (AppState::UserList { users }, None, None),
+                            Err(e) => {
+                                eprintln!("Error loading users (trying token refresh): {}", e);
+                                if ctx.refresh_token().await.is_ok() {
+                                    match UserService::list(&ctx, None, None).await {
+                                        Ok(users) => (AppState::UserList { users }, None, None),
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load users".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load users".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
-                        "Department List" => {
-                            match DepartmentService::list(&ctx).await {
-                                Ok(departments) => (AppState::DepartmentList { departments }, None, None),
-                                Err(e) => {
-                                    eprintln!("Error loading departments (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match DepartmentService::list(&ctx).await {
-                                            Ok(departments) => (AppState::DepartmentList { departments }, None, None),
-                                            Err(_) => (AppState::Error { message: "Failed to load departments".to_string() }, None, None)
+                        },
+                        "Department List" => match DepartmentService::list(&ctx).await {
+                            Ok(departments) => {
+                                (AppState::DepartmentList { departments }, None, None)
+                            }
+                            Err(e) => {
+                                eprintln!(
+                                    "Error loading departments (trying token refresh): {}",
+                                    e
+                                );
+                                if ctx.refresh_token().await.is_ok() {
+                                    match DepartmentService::list(&ctx).await {
+                                        Ok(departments) => {
+                                            (AppState::DepartmentList { departments }, None, None)
                                         }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load departments".to_string() }, None, None)
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load departments".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load departments".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
-                        "Product List" => {
-                            match ProductService::list(&ctx).await {
-                                Ok(products) => (AppState::ProductList { products }, None, None),
-                                Err(e) => {
-                                    eprintln!("Error loading products (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match ProductService::list(&ctx).await {
-                                            Ok(products) => (AppState::ProductList { products }, None, None),
-                                            Err(_) => (AppState::Error { message: "Failed to load products".to_string() }, None, None)
+                        },
+                        "Product List" => match ProductService::list(&ctx).await {
+                            Ok(products) => (AppState::ProductList { products }, None, None),
+                            Err(e) => {
+                                eprintln!("Error loading products (trying token refresh): {}", e);
+                                if ctx.refresh_token().await.is_ok() {
+                                    match ProductService::list(&ctx).await {
+                                        Ok(products) => {
+                                            (AppState::ProductList { products }, None, None)
                                         }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load products".to_string() }, None, None)
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load products".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load products".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
-                        "Project List" => {
-                            match ProjectService::list(&ctx).await {
-                                Ok(projects) => (AppState::ProjectList { projects }, None, None),
-                                Err(e) => {
-                                    eprintln!("Error loading projects (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match ProjectService::list(&ctx).await {
-                                            Ok(projects) => (AppState::ProjectList { projects }, None, None),
-                                            Err(_) => (AppState::Error { message: "Failed to load projects".to_string() }, None, None)
+                        },
+                        "Project List" => match ProjectService::list(&ctx).await {
+                            Ok(projects) => (AppState::ProjectList { projects }, None, None),
+                            Err(e) => {
+                                eprintln!("Error loading projects (trying token refresh): {}", e);
+                                if ctx.refresh_token().await.is_ok() {
+                                    match ProjectService::list(&ctx).await {
+                                        Ok(projects) => {
+                                            (AppState::ProjectList { projects }, None, None)
                                         }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load projects".to_string() }, None, None)
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load projects".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load projects".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
+                        },
                         "Task List" => {
-                            let tasks = match TaskService::list(&ctx, config.project_id, None).await {
+                            let tasks = match TaskService::list(&ctx, config.project_id, None).await
+                            {
                                 Ok(t) => Ok(t),
                                 Err(e) => {
                                     eprintln!("Error loading tasks (trying token refresh): {}", e);
@@ -583,20 +849,53 @@ impl Browser {
                                 Ok(tasks) => {
                                     let project_name = if let Some(id) = config.project_id {
                                         ProjectService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = project_name.clone();
-                                    (AppState::TaskList { tasks, project_name }, None, pn)
+                                    (
+                                        AppState::TaskList {
+                                            tasks,
+                                            project_name,
+                                        },
+                                        None,
+                                        pn,
+                                    )
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load tasks".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load tasks".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
                         "Testcase List" => {
-                            let testcases = match TestcaseService::list(&ctx, config.product_id, None, None, None).await {
+                            let testcases = match TestcaseService::list(
+                                &ctx,
+                                config.product_id,
+                                None,
+                                None,
+                                None,
+                            )
+                            .await
+                            {
                                 Ok(tc) => Ok(tc),
                                 Err(e) => {
-                                    eprintln!("Error loading testcases (trying token refresh): {}", e);
+                                    eprintln!(
+                                        "Error loading testcases (trying token refresh): {}",
+                                        e
+                                    );
                                     if ctx.refresh_token().await.is_ok() {
-                                        TestcaseService::list(&ctx, config.product_id, None, None, None).await
+                                        TestcaseService::list(
+                                            &ctx,
+                                            config.product_id,
+                                            None,
+                                            None,
+                                            None,
+                                        )
+                                        .await
                                     } else {
                                         Err(e)
                                     }
@@ -606,94 +905,178 @@ impl Browser {
                                 Ok(testcases) => {
                                     let product_name = if let Some(id) = config.product_id {
                                         ProductService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = product_name.clone();
-                                    (AppState::TestcaseList { testcases, product_name }, pn, None)
+                                    (
+                                        AppState::TestcaseList {
+                                            testcases,
+                                            product_name,
+                                        },
+                                        pn,
+                                        None,
+                                    )
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load testcases".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load testcases".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
-                        "Testtask List" => {
-                            match TesttaskService::list(&ctx, 1, 100).await {
-                                Ok(testtasks) => {
-                                    let project_name = if let Some(id) = config.project_id {
-                                        ProjectService::get_name(&ctx, id).await.ok()
-                                    } else { None };
-                                    let pn = project_name.clone();
-                                    (AppState::TesttaskList { testtasks, project_name }, None, pn)
-                                }
-                                Err(e) => {
-                                    eprintln!("Error loading testtasks (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match TesttaskService::list(&ctx, 1, 100).await {
-                                            Ok(testtasks) => {
-                                                let project_name = if let Some(id) = config.project_id {
-                                                    ProjectService::get_name(&ctx, id).await.ok()
-                                                } else { None };
-                                                let pn = project_name.clone();
-                                                (AppState::TesttaskList { testtasks, project_name }, None, pn)
-                                            }
-                                            Err(_) => (AppState::Error { message: "Failed to load testtasks".to_string() }, None, None)
+                        "Testtask List" => match TesttaskService::list(&ctx, 1, 100).await {
+                            Ok(testtasks) => {
+                                let project_name = if let Some(id) = config.project_id {
+                                    ProjectService::get_name(&ctx, id).await.ok()
+                                } else {
+                                    None
+                                };
+                                let pn = project_name.clone();
+                                (
+                                    AppState::TesttaskList {
+                                        testtasks,
+                                        project_name,
+                                    },
+                                    None,
+                                    pn,
+                                )
+                            }
+                            Err(e) => {
+                                eprintln!("Error loading testtasks (trying token refresh): {}", e);
+                                if ctx.refresh_token().await.is_ok() {
+                                    match TesttaskService::list(&ctx, 1, 100).await {
+                                        Ok(testtasks) => {
+                                            let project_name = if let Some(id) = config.project_id {
+                                                ProjectService::get_name(&ctx, id).await.ok()
+                                            } else {
+                                                None
+                                            };
+                                            let pn = project_name.clone();
+                                            (
+                                                AppState::TesttaskList {
+                                                    testtasks,
+                                                    project_name,
+                                                },
+                                                None,
+                                                pn,
+                                            )
                                         }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load testtasks".to_string() }, None, None)
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load testtasks".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load testtasks".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
-                        "Feedback List" => {
-                            match FeedbackService::list(&ctx, 1, 100).await {
-                                Ok(feedbacks) => (AppState::FeedbackList { feedbacks }, None, None),
-                                Err(e) => {
-                                    eprintln!("Error loading feedbacks (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match FeedbackService::list(&ctx, 1, 100).await {
-                                            Ok(feedbacks) => (AppState::FeedbackList { feedbacks }, None, None),
-                                            Err(_) => (AppState::Error { message: "Failed to load feedbacks".to_string() }, None, None)
+                        },
+                        "Feedback List" => match FeedbackService::list(&ctx, 1, 100).await {
+                            Ok(feedbacks) => (AppState::FeedbackList { feedbacks }, None, None),
+                            Err(e) => {
+                                eprintln!("Error loading feedbacks (trying token refresh): {}", e);
+                                if ctx.refresh_token().await.is_ok() {
+                                    match FeedbackService::list(&ctx, 1, 100).await {
+                                        Ok(feedbacks) => {
+                                            (AppState::FeedbackList { feedbacks }, None, None)
                                         }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load feedbacks".to_string() }, None, None)
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load feedbacks".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load feedbacks".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
-                        "Ticket List" => {
-                            match TicketService::list(&ctx, 1, 100).await {
-                                Ok(tickets) => (AppState::TicketList { tickets }, None, None),
-                                Err(e) => {
-                                    eprintln!("Error loading tickets (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match TicketService::list(&ctx, 1, 100).await {
-                                            Ok(tickets) => (AppState::TicketList { tickets }, None, None),
-                                            Err(_) => (AppState::Error { message: "Failed to load tickets".to_string() }, None, None)
+                        },
+                        "Ticket List" => match TicketService::list(&ctx, 1, 100).await {
+                            Ok(tickets) => (AppState::TicketList { tickets }, None, None),
+                            Err(e) => {
+                                eprintln!("Error loading tickets (trying token refresh): {}", e);
+                                if ctx.refresh_token().await.is_ok() {
+                                    match TicketService::list(&ctx, 1, 100).await {
+                                        Ok(tickets) => {
+                                            (AppState::TicketList { tickets }, None, None)
                                         }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load tickets".to_string() }, None, None)
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load tickets".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load tickets".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
-                        "Program List" => {
-                            match ProgramService::list(&ctx).await {
-                                Ok(programs) => (AppState::ProgramList { programs }, None, None),
-                                Err(e) => {
-                                    eprintln!("Error loading programs (trying token refresh): {}", e);
-                                    if ctx.refresh_token().await.is_ok() {
-                                        match ProgramService::list(&ctx).await {
-                                            Ok(programs) => (AppState::ProgramList { programs }, None, None),
-                                            Err(_) => (AppState::Error { message: "Failed to load programs".to_string() }, None, None)
+                        },
+                        "Program List" => match ProgramService::list(&ctx).await {
+                            Ok(programs) => (AppState::ProgramList { programs }, None, None),
+                            Err(e) => {
+                                eprintln!("Error loading programs (trying token refresh): {}", e);
+                                if ctx.refresh_token().await.is_ok() {
+                                    match ProgramService::list(&ctx).await {
+                                        Ok(programs) => {
+                                            (AppState::ProgramList { programs }, None, None)
                                         }
-                                    } else {
-                                        (AppState::Error { message: "Failed to load programs".to_string() }, None, None)
+                                        Err(_) => (
+                                            AppState::Error {
+                                                message: "Failed to load programs".to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ),
                                     }
+                                } else {
+                                    (
+                                        AppState::Error {
+                                            message: "Failed to load programs".to_string(),
+                                        },
+                                        None,
+                                        None,
+                                    )
                                 }
                             }
-                        }
+                        },
                         "ProductPlan List" => {
-                            let plans = match ProductPlanService::list(&ctx, config.product_id).await {
+                            let plans = match ProductPlanService::list(&ctx, config.product_id)
+                                .await
+                            {
                                 Ok(p) => Ok(p),
                                 Err(e) => {
-                                    eprintln!("Error loading product plans (trying token refresh): {}", e);
+                                    eprintln!(
+                                        "Error loading product plans (trying token refresh): {}",
+                                        e
+                                    );
                                     if ctx.refresh_token().await.is_ok() {
                                         ProductPlanService::list(&ctx, config.product_id).await
                                     } else {
@@ -705,16 +1088,35 @@ impl Browser {
                                 Ok(plans) => {
                                     let product_name = if let Some(id) = config.product_id {
                                         ProductService::get_name(&ctx, id).await.ok()
-                                    } else { None };
+                                    } else {
+                                        None
+                                    };
                                     let pn = product_name.clone();
-                                    (AppState::ProductPlanList { plans, product_name }, pn, None)
+                                    (
+                                        AppState::ProductPlanList {
+                                            plans,
+                                            product_name,
+                                        },
+                                        pn,
+                                        None,
+                                    )
                                 }
-                                Err(_) => (AppState::Error { message: "Failed to load product plans".to_string() }, None, None)
+                                Err(_) => (
+                                    AppState::Error {
+                                        message: "Failed to load product plans".to_string(),
+                                    },
+                                    None,
+                                    None,
+                                ),
                             }
                         }
-                        _ => {
-                            (AppState::Error { message: format!("Unknown module: {}", module_name) }, None, None)
-                        }
+                        _ => (
+                            AppState::Error {
+                                message: format!("Unknown module: {}", module_name),
+                            },
+                            None,
+                            None,
+                        ),
                     };
                     let _ = tx.send(result);
                 });
@@ -807,7 +1209,9 @@ impl Browser {
                 // Sync with list_state for MainMenu
                 if matches!(app.state, AppState::MainMenu { .. }) {
                     let _ = app.main_menu_state.borrow().selected();
-                    app.main_menu_state.borrow_mut().select(Some(app.selected_index));
+                    app.main_menu_state
+                        .borrow_mut()
+                        .select(Some(app.selected_index));
                 } else {
                     // Sync with list_state for other list states
                     let _ = app.list_state.borrow().selected();
@@ -818,11 +1222,15 @@ impl Browser {
                 let max = match &app.state {
                     AppState::BugList { bugs, .. } => bugs.len().saturating_sub(1),
                     AppState::StoryList { stories, .. } => stories.len().saturating_sub(1),
-                    AppState::ExecutionList { executions, .. } => executions.len().saturating_sub(1),
+                    AppState::ExecutionList { executions, .. } => {
+                        executions.len().saturating_sub(1)
+                    }
                     AppState::BuildList { builds, .. } => builds.len().saturating_sub(1),
                     AppState::ReleaseList { releases, .. } => releases.len().saturating_sub(1),
                     AppState::UserList { users, .. } => users.len().saturating_sub(1),
-                    AppState::DepartmentList { departments, .. } => departments.len().saturating_sub(1),
+                    AppState::DepartmentList { departments, .. } => {
+                        departments.len().saturating_sub(1)
+                    }
                     AppState::ProductList { products, .. } => products.len().saturating_sub(1),
                     AppState::ProjectList { projects, .. } => projects.len().saturating_sub(1),
                     AppState::TaskList { tasks, .. } => tasks.len().saturating_sub(1),
@@ -839,7 +1247,9 @@ impl Browser {
                     AppState::AccountSelect { multi_config, .. } => {
                         multi_config.list_account_names().len().saturating_sub(1)
                     }
-                    AppState::MainMenu { .. } => App::get_main_menu_modules().len().saturating_sub(1),
+                    AppState::MainMenu { .. } => {
+                        App::get_main_menu_modules().len().saturating_sub(1)
+                    }
                     _ => 0,
                 };
                 if app.selected_index < max {
@@ -848,7 +1258,9 @@ impl Browser {
                 // Sync with list_state
                 if matches!(app.state, AppState::MainMenu { .. }) {
                     let _ = app.main_menu_state.borrow().selected();
-                    app.main_menu_state.borrow_mut().select(Some(app.selected_index));
+                    app.main_menu_state
+                        .borrow_mut()
+                        .select(Some(app.selected_index));
                 } else {
                     let _ = app.list_state.borrow().selected();
                     app.list_state.borrow_mut().select(Some(app.selected_index));
@@ -858,67 +1270,109 @@ impl Browser {
                 // Enter key handling for navigation
                 // Extract data first to avoid borrow conflicts
                 let action = match &app.state {
-                    AppState::BugList { bugs, product_name } if !bugs.is_empty() && app.selected_index < bugs.len() => {
+                    AppState::BugList { bugs, product_name }
+                        if !bugs.is_empty() && app.selected_index < bugs.len() =>
+                    {
                         let bug = bugs[app.selected_index].clone();
                         let product_name = product_name.clone();
                         Some(EnterAction::BugDetail { bug, product_name })
                     }
-                    AppState::StoryList { stories, product_name } if !stories.is_empty() && app.selected_index < stories.len() => {
+                    AppState::StoryList {
+                        stories,
+                        product_name,
+                    } if !stories.is_empty() && app.selected_index < stories.len() => {
                         let story = stories[app.selected_index].clone();
                         let product_name = product_name.clone();
-                        Some(EnterAction::StoryDetail { story, product_name })
+                        Some(EnterAction::StoryDetail {
+                            story,
+                            product_name,
+                        })
                     }
-                    AppState::ExecutionList { executions, project_name } if !executions.is_empty() && app.selected_index < executions.len() => {
+                    AppState::ExecutionList {
+                        executions,
+                        project_name,
+                    } if !executions.is_empty() && app.selected_index < executions.len() => {
                         let execution = executions[app.selected_index].clone();
                         let project_name = project_name.clone();
-                        Some(EnterAction::ExecutionDetail { execution, project_name })
+                        Some(EnterAction::ExecutionDetail {
+                            execution,
+                            project_name,
+                        })
                     }
-                    AppState::ReleaseList { releases, product_name } if !releases.is_empty() && app.selected_index < releases.len() => {
+                    AppState::ReleaseList {
+                        releases,
+                        product_name,
+                    } if !releases.is_empty() && app.selected_index < releases.len() => {
                         let release = releases[app.selected_index].clone();
                         let product_name = product_name.clone();
-                        Some(EnterAction::ReleaseDetail { release, product_name })
+                        Some(EnterAction::ReleaseDetail {
+                            release,
+                            product_name,
+                        })
                     }
-                    AppState::UserList { users } if !users.is_empty() && app.selected_index < users.len() => {
+                    AppState::UserList { users }
+                        if !users.is_empty() && app.selected_index < users.len() =>
+                    {
                         let user = users[app.selected_index].clone();
                         Some(EnterAction::UserDetail { user })
                     }
-                    AppState::DepartmentList { departments } if !departments.is_empty() && app.selected_index < departments.len() => {
+                    AppState::DepartmentList { departments }
+                        if !departments.is_empty() && app.selected_index < departments.len() =>
+                    {
                         let dept = departments[app.selected_index].clone();
                         Some(EnterAction::DepartmentDetail { dept })
                     }
-                    AppState::ProductList { products } if !products.is_empty() && app.selected_index < products.len() => {
+                    AppState::ProductList { products }
+                        if !products.is_empty() && app.selected_index < products.len() =>
+                    {
                         let product = products[app.selected_index].clone();
                         Some(EnterAction::ProductDetail { product })
                     }
-                    AppState::ProjectList { projects } if !projects.is_empty() && app.selected_index < projects.len() => {
+                    AppState::ProjectList { projects }
+                        if !projects.is_empty() && app.selected_index < projects.len() =>
+                    {
                         let project = projects[app.selected_index].clone();
                         Some(EnterAction::ProjectDetail { project })
                     }
-                    AppState::TaskList { tasks, .. } if !tasks.is_empty() && app.selected_index < tasks.len() => {
+                    AppState::TaskList { tasks, .. }
+                        if !tasks.is_empty() && app.selected_index < tasks.len() =>
+                    {
                         let task = tasks[app.selected_index].clone();
                         Some(EnterAction::TaskDetail { task })
                     }
-                    AppState::TestcaseList { testcases, .. } if !testcases.is_empty() && app.selected_index < testcases.len() => {
+                    AppState::TestcaseList { testcases, .. }
+                        if !testcases.is_empty() && app.selected_index < testcases.len() =>
+                    {
                         let tc = testcases[app.selected_index].clone();
                         Some(EnterAction::TestcaseDetail { tc })
                     }
-                    AppState::TesttaskList { testtasks, .. } if !testtasks.is_empty() && app.selected_index < testtasks.len() => {
+                    AppState::TesttaskList { testtasks, .. }
+                        if !testtasks.is_empty() && app.selected_index < testtasks.len() =>
+                    {
                         let tt = testtasks[app.selected_index].clone();
                         Some(EnterAction::TesttaskDetail { tt })
                     }
-                    AppState::FeedbackList { feedbacks } if !feedbacks.is_empty() && app.selected_index < feedbacks.len() => {
+                    AppState::FeedbackList { feedbacks }
+                        if !feedbacks.is_empty() && app.selected_index < feedbacks.len() =>
+                    {
                         let fb = feedbacks[app.selected_index].clone();
                         Some(EnterAction::FeedbackDetail { fb })
                     }
-                    AppState::TicketList { tickets } if !tickets.is_empty() && app.selected_index < tickets.len() => {
+                    AppState::TicketList { tickets }
+                        if !tickets.is_empty() && app.selected_index < tickets.len() =>
+                    {
                         let ticket = tickets[app.selected_index].clone();
                         Some(EnterAction::TicketDetail { ticket })
                     }
-                    AppState::ProgramList { programs } if !programs.is_empty() && app.selected_index < programs.len() => {
+                    AppState::ProgramList { programs }
+                        if !programs.is_empty() && app.selected_index < programs.len() =>
+                    {
                         let program = programs[app.selected_index].clone();
                         Some(EnterAction::ProgramDetail { program })
                     }
-                    AppState::ProductPlanList { plans, .. } if !plans.is_empty() && app.selected_index < plans.len() => {
+                    AppState::ProductPlanList { plans, .. }
+                        if !plans.is_empty() && app.selected_index < plans.len() =>
+                    {
                         let plan = plans[app.selected_index].clone();
                         Some(EnterAction::ProductPlanDetail { plan })
                     }
@@ -927,7 +1381,8 @@ impl Browser {
                             app.saved_main_index = app.selected_index;
                             // Settings doesn't load data, it shows settings panel directly
                             if module_name == "Settings" {
-                                let current_account = app.config.account.clone().unwrap_or_default();
+                                let current_account =
+                                    app.config.account.clone().unwrap_or_default();
                                 app.state = AppState::Settings {
                                     multi_config: app.multi_config.clone(),
                                     selected: 0,
@@ -950,10 +1405,21 @@ impl Browser {
                 if let Some(act) = action {
                     app.save_list();
                     match act {
-                        EnterAction::BugDetail { bug, product_name } => app.set_bug_detail(bug, product_name),
-                        EnterAction::StoryDetail { story, product_name } => app.set_story_detail(story, product_name),
-                        EnterAction::ExecutionDetail { execution, project_name } => app.set_execution_detail(execution, project_name),
-                        EnterAction::ReleaseDetail { release, product_name } => app.set_release_detail(release, product_name),
+                        EnterAction::BugDetail { bug, product_name } => {
+                            app.set_bug_detail(bug, product_name)
+                        }
+                        EnterAction::StoryDetail {
+                            story,
+                            product_name,
+                        } => app.set_story_detail(story, product_name),
+                        EnterAction::ExecutionDetail {
+                            execution,
+                            project_name,
+                        } => app.set_execution_detail(execution, project_name),
+                        EnterAction::ReleaseDetail {
+                            release,
+                            product_name,
+                        } => app.set_release_detail(release, product_name),
                         EnterAction::UserDetail { user } => app.set_user_detail(user),
                         EnterAction::DepartmentDetail { dept } => app.set_department_detail(dept),
                         EnterAction::ProductDetail { product } => app.set_product_detail(product),
@@ -964,31 +1430,47 @@ impl Browser {
                         EnterAction::FeedbackDetail { fb } => app.set_feedback_detail(fb),
                         EnterAction::TicketDetail { ticket } => app.set_ticket_detail(ticket),
                         EnterAction::ProgramDetail { program } => app.set_program_detail(program),
-                        EnterAction::ProductPlanDetail { plan } => app.set_productplan_detail(plan, None),
+                        EnterAction::ProductPlanDetail { plan } => {
+                            app.set_productplan_detail(plan, None)
+                        }
                     }
                 }
             }
             KeyCode::Esc | KeyCode::Char('q') => match &app.state {
-                AppState::BugDetail { .. } | AppState::StoryDetail { .. }
-                | AppState::ExecutionDetail { .. } | AppState::BuildDetail { .. }
-                | AppState::ReleaseDetail { .. } | AppState::UserDetail { .. }
-                | AppState::DepartmentDetail { .. } | AppState::ProductDetail { .. }
-                | AppState::ProjectDetail { .. } | AppState::TaskDetail { .. }
+                AppState::BugDetail { .. }
+                | AppState::StoryDetail { .. }
+                | AppState::ExecutionDetail { .. }
+                | AppState::BuildDetail { .. }
+                | AppState::ReleaseDetail { .. }
+                | AppState::UserDetail { .. }
+                | AppState::DepartmentDetail { .. }
+                | AppState::ProductDetail { .. }
+                | AppState::ProjectDetail { .. }
+                | AppState::TaskDetail { .. }
                 | AppState::TestcaseDetail { .. }
-                | AppState::TesttaskDetail { .. } | AppState::FeedbackDetail { .. }
-                | AppState::TicketDetail { .. } | AppState::ProgramDetail { .. }
+                | AppState::TesttaskDetail { .. }
+                | AppState::FeedbackDetail { .. }
+                | AppState::TicketDetail { .. }
+                | AppState::ProgramDetail { .. }
                 | AppState::ProductPlanDetail { .. } => {
                     app.restore_list();
                 }
                 // List states - return to MainMenu
-                AppState::BugList { .. } | AppState::StoryList { .. }
-                | AppState::ExecutionList { .. } | AppState::BuildList { .. }
-                | AppState::ReleaseList { .. } | AppState::UserList { .. }
-                | AppState::DepartmentList { .. } | AppState::ProductList { .. }
-                | AppState::ProjectList { .. } | AppState::TaskList { .. }
+                AppState::BugList { .. }
+                | AppState::StoryList { .. }
+                | AppState::ExecutionList { .. }
+                | AppState::BuildList { .. }
+                | AppState::ReleaseList { .. }
+                | AppState::UserList { .. }
+                | AppState::DepartmentList { .. }
+                | AppState::ProductList { .. }
+                | AppState::ProjectList { .. }
+                | AppState::TaskList { .. }
                 | AppState::TestcaseList { .. }
-                | AppState::TesttaskList { .. } | AppState::FeedbackList { .. }
-                | AppState::TicketList { .. } | AppState::ProgramList { .. }
+                | AppState::TesttaskList { .. }
+                | AppState::FeedbackList { .. }
+                | AppState::TicketList { .. }
+                | AppState::ProgramList { .. }
                 | AppState::ProductPlanList { .. } => {
                     app.set_main_menu();
                 }
@@ -1026,42 +1508,42 @@ impl Browser {
                     AppState::StoryList { stories, .. } => {
                         stories.get(app.selected_index).map(|s| s.web_url(base_url))
                     }
-                    AppState::ReleaseList { releases, .. } => {
-                        releases.get(app.selected_index).map(|r| r.web_url(base_url))
-                    }
+                    AppState::ReleaseList { releases, .. } => releases
+                        .get(app.selected_index)
+                        .map(|r| r.web_url(base_url)),
                     AppState::UserList { users } => {
                         users.get(app.selected_index).map(|u| u.web_url(base_url))
                     }
-                    AppState::DepartmentList { departments } => {
-                        departments.get(app.selected_index).map(|d| d.web_url(base_url))
-                    }
-                    AppState::ProductList { products } => {
-                        products.get(app.selected_index).map(|p| format!("{}/product-view-{}.html", base_url, p.id))
-                    }
-                    AppState::ProjectList { projects } => {
-                        projects.get(app.selected_index).map(|p| format!("{}/project-view-{}.html", base_url, p.id))
-                    }
-                    AppState::TaskList { tasks, .. } => {
-                        tasks.get(app.selected_index).map(|t| format!("{}/task-view-{}.html", base_url, t.id))
-                    }
-                    AppState::TestcaseList { testcases, .. } => {
-                        testcases.get(app.selected_index).map(|t| format!("{}/testcase-view-{}.html", base_url, t.id))
-                    }
-                    AppState::TesttaskList { testtasks, .. } => {
-                        testtasks.get(app.selected_index).map(|t| format!("{}/testtask-view-{}.html", base_url, t.id))
-                    }
-                    AppState::FeedbackList { feedbacks } => {
-                        feedbacks.get(app.selected_index).map(|f| format!("{}/feedback-view-{}.html", base_url, f.id))
-                    }
-                    AppState::TicketList { tickets } => {
-                        tickets.get(app.selected_index).map(|t| format!("{}/ticket-view-{}.html", base_url, t.id))
-                    }
-                    AppState::ProgramList { programs } => {
-                        programs.get(app.selected_index).map(|p| format!("{}/program-view-{}.html", base_url, p.id))
-                    }
-                    AppState::ProductPlanList { plans, .. } => {
-                        plans.get(app.selected_index).map(|p| format!("{}/productplan-view-{}.html", base_url, p.id))
-                    }
+                    AppState::DepartmentList { departments } => departments
+                        .get(app.selected_index)
+                        .map(|d| d.web_url(base_url)),
+                    AppState::ProductList { products } => products
+                        .get(app.selected_index)
+                        .map(|p| format!("{}/product-view-{}.html", base_url, p.id)),
+                    AppState::ProjectList { projects } => projects
+                        .get(app.selected_index)
+                        .map(|p| format!("{}/project-view-{}.html", base_url, p.id)),
+                    AppState::TaskList { tasks, .. } => tasks
+                        .get(app.selected_index)
+                        .map(|t| format!("{}/task-view-{}.html", base_url, t.id)),
+                    AppState::TestcaseList { testcases, .. } => testcases
+                        .get(app.selected_index)
+                        .map(|t| format!("{}/testcase-view-{}.html", base_url, t.id)),
+                    AppState::TesttaskList { testtasks, .. } => testtasks
+                        .get(app.selected_index)
+                        .map(|t| format!("{}/testtask-view-{}.html", base_url, t.id)),
+                    AppState::FeedbackList { feedbacks } => feedbacks
+                        .get(app.selected_index)
+                        .map(|f| format!("{}/feedback-view-{}.html", base_url, f.id)),
+                    AppState::TicketList { tickets } => tickets
+                        .get(app.selected_index)
+                        .map(|t| format!("{}/ticket-view-{}.html", base_url, t.id)),
+                    AppState::ProgramList { programs } => programs
+                        .get(app.selected_index)
+                        .map(|p| format!("{}/program-view-{}.html", base_url, p.id)),
+                    AppState::ProductPlanList { plans, .. } => plans
+                        .get(app.selected_index)
+                        .map(|p| format!("{}/productplan-view-{}.html", base_url, p.id)),
                     _ => None,
                 };
 
@@ -1209,12 +1691,10 @@ impl Browser {
         let text = Paragraph::new(Text::from(vec![
             Line::from(Span::raw(message)),
             Line::from(Span::raw("")),
-            Line::from(vec![
-                Span::styled(
-                    format!("[{}] Loading...", spinner),
-                    Style::default().fg(Color::Yellow),
-                ),
-            ]),
+            Line::from(vec![Span::styled(
+                format!("[{}] Loading...", spinner),
+                Style::default().fg(Color::Yellow),
+            )]),
         ]))
         .block(Block::default().borders(Borders::ALL).title("Please wait"));
 
@@ -1369,7 +1849,10 @@ impl Browser {
         f.render_widget(details, chunks[1]);
 
         // Strip HTML tags from steps
-        let steps_text = bug.steps.as_deref().unwrap_or("No reproduction steps provided.");
+        let steps_text = bug
+            .steps
+            .as_deref()
+            .unwrap_or("No reproduction steps provided.");
         let steps_text = strip_html_tags(steps_text);
         // Split by newline to create multiple lines
         let steps_lines: Vec<Line> = steps_text
@@ -1587,7 +2070,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Execution List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Execution List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", executions.len())),
             Span::raw(" items)"),
@@ -1643,7 +2129,11 @@ impl Browser {
         f.render_widget(footer, chunks[2]);
     }
 
-    fn render_execution_detail(f: &mut ratatui::Frame, area: Rect, execution: &crate::api::Execution) {
+    fn render_execution_detail(
+        f: &mut ratatui::Frame,
+        area: Rect,
+        execution: &crate::api::Execution,
+    ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
@@ -1656,9 +2146,16 @@ impl Browser {
 
         let title = Paragraph::new(Text::from(vec![Line::from(vec![
             Span::raw(format!("Execution #{} - ", execution.id)),
-            Span::styled(&execution.name, Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                &execution.name,
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Execution Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Execution Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
@@ -1684,7 +2181,10 @@ impl Browser {
                 Span::raw("Days: "),
                 Span::raw(format!(
                     "{}",
-                    execution.days.map(|d| d.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    execution
+                        .days
+                        .map(|d| d.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
         ]))
@@ -1693,7 +2193,10 @@ impl Browser {
         f.render_widget(details, chunks[1]);
 
         let desc = Paragraph::new(Text::from(vec![Line::from(Span::raw(
-            execution.desc.as_deref().unwrap_or("No description provided."),
+            execution
+                .desc
+                .as_deref()
+                .unwrap_or("No description provided."),
         ))]))
         .block(Block::default().borders(Borders::ALL).title("Description"));
 
@@ -1747,7 +2250,10 @@ impl Browser {
                     Span::raw(" "),
                     Span::styled(&build.name, Style::default()),
                     Span::raw(" | "),
-                    Span::raw(format!("Stories: {}", build.stories.as_deref().unwrap_or("0"))),
+                    Span::raw(format!(
+                        "Stories: {}",
+                        build.stories.as_deref().unwrap_or("0")
+                    )),
                     Span::raw(" | "),
                     Span::raw(format!("Bugs: {}", build.bugs.as_deref().unwrap_or("0"))),
                 ]))
@@ -1796,11 +2302,23 @@ impl Browser {
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
-            Line::from(vec![Span::raw("Product: "), Span::raw(format!("{}", build.product))]),
-            Line::from(vec![Span::raw("Project: "), Span::raw(format!("{}", build.project))]),
+            Line::from(vec![
+                Span::raw("Product: "),
+                Span::raw(format!("{}", build.product)),
+            ]),
+            Line::from(vec![
+                Span::raw("Project: "),
+                Span::raw(format!("{}", build.project)),
+            ]),
             Line::from(vec![
                 Span::raw("Branch: "),
-                Span::raw(format!("{}", build.branch.map(|b| b.to_string()).unwrap_or_else(|| "N/A".to_string()))),
+                Span::raw(format!(
+                    "{}",
+                    build
+                        .branch
+                        .map(|b| b.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
+                )),
             ]),
             Line::from(vec![
                 Span::raw("SCM Path: "),
@@ -1866,7 +2384,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Release List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Release List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", releases.len())),
             Span::raw(" items)"),
@@ -1934,16 +2455,34 @@ impl Browser {
             Span::raw(format!("Release #{} - ", release.id)),
             Span::styled(&release.name, Style::default().add_modifier(Modifier::BOLD)),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Release Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Release Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
             Line::from(vec![Span::raw("Status: "), Span::raw(&release.status)]),
-            Line::from(vec![Span::raw("Product: "), Span::raw(release.product.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string()))]),
+            Line::from(vec![
+                Span::raw("Product: "),
+                Span::raw(
+                    release
+                        .product
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string()),
+                ),
+            ]),
             Line::from(vec![
                 Span::raw("Build: "),
-                Span::raw(format!("{}", release.build.map(|b| b.to_string()).unwrap_or_else(|| "N/A".to_string()))),
+                Span::raw(format!(
+                    "{}",
+                    release
+                        .build
+                        .map(|b| b.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
+                )),
             ]),
             Line::from(vec![
                 Span::raw("Marker: "),
@@ -2049,7 +2588,10 @@ impl Browser {
 
         let title = Paragraph::new(Text::from(vec![Line::from(vec![
             Span::raw(format!("User #{} - ", user.id)),
-            Span::styled(&user.realname, Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                &user.realname,
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(&user.account),
             Span::raw(")"),
@@ -2067,7 +2609,12 @@ impl Browser {
             ]),
             Line::from(vec![
                 Span::raw("Dept: "),
-                Span::raw(format!("{}", user.dept.map(|d| d.to_string()).unwrap_or_else(|| "N/A".to_string()))),
+                Span::raw(format!(
+                    "{}",
+                    user.dept
+                        .map(|d| d.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
+                )),
             ]),
             Line::from(vec![
                 Span::raw("Role: "),
@@ -2109,7 +2656,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Department List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Department List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", departments.len())),
             Span::raw(" items)"),
@@ -2128,7 +2678,9 @@ impl Browser {
                     Span::raw(" | "),
                     Span::raw(format!(
                         "Parent: {}",
-                        dept.parent.map(|p| p.to_string()).unwrap_or_else(|| "root".to_string())
+                        dept.parent
+                            .map(|p| p.to_string())
+                            .unwrap_or_else(|| "root".to_string())
                     )),
                 ]))
             })
@@ -2151,7 +2703,11 @@ impl Browser {
             Span::raw("/"),
             Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
             Span::raw(" back  |  "),
-            Span::raw(format!("Selected: {} / {}", selected + 1, departments.len())),
+            Span::raw(format!(
+                "Selected: {} / {}",
+                selected + 1,
+                departments.len()
+            )),
         ])]));
         f.render_widget(footer, chunks[2]);
     }
@@ -2169,27 +2725,43 @@ impl Browser {
 
         let title = Paragraph::new(Text::from(vec![Line::from(vec![
             Span::raw(format!("Department #{} - ", department.id)),
-            Span::styled(&department.name, Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                &department.name,
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Department Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Department Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
-            Line::from(vec![Span::raw("ID: "), Span::raw(format!("{}", department.id))]),
+            Line::from(vec![
+                Span::raw("ID: "),
+                Span::raw(format!("{}", department.id)),
+            ]),
             Line::from(vec![Span::raw("Name: "), Span::raw(&department.name)]),
             Line::from(vec![
                 Span::raw("Parent: "),
                 Span::raw(format!(
                     "{}",
-                    department.parent.map(|p| p.to_string()).unwrap_or_else(|| "root".to_string())
+                    department
+                        .parent
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "root".to_string())
                 )),
             ]),
             Line::from(vec![
                 Span::raw("Order: "),
                 Span::raw(format!(
                     "{}",
-                    department.order.map(|o| o.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    department
+                        .order
+                        .map(|o| o.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
@@ -2232,7 +2804,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Product List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Product List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", products.len())),
             Span::raw(" items)"),
@@ -2300,12 +2875,19 @@ impl Browser {
             Span::raw(format!("Product #{} - ", product.id)),
             Span::styled(&product.name, Style::default().add_modifier(Modifier::BOLD)),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Product Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Product Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
-            Line::from(vec![Span::raw("ID: "), Span::raw(format!("{}", product.id))]),
+            Line::from(vec![
+                Span::raw("ID: "),
+                Span::raw(format!("{}", product.id)),
+            ]),
             Line::from(vec![Span::raw("Name: "), Span::raw(&product.name)]),
             Line::from(vec![Span::raw("Code: "), Span::raw(&product.code)]),
             Line::from(vec![Span::raw("Status: "), Span::raw(&product.status)]),
@@ -2315,7 +2897,10 @@ impl Browser {
         f.render_widget(details, chunks[1]);
 
         let desc = Paragraph::new(Text::from(vec![Line::from(Span::raw(
-            product.desc.as_deref().unwrap_or("No description provided."),
+            product
+                .desc
+                .as_deref()
+                .unwrap_or("No description provided."),
         ))]))
         .block(Block::default().borders(Borders::ALL).title("Description"));
 
@@ -2352,7 +2937,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Project List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Project List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", projects.len())),
             Span::raw(" items)"),
@@ -2421,12 +3009,19 @@ impl Browser {
             Span::raw(format!("Project #{} - ", project.id)),
             Span::styled(&project.name, Style::default().add_modifier(Modifier::BOLD)),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Project Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Project Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
-            Line::from(vec![Span::raw("ID: "), Span::raw(format!("{}", project.id))]),
+            Line::from(vec![
+                Span::raw("ID: "),
+                Span::raw(format!("{}", project.id)),
+            ]),
             Line::from(vec![Span::raw("Name: "), Span::raw(&project.name)]),
             Line::from(vec![Span::raw("Code: "), Span::raw(&project.code)]),
             Line::from(vec![Span::raw("Status: "), Span::raw(&project.status)]),
@@ -2436,7 +3031,10 @@ impl Browser {
         f.render_widget(details, chunks[1]);
 
         let desc = Paragraph::new(Text::from(vec![Line::from(Span::raw(
-            project.desc.as_deref().unwrap_or("No description provided."),
+            project
+                .desc
+                .as_deref()
+                .unwrap_or("No description provided."),
         ))]))
         .block(Block::default().borders(Borders::ALL).title("Description"));
 
@@ -2548,8 +3146,14 @@ impl Browser {
 
         let details = Paragraph::new(Text::from(vec![
             Line::from(vec![Span::raw("Status: "), Span::raw(&task.status)]),
-            Line::from(vec![Span::raw("Priority: "), Span::raw(format!("{}", task.pri))]),
-            Line::from(vec![Span::raw("Project: "), Span::raw(format!("{}", task.project))]),
+            Line::from(vec![
+                Span::raw("Priority: "),
+                Span::raw(format!("{}", task.pri)),
+            ]),
+            Line::from(vec![
+                Span::raw("Project: "),
+                Span::raw(format!("{}", task.project)),
+            ]),
             Line::from(vec![
                 Span::raw("Assigned: "),
                 Span::raw(task.assigned_to.as_deref().unwrap_or("Unassigned")),
@@ -2558,21 +3162,27 @@ impl Browser {
                 Span::raw("Estimate: "),
                 Span::raw(format!(
                     "{}",
-                    task.estimate.map(|e| format!("{}h", e)).unwrap_or_else(|| "N/A".to_string())
+                    task.estimate
+                        .map(|e| format!("{}h", e))
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
                 Span::raw("Consumed: "),
                 Span::raw(format!(
                     "{}",
-                    task.consumed.map(|c| format!("{}h", c)).unwrap_or_else(|| "N/A".to_string())
+                    task.consumed
+                        .map(|c| format!("{}h", c))
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
                 Span::raw("Left: "),
                 Span::raw(format!(
                     "{}",
-                    task.left.map(|l| format!("{}h", l)).unwrap_or_else(|| "N/A".to_string())
+                    task.left
+                        .map(|l| format!("{}h", l))
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
         ]))
@@ -2611,7 +3221,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Testcase List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Testcase List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", testcases.len())),
             Span::raw(" items)"),
@@ -2639,7 +3252,12 @@ impl Browser {
                     ),
                     Span::raw(" | "),
                     Span::styled(
-                        format!("Sev:{}", tc.severity.map(|s| s.to_string()).unwrap_or_else(|| "N/A".to_string())),
+                        format!(
+                            "Sev:{}",
+                            tc.severity
+                                .map(|s| s.to_string())
+                                .unwrap_or_else(|| "N/A".to_string())
+                        ),
                         match tc.severity {
                             Some(1) => Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
                             Some(2) => Style::default().fg(Color::Yellow),
@@ -2685,9 +3303,16 @@ impl Browser {
 
         let title = Paragraph::new(Text::from(vec![Line::from(vec![
             Span::raw(format!("Testcase #{} - ", testcase.id)),
-            Span::styled(&testcase.title, Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                &testcase.title,
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Testcase Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Testcase Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
@@ -2697,8 +3322,24 @@ impl Browser {
                 Span::raw("Type: "),
                 Span::raw(testcase.type_.as_deref().unwrap_or("N/A")),
             ]),
-            Line::from(vec![Span::raw("Severity: "), Span::raw(testcase.severity.map(|s| s.to_string()).unwrap_or_else(|| "N/A".to_string()))]),
-            Line::from(vec![Span::raw("Priority: "), Span::raw(testcase.pri.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string()))]),
+            Line::from(vec![
+                Span::raw("Severity: "),
+                Span::raw(
+                    testcase
+                        .severity
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| "N/A".to_string()),
+                ),
+            ]),
+            Line::from(vec![
+                Span::raw("Priority: "),
+                Span::raw(
+                    testcase
+                        .pri
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string()),
+                ),
+            ]),
             Line::from(vec![
                 Span::raw("Product: "),
                 Span::raw(format!("{}", testcase.product)),
@@ -2707,7 +3348,10 @@ impl Browser {
                 Span::raw("Version: "),
                 Span::raw(format!(
                     "{}",
-                    testcase.version.map(|v| v.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    testcase
+                        .version
+                        .map(|v| v.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
         ]))
@@ -2758,7 +3402,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Testtask List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Testtask List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", testtasks.len())),
             Span::raw(" items)"),
@@ -2828,9 +3475,16 @@ impl Browser {
 
         let title = Paragraph::new(Text::from(vec![Line::from(vec![
             Span::raw(format!("Testtask #{} - ", testtask.id)),
-            Span::styled(&testtask.name, Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                &testtask.name,
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Testtask Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Testtask Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
@@ -2840,12 +3494,18 @@ impl Browser {
                 Span::raw("Type: "),
                 Span::raw(testtask.type_.as_deref().unwrap_or("N/A")),
             ]),
-            Line::from(vec![Span::raw("Project: "), Span::raw(format!("{}", testtask.project))]),
+            Line::from(vec![
+                Span::raw("Project: "),
+                Span::raw(format!("{}", testtask.project)),
+            ]),
             Line::from(vec![
                 Span::raw("Product: "),
                 Span::raw(format!(
                     "{}",
-                    testtask.product.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    testtask
+                        .product
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
@@ -2856,7 +3516,10 @@ impl Browser {
                 Span::raw("Begin: "),
                 Span::raw(testtask.begin.as_deref().unwrap_or("N/A")),
             ]),
-            Line::from(vec![Span::raw("End: "), Span::raw(testtask.end.as_deref().unwrap_or("N/A"))]),
+            Line::from(vec![
+                Span::raw("End: "),
+                Span::raw(testtask.end.as_deref().unwrap_or("N/A")),
+            ]),
             Line::from(vec![
                 Span::raw("Cases: "),
                 Span::raw(testtask.case_count.as_deref().unwrap_or("0")),
@@ -2905,7 +3568,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Feedback List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Feedback List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", feedbacks.len())),
             Span::raw(" items)"),
@@ -2972,9 +3638,16 @@ impl Browser {
 
         let title = Paragraph::new(Text::from(vec![Line::from(vec![
             Span::raw(format!("Feedback #{} - ", feedback.id)),
-            Span::styled(&feedback.title, Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                &feedback.title,
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Feedback Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Feedback Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
@@ -2988,14 +3661,20 @@ impl Browser {
                 Span::raw("Priority: "),
                 Span::raw(format!(
                     "{}",
-                    feedback.pri.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    feedback
+                        .pri
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
                 Span::raw("Product: "),
                 Span::raw(format!(
                     "{}",
-                    feedback.product.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    feedback
+                        .product
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
@@ -3118,7 +3797,11 @@ impl Browser {
             Span::raw(format!("Ticket #{} - ", ticket.id)),
             Span::styled(&ticket.title, Style::default().add_modifier(Modifier::BOLD)),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Ticket Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Ticket Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
@@ -3132,21 +3815,30 @@ impl Browser {
                 Span::raw("Priority: "),
                 Span::raw(format!(
                     "{}",
-                    ticket.pri.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    ticket
+                        .pri
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
                 Span::raw("Severity: "),
                 Span::raw(format!(
                     "{}",
-                    ticket.severity.map(|s| s.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    ticket
+                        .severity
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
                 Span::raw("Product: "),
                 Span::raw(format!(
                     "{}",
-                    ticket.product.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    ticket
+                        .product
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
@@ -3201,7 +3893,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Program List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Program List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", programs.len())),
             Span::raw(" items)"),
@@ -3270,12 +3965,19 @@ impl Browser {
             Span::raw(format!("Program #{} - ", program.id)),
             Span::styled(&program.name, Style::default().add_modifier(Modifier::BOLD)),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("Program Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Program Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
-            Line::from(vec![Span::raw("ID: "), Span::raw(format!("{}", program.id))]),
+            Line::from(vec![
+                Span::raw("ID: "),
+                Span::raw(format!("{}", program.id)),
+            ]),
             Line::from(vec![Span::raw("Name: "), Span::raw(&program.name)]),
             Line::from(vec![Span::raw("Code: "), Span::raw(&program.code)]),
             Line::from(vec![Span::raw("Status: "), Span::raw(&program.status)]),
@@ -3287,7 +3989,10 @@ impl Browser {
                 Span::raw("Parent: "),
                 Span::raw(format!(
                     "{}",
-                    program.parent.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    program
+                        .parent
+                        .map(|p| p.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
@@ -3298,7 +4003,10 @@ impl Browser {
                 Span::raw("Begin: "),
                 Span::raw(program.begin.as_deref().unwrap_or("N/A")),
             ]),
-            Line::from(vec![Span::raw("End: "), Span::raw(program.end.as_deref().unwrap_or("N/A"))]),
+            Line::from(vec![
+                Span::raw("End: "),
+                Span::raw(program.end.as_deref().unwrap_or("N/A")),
+            ]),
         ]))
         .block(Block::default().borders(Borders::ALL).title("Details"));
 
@@ -3335,7 +4043,10 @@ impl Browser {
             .split(area);
 
         let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("ProductPlan List", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "ProductPlan List",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::raw(" ("),
             Span::raw(format!("{}", plans.len())),
             Span::raw(" items)"),
@@ -3404,27 +4115,49 @@ impl Browser {
 
         let title = Paragraph::new(Text::from(vec![Line::from(vec![
             Span::raw(format!("ProductPlan #{} - ", plan.id)),
-            Span::styled(plan.name.as_deref().unwrap_or("-"), Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                plan.name.as_deref().unwrap_or("-"),
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
         ])]))
-        .block(Block::default().borders(Borders::ALL).title("ProductPlan Detail"));
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("ProductPlan Detail"),
+        );
 
         f.render_widget(title, chunks[0]);
 
         let details = Paragraph::new(Text::from(vec![
             Line::from(vec![Span::raw("ID: "), Span::raw(format!("{}", plan.id))]),
-            Line::from(vec![Span::raw("Name: "), Span::raw(plan.name.as_deref().unwrap_or("-"))]),
-            Line::from(vec![Span::raw("Code: "), Span::raw(plan.code.as_deref().unwrap_or("-"))]),
-            Line::from(vec![Span::raw("Status: "), Span::raw(plan.status.as_deref().unwrap_or("-"))]),
+            Line::from(vec![
+                Span::raw("Name: "),
+                Span::raw(plan.name.as_deref().unwrap_or("-")),
+            ]),
+            Line::from(vec![
+                Span::raw("Code: "),
+                Span::raw(plan.code.as_deref().unwrap_or("-")),
+            ]),
+            Line::from(vec![
+                Span::raw("Status: "),
+                Span::raw(plan.status.as_deref().unwrap_or("-")),
+            ]),
             Line::from(vec![
                 Span::raw("Type: "),
                 Span::raw(plan.type_.as_deref().unwrap_or("N/A")),
             ]),
-            Line::from(vec![Span::raw("Product: "), Span::raw(format!("{}", plan.product))]),
+            Line::from(vec![
+                Span::raw("Product: "),
+                Span::raw(format!("{}", plan.product)),
+            ]),
             Line::from(vec![
                 Span::raw("Begin: "),
                 Span::raw(plan.begin.as_deref().unwrap_or("N/A")),
             ]),
-            Line::from(vec![Span::raw("End: "), Span::raw(plan.end.as_deref().unwrap_or("N/A"))]),
+            Line::from(vec![
+                Span::raw("End: "),
+                Span::raw(plan.end.as_deref().unwrap_or("N/A")),
+            ]),
             Line::from(vec![
                 Span::raw("Owner: "),
                 Span::raw(plan.owner.as_deref().unwrap_or("N/A")),
@@ -3433,14 +4166,18 @@ impl Browser {
                 Span::raw("Stories: "),
                 Span::raw(format!(
                     "{}",
-                    plan.story_count.map(|s| s.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    plan.story_count
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
             Line::from(vec![
                 Span::raw("Bugs: "),
                 Span::raw(format!(
                     "{}",
-                    plan.bug_count.map(|b| b.to_string()).unwrap_or_else(|| "N/A".to_string())
+                    plan.bug_count
+                        .map(|b| b.to_string())
+                        .unwrap_or_else(|| "N/A".to_string())
                 )),
             ]),
         ]))
@@ -3752,9 +4489,9 @@ impl Browser {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(3),  // Header
-                Constraint::Min(0),     // Menu items
-                Constraint::Length(3),   // Footer
+                Constraint::Length(3), // Header
+                Constraint::Min(0),    // Menu items
+                Constraint::Length(3), // Footer
             ])
             .split(area);
 
@@ -3776,12 +4513,21 @@ impl Browser {
                 let is_selected = i == selected;
                 let prefix = if is_selected { "> " } else { "  " };
                 let style = if is_selected {
-                    Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD)
                 } else {
                     Style::default().fg(Color::White)
                 };
                 ListItem::new(Line::from(vec![
-                    Span::styled(prefix, if is_selected { Color::Cyan } else { Color::Gray }),
+                    Span::styled(
+                        prefix,
+                        if is_selected {
+                            Color::Cyan
+                        } else {
+                            Color::Gray
+                        },
+                    ),
                     Span::styled(*module, style),
                 ]))
             })

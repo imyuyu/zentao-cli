@@ -18,7 +18,11 @@ impl DepartmentService {
     }
 
     pub async fn get(ctx: &AppContext, id: u64) -> Result<Department> {
-        log(LogLevel::Info, "DepartmentService", format!("get id={}", id));
+        log(
+            LogLevel::Info,
+            "DepartmentService",
+            format!("get id={}", id),
+        );
         let client = ctx.client();
         DepartmentApi::get(&client, id).await
     }

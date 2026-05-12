@@ -59,7 +59,11 @@ impl ProjectService {
     }
 
     pub async fn get_name(ctx: &AppContext, id: u64) -> Result<String> {
-        log(LogLevel::Info, "ProjectService", format!("get_name id={}", id));
+        log(
+            LogLevel::Info,
+            "ProjectService",
+            format!("get_name id={}", id),
+        );
         let project = Self::get(ctx, id).await?;
         Ok(project.name)
     }

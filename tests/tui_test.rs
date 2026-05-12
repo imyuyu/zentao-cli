@@ -209,23 +209,21 @@ fn test_set_bug_detail() {
 #[test]
 fn test_set_story_list() {
     let mut app = create_test_app();
-    let stories = vec![
-        Story {
-            id: 1,
-            title: "Test Story 1".to_string(),
-            description: Some("Description 1".to_string()),
-            status: "active".to_string(),
-            pri: 3,
-            category: None,
-            stage: None,
-            product: 1,
-            module: None,
-            assigned_to: None,
-            opened_by: None,
-            estimate: None,
-            version: None,
-        },
-    ];
+    let stories = vec![Story {
+        id: 1,
+        title: "Test Story 1".to_string(),
+        description: Some("Description 1".to_string()),
+        status: "active".to_string(),
+        pri: 3,
+        category: None,
+        stage: None,
+        product: 1,
+        module: None,
+        assigned_to: None,
+        opened_by: None,
+        estimate: None,
+        version: None,
+    }];
 
     app.set_story_list(stories.clone(), Some("Test Product".to_string()));
 
@@ -548,25 +546,23 @@ fn test_get_main_menu_modules() {
 #[test]
 fn test_selected_index_bounds() {
     let mut app = create_test_app();
-    let bugs = vec![
-        Bug {
-            id: 1,
-            title: "Bug 1".to_string(),
-            description: None,
-            status: "active".to_string(),
-            severity: 3,
-            pri: 3,
-            type_: None,
-            resolution: None,
-            steps: None,
-            product: 1,
-            project: None,
-            story: None,
-            assigned_to: None,
-            resolved_by: None,
-            resolved_date: None,
-        },
-    ];
+    let bugs = vec![Bug {
+        id: 1,
+        title: "Bug 1".to_string(),
+        description: None,
+        status: "active".to_string(),
+        severity: 3,
+        pri: 3,
+        type_: None,
+        resolution: None,
+        steps: None,
+        product: 1,
+        project: None,
+        story: None,
+        assigned_to: None,
+        resolved_by: None,
+        resolved_date: None,
+    }];
 
     app.state = AppState::BugList {
         bugs,
@@ -596,15 +592,13 @@ fn test_is_quitting() {
 #[test]
 fn test_set_department_list() {
     let mut app = create_test_app();
-    let departments = vec![
-        Department {
-            id: 1,
-            name: "HR".to_string(),
-            parent: None,
-            order: Some(1),
-            path: None,
-        },
-    ];
+    let departments = vec![Department {
+        id: 1,
+        name: "HR".to_string(),
+        parent: None,
+        order: Some(1),
+        path: None,
+    }];
 
     app.set_department_list(departments.clone());
 

@@ -1,13 +1,13 @@
 use crate::core::{load_multi_account_config, AppContext, Config, OutputFormat};
 use crate::service::bug::BugService;
-use crate::service::story::StoryService;
-use crate::service::execution::ExecutionService;
 use crate::service::build::BuildService;
-use crate::service::release::ReleaseService;
-use crate::service::user::UserService;
 use crate::service::department::DepartmentService;
+use crate::service::execution::ExecutionService;
 use crate::service::product::ProductService;
 use crate::service::project::ProjectService;
+use crate::service::release::ReleaseService;
+use crate::service::story::StoryService;
+use crate::service::user::UserService;
 use crate::tui::{App, Browser};
 use anyhow::Result;
 
@@ -36,13 +36,22 @@ pub fn bug_browse(config: &Config) -> Result<()> {
         app.set_loading("Fetching bugs...".to_string());
 
         // 尝试获取 bugs，失败时尝试刷新 token 重试
-        let bugs = match BugService::list(&ctx, config.product_id, Some("active".to_string()), None).await {
+        let bugs = match BugService::list(&ctx, config.product_id, Some("active".to_string()), None)
+            .await
+        {
             Ok(bugs) => bugs,
             Err(e) => {
                 // 检查是否是 401 错误，尝试刷新 token
                 eprintln!("Error fetching bugs (trying token refresh): {}", e);
                 if ctx.refresh_token().await.is_ok() {
-                    match BugService::list(&ctx, config.product_id, Some("active".to_string()), None).await {
+                    match BugService::list(
+                        &ctx,
+                        config.product_id,
+                        Some("active".to_string()),
+                        None,
+                    )
+                    .await
+                    {
                         Ok(bugs) => bugs,
                         Err(e2) => {
                             eprintln!("Error fetching bugs after token refresh: {}", e2);
@@ -85,12 +94,15 @@ pub fn story_browse(config: &Config) -> Result<()> {
         app.set_loading("Fetching stories...".to_string());
 
         // 尝试获取 stories，失败时尝试刷新 token 重试
-        let stories = match StoryService::list(&ctx, config.product_id, config.project_id, None).await {
+        let stories = match StoryService::list(&ctx, config.product_id, config.project_id, None)
+            .await
+        {
             Ok(stories) => stories,
             Err(e) => {
                 eprintln!("Error fetching stories (trying token refresh): {}", e);
                 if ctx.refresh_token().await.is_ok() {
-                    match StoryService::list(&ctx, config.product_id, config.project_id, None).await {
+                    match StoryService::list(&ctx, config.product_id, config.project_id, None).await
+                    {
                         Ok(stories) => stories,
                         Err(e2) => {
                             eprintln!("Error fetching stories after token refresh: {}", e2);
@@ -181,12 +193,15 @@ pub fn build_browse(config: &Config) -> Result<()> {
         app.set_loading("Fetching builds...".to_string());
 
         // 尝试获取 builds，失败时尝试刷新 token 重试
-        let builds = match BuildService::list(&ctx, config.project_id, config.product_id, None).await {
+        let builds = match BuildService::list(&ctx, config.project_id, config.product_id, None)
+            .await
+        {
             Ok(builds) => builds,
             Err(e) => {
                 eprintln!("Error fetching builds (trying token refresh): {}", e);
                 if ctx.refresh_token().await.is_ok() {
-                    match BuildService::list(&ctx, config.project_id, config.product_id, None).await {
+                    match BuildService::list(&ctx, config.project_id, config.product_id, None).await
+                    {
                         Ok(builds) => builds,
                         Err(e2) => {
                             eprintln!("Error fetching builds after token refresh: {}", e2);
@@ -234,7 +249,8 @@ pub fn release_browse(config: &Config) -> Result<()> {
         app.set_loading("Fetching releases...".to_string());
 
         // 尝试获取 releases，失败时尝试刷新 token 重试
-        let releases = match ReleaseService::list(&ctx, config.product_id, config.project_id).await {
+        let releases = match ReleaseService::list(&ctx, config.product_id, config.project_id).await
+        {
             Ok(releases) => releases,
             Err(e) => {
                 eprintln!("Error fetching releases (trying token refresh): {}", e);

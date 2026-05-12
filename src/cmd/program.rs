@@ -42,7 +42,10 @@ fn print_program_list(programs: &[crate::api::Program], format: OutputFormat) {
         OutputFormat::Table => {
             println!("Programs:");
             for item in programs {
-                println!("  [{}] {} ({}) - {}", item.id, item.name, item.code, item.status);
+                println!(
+                    "  [{}] {} ({}) - {}",
+                    item.id, item.name, item.code, item.status
+                );
             }
         }
         _ => println!(

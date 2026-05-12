@@ -100,10 +100,7 @@ impl FeedbackApi {
     /// - page: 页码（默认 1）
     /// - limit: 每页数量（默认 100）
     pub async fn list(client: &ApiClient, page: u32, limit: u32) -> Result<Vec<Feedback>> {
-        let path = format!(
-            "/api.php/v1/feedbacks?page={}&limit={}",
-            page, limit
-        );
+        let path = format!("/api.php/v1/feedbacks?page={}&limit={}", page, limit);
 
         let resp: FeedbackListResponse = client.get(&path).await?;
         Ok(resp.feedbacks.unwrap_or_default())

@@ -49,7 +49,10 @@ where
             if s.is_empty() {
                 Ok(None)
             } else if let Some(num_str) = s.split('_').last() {
-                num_str.parse::<u64>().map_err(serde::de::Error::custom).map(Some)
+                num_str
+                    .parse::<u64>()
+                    .map_err(serde::de::Error::custom)
+                    .map(Some)
             } else {
                 s.parse::<u64>().map_err(serde::de::Error::custom).map(Some)
             }

@@ -42,8 +42,14 @@ fn print_feedback_list(feedbacks: &[crate::api::Feedback], format: OutputFormat)
         OutputFormat::Table => {
             println!("Feedbacks:");
             for item in feedbacks {
-                let pri = item.pri.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string());
-                println!("  [{}] {} (pri: {}) - {}", item.id, item.title, pri, item.status);
+                let pri = item
+                    .pri
+                    .map(|p| p.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
+                println!(
+                    "  [{}] {} (pri: {}) - {}",
+                    item.id, item.title, pri, item.status
+                );
             }
         }
         _ => println!(

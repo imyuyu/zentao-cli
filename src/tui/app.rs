@@ -1,4 +1,7 @@
-use crate::api::{Bug, Department, Feedback, Product, ProductPlan, Program, Project, Release, Story, Task, Testcase, Testtask, Ticket, User};
+use crate::api::{
+    Bug, Department, Feedback, Product, ProductPlan, Program, Project, Release, Story, Task,
+    Testcase, Testtask, Ticket, User,
+};
 use crate::core::config::{Config, MultiAccountConfig};
 
 #[derive(Debug, Clone)]
@@ -271,46 +274,90 @@ impl App {
     }
 
     pub fn set_story_list(&mut self, stories: Vec<Story>, product_name: Option<String>) {
-        self.state = AppState::StoryList { stories, product_name };
+        self.state = AppState::StoryList {
+            stories,
+            product_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
 
     pub fn set_story_detail(&mut self, story: Story, product_name: Option<String>) {
-        self.state = AppState::StoryDetail { story, product_name };
+        self.state = AppState::StoryDetail {
+            story,
+            product_name,
+        };
         self.selected_index = 0;
     }
 
-    pub fn set_execution_list(&mut self, executions: Vec<crate::api::Execution>, project_name: Option<String>) {
-        self.state = AppState::ExecutionList { executions, project_name };
+    pub fn set_execution_list(
+        &mut self,
+        executions: Vec<crate::api::Execution>,
+        project_name: Option<String>,
+    ) {
+        self.state = AppState::ExecutionList {
+            executions,
+            project_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
 
-    pub fn set_execution_detail(&mut self, execution: crate::api::Execution, project_name: Option<String>) {
-        self.state = AppState::ExecutionDetail { execution, project_name };
+    pub fn set_execution_detail(
+        &mut self,
+        execution: crate::api::Execution,
+        project_name: Option<String>,
+    ) {
+        self.state = AppState::ExecutionDetail {
+            execution,
+            project_name,
+        };
         self.selected_index = 0;
     }
 
-    pub fn set_build_list(&mut self, builds: Vec<crate::api::Build>, product_name: Option<String>, project_name: Option<String>) {
-        self.state = AppState::BuildList { builds, product_name, project_name };
+    pub fn set_build_list(
+        &mut self,
+        builds: Vec<crate::api::Build>,
+        product_name: Option<String>,
+        project_name: Option<String>,
+    ) {
+        self.state = AppState::BuildList {
+            builds,
+            product_name,
+            project_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
 
-    pub fn set_build_detail(&mut self, build: crate::api::Build, product_name: Option<String>, project_name: Option<String>) {
-        self.state = AppState::BuildDetail { build, product_name, project_name };
+    pub fn set_build_detail(
+        &mut self,
+        build: crate::api::Build,
+        product_name: Option<String>,
+        project_name: Option<String>,
+    ) {
+        self.state = AppState::BuildDetail {
+            build,
+            product_name,
+            project_name,
+        };
         self.selected_index = 0;
     }
 
     pub fn set_release_list(&mut self, releases: Vec<Release>, product_name: Option<String>) {
-        self.state = AppState::ReleaseList { releases, product_name };
+        self.state = AppState::ReleaseList {
+            releases,
+            product_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
 
     pub fn set_release_detail(&mut self, release: Release, product_name: Option<String>) {
-        self.state = AppState::ReleaseDetail { release, product_name };
+        self.state = AppState::ReleaseDetail {
+            release,
+            product_name,
+        };
         self.selected_index = 0;
     }
 
@@ -359,7 +406,10 @@ impl App {
     }
 
     pub fn set_task_list(&mut self, tasks: Vec<Task>, project_name: Option<String>) {
-        self.state = AppState::TaskList { tasks, project_name };
+        self.state = AppState::TaskList {
+            tasks,
+            project_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
@@ -370,24 +420,36 @@ impl App {
     }
 
     pub fn set_testcase_list(&mut self, testcases: Vec<Testcase>, product_name: Option<String>) {
-        self.state = AppState::TestcaseList { testcases, product_name };
+        self.state = AppState::TestcaseList {
+            testcases,
+            product_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
 
     pub fn set_testcase_detail(&mut self, testcase: Testcase, product_name: Option<String>) {
-        self.state = AppState::TestcaseDetail { testcase, product_name };
+        self.state = AppState::TestcaseDetail {
+            testcase,
+            product_name,
+        };
         self.selected_index = 0;
     }
 
     pub fn set_testtask_list(&mut self, testtasks: Vec<Testtask>, project_name: Option<String>) {
-        self.state = AppState::TesttaskList { testtasks, project_name };
+        self.state = AppState::TesttaskList {
+            testtasks,
+            project_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
 
     pub fn set_testtask_detail(&mut self, testtask: Testtask, project_name: Option<String>) {
-        self.state = AppState::TesttaskDetail { testtask, project_name };
+        self.state = AppState::TesttaskDetail {
+            testtask,
+            project_name,
+        };
         self.selected_index = 0;
     }
 
@@ -425,7 +487,10 @@ impl App {
     }
 
     pub fn set_productplan_list(&mut self, plans: Vec<ProductPlan>, product_name: Option<String>) {
-        self.state = AppState::ProductPlanList { plans, product_name };
+        self.state = AppState::ProductPlanList {
+            plans,
+            product_name,
+        };
         self.selected_index = 0;
         self.list_state.borrow_mut().select(Some(0));
     }
@@ -524,51 +589,69 @@ impl App {
             AppState::BugList { bugs, product_name } => {
                 Some(SavedList::BugList(bugs.clone(), product_name.clone()))
             }
-            AppState::StoryList { stories, product_name } => {
-                Some(SavedList::StoryList(stories.clone(), product_name.clone()))
-            }
-            AppState::ExecutionList { executions, project_name } => {
-                Some(SavedList::ExecutionList(executions.clone(), project_name.clone()))
-            }
-            AppState::BuildList { builds, product_name, project_name } => {
-                Some(SavedList::BuildList(builds.clone(), product_name.clone(), project_name.clone()))
-            }
-            AppState::ReleaseList { releases, product_name } => {
-                Some(SavedList::ReleaseList(releases.clone(), product_name.clone()))
-            }
-            AppState::UserList { users } => {
-                Some(SavedList::UserList(users.clone()))
-            }
+            AppState::StoryList {
+                stories,
+                product_name,
+            } => Some(SavedList::StoryList(stories.clone(), product_name.clone())),
+            AppState::ExecutionList {
+                executions,
+                project_name,
+            } => Some(SavedList::ExecutionList(
+                executions.clone(),
+                project_name.clone(),
+            )),
+            AppState::BuildList {
+                builds,
+                product_name,
+                project_name,
+            } => Some(SavedList::BuildList(
+                builds.clone(),
+                product_name.clone(),
+                project_name.clone(),
+            )),
+            AppState::ReleaseList {
+                releases,
+                product_name,
+            } => Some(SavedList::ReleaseList(
+                releases.clone(),
+                product_name.clone(),
+            )),
+            AppState::UserList { users } => Some(SavedList::UserList(users.clone())),
             AppState::DepartmentList { departments } => {
                 Some(SavedList::DepartmentList(departments.clone()))
             }
-            AppState::ProductList { products } => {
-                Some(SavedList::ProductList(products.clone()))
-            }
-            AppState::ProjectList { projects } => {
-                Some(SavedList::ProjectList(projects.clone()))
-            }
-            AppState::TaskList { tasks, project_name } => {
-                Some(SavedList::TaskList(tasks.clone(), project_name.clone()))
-            }
-            AppState::TestcaseList { testcases, product_name } => {
-                Some(SavedList::TestcaseList(testcases.clone(), product_name.clone()))
-            }
-            AppState::TesttaskList { testtasks, project_name } => {
-                Some(SavedList::TesttaskList(testtasks.clone(), project_name.clone()))
-            }
+            AppState::ProductList { products } => Some(SavedList::ProductList(products.clone())),
+            AppState::ProjectList { projects } => Some(SavedList::ProjectList(projects.clone())),
+            AppState::TaskList {
+                tasks,
+                project_name,
+            } => Some(SavedList::TaskList(tasks.clone(), project_name.clone())),
+            AppState::TestcaseList {
+                testcases,
+                product_name,
+            } => Some(SavedList::TestcaseList(
+                testcases.clone(),
+                product_name.clone(),
+            )),
+            AppState::TesttaskList {
+                testtasks,
+                project_name,
+            } => Some(SavedList::TesttaskList(
+                testtasks.clone(),
+                project_name.clone(),
+            )),
             AppState::FeedbackList { feedbacks } => {
                 Some(SavedList::FeedbackList(feedbacks.clone()))
             }
-            AppState::TicketList { tickets } => {
-                Some(SavedList::TicketList(tickets.clone()))
-            }
-            AppState::ProgramList { programs } => {
-                Some(SavedList::ProgramList(programs.clone()))
-            }
-            AppState::ProductPlanList { plans, product_name } => {
-                Some(SavedList::ProductPlanList(plans.clone(), product_name.clone()))
-            }
+            AppState::TicketList { tickets } => Some(SavedList::TicketList(tickets.clone())),
+            AppState::ProgramList { programs } => Some(SavedList::ProgramList(programs.clone())),
+            AppState::ProductPlanList {
+                plans,
+                product_name,
+            } => Some(SavedList::ProductPlanList(
+                plans.clone(),
+                product_name.clone(),
+            )),
             _ => None,
         };
         self.saved_list = saved;

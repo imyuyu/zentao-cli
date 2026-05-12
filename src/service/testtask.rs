@@ -12,7 +12,12 @@ impl TesttaskService {
         TesttaskApi::list(&client, page, limit).await
     }
 
-    pub async fn list_by_project(ctx: &AppContext, project: u64, page: u32, limit: u32) -> Result<Vec<Testtask>> {
+    pub async fn list_by_project(
+        ctx: &AppContext,
+        project: u64,
+        page: u32,
+        limit: u32,
+    ) -> Result<Vec<Testtask>> {
         log(LogLevel::Info, "TesttaskService", "list_by_project");
         let client = ctx.client();
         TesttaskApi::list_by_project(&client, project, page, limit).await

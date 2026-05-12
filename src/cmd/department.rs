@@ -42,7 +42,10 @@ fn print_department_list(departments: &[crate::api::Department], format: OutputF
         OutputFormat::Table => {
             println!("Departments:");
             for item in departments {
-                let parent = item.parent.map(|p| p.to_string()).unwrap_or_else(|| "N/A".to_string());
+                let parent = item
+                    .parent
+                    .map(|p| p.to_string())
+                    .unwrap_or_else(|| "N/A".to_string());
                 println!("  [{}] {} (parent: {})", item.id, item.name, parent);
             }
         }

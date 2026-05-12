@@ -68,11 +68,7 @@ impl AppContext {
         crate::core::save_config(&self.config)?;
 
         eprintln!("[DEBUG] refresh_token: success");
-        log(
-            LogLevel::Info,
-            "AppContext",
-            "Token refreshed successfully",
-        );
+        log(LogLevel::Info, "AppContext", "Token refreshed successfully");
 
         Ok(())
     }

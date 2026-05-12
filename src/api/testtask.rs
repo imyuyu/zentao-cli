@@ -105,10 +105,7 @@ impl TesttaskApi {
     /// - page: 页码（默认 1）
     /// - limit: 每页数量（默认 100）
     pub async fn list(client: &ApiClient, page: u32, limit: u32) -> Result<Vec<Testtask>> {
-        let path = format!(
-            "/api.php/v1/testtasks?page={}&limit={}",
-            page, limit
-        );
+        let path = format!("/api.php/v1/testtasks?page={}&limit={}", page, limit);
 
         let resp: TesttaskListResponse = client.get(&path).await?;
         Ok(resp.testtasks.unwrap_or_default())

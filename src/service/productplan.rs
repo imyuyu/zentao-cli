@@ -20,7 +20,11 @@ impl ProductPlanService {
 
     /// 获取单个产品计划详情
     pub async fn get(ctx: &AppContext, id: u64) -> Result<ProductPlan> {
-        log(LogLevel::Info, "ProductPlanService", format!("get id={}", id));
+        log(
+            LogLevel::Info,
+            "ProductPlanService",
+            format!("get id={}", id),
+        );
         let client = ctx.client();
         ProductPlanApi::get(&client, id).await
     }

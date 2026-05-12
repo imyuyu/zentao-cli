@@ -17,10 +17,7 @@ pub async fn run(cmd: &ProductPlanSubcommand, ctx: &AppContext) {
                         &format!("{}/api.php/v1/products/{}/plans", ctx.config.url, pid),
                     );
                 } else {
-                    print_dry_run(
-                        "ProductPlanService::list()",
-                        "product ID is required",
-                    );
+                    print_dry_run("ProductPlanService::list()", "product ID is required");
                 }
                 return;
             }

@@ -187,10 +187,7 @@ impl ProductPlanApi {
     /// 创建产品计划
     ///
     /// POST /api.php/v1/productplans
-    pub async fn create(
-        client: &ApiClient,
-        req: &CreateProductPlanRequest,
-    ) -> Result<ProductPlan> {
+    pub async fn create(client: &ApiClient, req: &CreateProductPlanRequest) -> Result<ProductPlan> {
         #[derive(Deserialize)]
         struct CreateResponse {
             id: Option<u64>,
