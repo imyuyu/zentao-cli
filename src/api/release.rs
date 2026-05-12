@@ -34,9 +34,10 @@ pub struct Release {
     /// 发布名称
     pub name: String,
     /// 所属产品 ID
-    pub product: u64,
+    #[serde(deserialize_with = "crate::api::types::deserialize_optional_id")]
+    pub product: Option<u64>,
     /// 关联的 Build（版本）ID
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(deserialize_with = "crate::api::types::deserialize_optional_id")]
     pub build: Option<u64>,
     /// 发布状态：normal（正常）/closed（关闭）
     pub status: String,
@@ -46,6 +47,12 @@ pub struct Release {
     /// 发布日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<String>,
+}
+
+impl Release {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/release-view-{}.html", base_url, self.id)
+    }
 }
 
 // ============================================================
@@ -171,7 +178,7 @@ mod tests {
         let release: Release = serde_json::from_str(release_json).unwrap();
         assert_eq!(release.id, 10);
         assert_eq!(release.name, "v2.0.0");
-        assert_eq!(release.product, 1);
+        assert_eq!(release.product, Some(1));
         assert_eq!(release.build, Some(20));
         assert_eq!(release.status, "normal");
         assert_eq!(release.marker, Some("beta".to_string()));

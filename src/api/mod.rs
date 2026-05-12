@@ -12,20 +12,29 @@
 //! - `project`: 项目 API
 //! - `task`: 任务 API
 //! - `testcase`: 测试用例 API
+//! - `testtask`: 测试单 API
+//! - `feedback`: 反馈 API
+//! - `ticket`: 工单 API
 
 pub mod auth;
 pub mod auth_client;
 pub mod bug;
 pub mod build;
 pub mod client;
+pub mod department;
 pub mod doc;
 pub mod execution;
+pub mod feedback;
 pub mod product;
+pub mod productplan;
+pub mod program;
 pub mod project;
 pub mod release;
 pub mod story;
 pub mod task;
 pub mod testcase;
+pub mod testtask;
+pub mod ticket;
 pub mod types;
 pub mod user;
 
@@ -37,12 +46,18 @@ pub use build::{BuildApi, CreateBuildRequest, UpdateBuildRequest};
 pub use client::ApiClient;
 pub use doc::{Doc, DocApi};
 pub use execution::ExecutionApi;
+pub use feedback::{Feedback, FeedbackApi};
 pub use product::{CreateProductRequest, Product, ProductApi, UpdateProductRequest};
+pub use productplan::{ProductPlan, ProductPlanApi};
+pub use program::{Program, ProgramApi};
 pub use project::{CreateProjectRequest, Project, ProjectApi, UpdateProjectRequest};
 pub use release::{Release, ReleaseApi};
 pub use story::{CreateStoryRequest, StoryApi, UpdateStoryRequest};
 pub use task::{CreateTaskRequest, Task, TaskApi, TaskEstimate, UpdateTaskRequest};
 pub use testcase::TestcaseApi;
+pub use testtask::{Testtask, TesttaskApi};
+pub use ticket::{Ticket, TicketApi};
 pub use types::*;
-pub use types::{Bug, Story, Testcase, TestcaseListQuery, User};
+pub use types::{Bug, Department, Story, Testcase, TestcaseListQuery, User};
 pub use user::UserApi;
+pub use department::DepartmentApi;

@@ -1,4 +1,4 @@
-use crate::api::{Bug, Product, Story};
+use crate::api::{Bug, Department, Feedback, Product, ProductPlan, Program, Project, Release, Story, Task, Testcase, Testtask, Ticket, User};
 use crate::core::config::{Config, MultiAccountConfig};
 
 #[derive(Debug, Clone)]
@@ -9,15 +9,133 @@ pub enum AppState {
     },
     BugList {
         bugs: Vec<Bug>,
+        product_name: Option<String>,
     },
     BugDetail {
         bug: Bug,
+        product_name: Option<String>,
     },
     StoryList {
         stories: Vec<Story>,
+        product_name: Option<String>,
     },
     StoryDetail {
         story: Story,
+        product_name: Option<String>,
+    },
+    // 执行列表
+    ExecutionList {
+        executions: Vec<crate::api::Execution>,
+        project_name: Option<String>,
+    },
+    ExecutionDetail {
+        execution: crate::api::Execution,
+        project_name: Option<String>,
+    },
+    // 版本列表
+    BuildList {
+        builds: Vec<crate::api::Build>,
+        product_name: Option<String>,
+        project_name: Option<String>,
+    },
+    BuildDetail {
+        build: crate::api::Build,
+        product_name: Option<String>,
+        project_name: Option<String>,
+    },
+    // 发布列表
+    ReleaseList {
+        releases: Vec<Release>,
+        product_name: Option<String>,
+    },
+    ReleaseDetail {
+        release: Release,
+        product_name: Option<String>,
+    },
+    // 用户列表
+    UserList {
+        users: Vec<User>,
+    },
+    UserDetail {
+        user: User,
+    },
+    // 部门列表
+    DepartmentList {
+        departments: Vec<Department>,
+    },
+    DepartmentDetail {
+        department: Department,
+    },
+    // 产品列表
+    ProductList {
+        products: Vec<Product>,
+    },
+    ProductDetail {
+        product: Product,
+    },
+    // 项目列表
+    ProjectList {
+        projects: Vec<Project>,
+    },
+    ProjectDetail {
+        project: Project,
+    },
+    // 任务列表
+    TaskList {
+        tasks: Vec<Task>,
+        project_name: Option<String>,
+    },
+    TaskDetail {
+        task: Task,
+        project_name: Option<String>,
+    },
+    // 测试用例列表
+    TestcaseList {
+        testcases: Vec<Testcase>,
+        product_name: Option<String>,
+    },
+    TestcaseDetail {
+        testcase: Testcase,
+        product_name: Option<String>,
+    },
+    // 测试单列表
+    TesttaskList {
+        testtasks: Vec<Testtask>,
+        project_name: Option<String>,
+    },
+    TesttaskDetail {
+        testtask: Testtask,
+        project_name: Option<String>,
+    },
+    // 反馈列表
+    FeedbackList {
+        feedbacks: Vec<Feedback>,
+    },
+    FeedbackDetail {
+        feedback: Feedback,
+    },
+    // 工单列表
+    TicketList {
+        tickets: Vec<Ticket>,
+    },
+    TicketDetail {
+        ticket: Ticket,
+    },
+    // 项目集列表
+    ProgramList {
+        programs: Vec<Program>,
+    },
+    ProgramDetail {
+        program: Program,
+    },
+    // 产品计划列表
+    ProductPlanList {
+        plans: Vec<ProductPlan>,
+        product_name: Option<String>,
+    },
+    ProductPlanDetail {
+        plan: ProductPlan,
+        product_name: Option<String>,
     },
     Error {
         message: String,
@@ -40,6 +158,16 @@ pub enum AppState {
         multi_config: MultiAccountConfig,
         selected: usize,
     },
+    // 主菜单
+    MainMenu {
+        selected: usize,
+    },
+    // 退出确认
+    ConfirmQuit,
+    // 模块已选中，等待加载（用于主菜单Enter后通知调用者）
+    ModuleSelected {
+        module_name: String,
+    },
 }
 
 impl AppState {
@@ -56,6 +184,31 @@ pub struct App {
     pub help_visible: bool,
     pub config: crate::core::Config,
     pub multi_config: MultiAccountConfig,
+    pub list_state: std::cell::RefCell<ratatui::widgets::ListState>,
+    pub main_menu_state: std::cell::RefCell<ratatui::widgets::ListState>,
+    // Saved list state for returning from detail pages
+    pub saved_list: Option<SavedList>,
+    pub saved_index: usize,
+    pub saved_main_index: usize,
+}
+
+pub enum SavedList {
+    BugList(Vec<Bug>, Option<String>),
+    StoryList(Vec<Story>, Option<String>),
+    ExecutionList(Vec<crate::api::Execution>, Option<String>),
+    BuildList(Vec<crate::api::Build>, Option<String>, Option<String>),
+    ReleaseList(Vec<Release>, Option<String>),
+    UserList(Vec<User>),
+    DepartmentList(Vec<Department>),
+    ProductList(Vec<Product>),
+    ProjectList(Vec<Project>),
+    TaskList(Vec<Task>, Option<String>),
+    TestcaseList(Vec<Testcase>, Option<String>),
+    TesttaskList(Vec<Testtask>, Option<String>),
+    FeedbackList(Vec<Feedback>),
+    TicketList(Vec<Ticket>),
+    ProgramList(Vec<Program>),
+    ProductPlanList(Vec<ProductPlan>, Option<String>),
 }
 
 impl App {
@@ -68,6 +221,11 @@ impl App {
             help_visible: false,
             config,
             multi_config,
+            list_state: std::cell::RefCell::new(ratatui::widgets::ListState::default()),
+            main_menu_state: std::cell::RefCell::new(ratatui::widgets::ListState::default()),
+            saved_list: None,
+            saved_index: 0,
+            saved_main_index: 0,
         }
     }
 
@@ -76,24 +234,227 @@ impl App {
         self.selected_index = 0;
     }
 
-    pub fn set_bug_list(&mut self, bugs: Vec<Bug>) {
-        self.state = AppState::BugList { bugs };
+    pub fn set_main_menu(&mut self) {
+        let index = if self.saved_main_index > 0 {
+            self.saved_main_index
+        } else {
+            0
+        };
+        self.state = AppState::MainMenu { selected: index };
+        self.selected_index = index;
+        self.main_menu_state.borrow_mut().select(Some(index));
+    }
+
+    pub fn set_module_selected(&mut self, module_name: String) {
+        self.state = AppState::ModuleSelected { module_name };
+    }
+
+    pub fn get_selected_module(&self) -> Option<String> {
+        if matches!(self.state, AppState::MainMenu { .. }) {
+            let modules = App::get_main_menu_modules();
+            modules.get(self.selected_index).map(|s| s.to_string())
+        } else {
+            None
+        }
+    }
+
+    pub fn set_bug_list(&mut self, bugs: Vec<Bug>, product_name: Option<String>) {
+        self.state = AppState::BugList { bugs, product_name };
+        self.selected_index = 0;
+        // Set default selection to first item
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_bug_detail(&mut self, bug: Bug, product_name: Option<String>) {
+        self.state = AppState::BugDetail { bug, product_name };
         self.selected_index = 0;
     }
 
-    pub fn set_bug_detail(&mut self, bug: Bug) {
-        self.state = AppState::BugDetail { bug };
+    pub fn set_story_list(&mut self, stories: Vec<Story>, product_name: Option<String>) {
+        self.state = AppState::StoryList { stories, product_name };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_story_detail(&mut self, story: Story, product_name: Option<String>) {
+        self.state = AppState::StoryDetail { story, product_name };
         self.selected_index = 0;
     }
 
-    pub fn set_story_list(&mut self, stories: Vec<Story>) {
-        self.state = AppState::StoryList { stories };
+    pub fn set_execution_list(&mut self, executions: Vec<crate::api::Execution>, project_name: Option<String>) {
+        self.state = AppState::ExecutionList { executions, project_name };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_execution_detail(&mut self, execution: crate::api::Execution, project_name: Option<String>) {
+        self.state = AppState::ExecutionDetail { execution, project_name };
         self.selected_index = 0;
     }
 
-    pub fn set_story_detail(&mut self, story: Story) {
-        self.state = AppState::StoryDetail { story };
+    pub fn set_build_list(&mut self, builds: Vec<crate::api::Build>, product_name: Option<String>, project_name: Option<String>) {
+        self.state = AppState::BuildList { builds, product_name, project_name };
         self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_build_detail(&mut self, build: crate::api::Build, product_name: Option<String>, project_name: Option<String>) {
+        self.state = AppState::BuildDetail { build, product_name, project_name };
+        self.selected_index = 0;
+    }
+
+    pub fn set_release_list(&mut self, releases: Vec<Release>, product_name: Option<String>) {
+        self.state = AppState::ReleaseList { releases, product_name };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_release_detail(&mut self, release: Release, product_name: Option<String>) {
+        self.state = AppState::ReleaseDetail { release, product_name };
+        self.selected_index = 0;
+    }
+
+    pub fn set_user_list(&mut self, users: Vec<User>) {
+        self.state = AppState::UserList { users };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_user_detail(&mut self, user: User) {
+        self.state = AppState::UserDetail { user };
+        self.selected_index = 0;
+    }
+
+    pub fn set_department_list(&mut self, departments: Vec<Department>) {
+        self.state = AppState::DepartmentList { departments };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_department_detail(&mut self, department: Department) {
+        self.state = AppState::DepartmentDetail { department };
+        self.selected_index = 0;
+    }
+
+    pub fn set_product_list(&mut self, products: Vec<Product>) {
+        self.state = AppState::ProductList { products };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_product_detail(&mut self, product: Product) {
+        self.state = AppState::ProductDetail { product };
+        self.selected_index = 0;
+    }
+
+    pub fn set_project_list(&mut self, projects: Vec<Project>) {
+        self.state = AppState::ProjectList { projects };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_project_detail(&mut self, project: Project) {
+        self.state = AppState::ProjectDetail { project };
+        self.selected_index = 0;
+    }
+
+    pub fn set_task_list(&mut self, tasks: Vec<Task>, project_name: Option<String>) {
+        self.state = AppState::TaskList { tasks, project_name };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_task_detail(&mut self, task: Task, project_name: Option<String>) {
+        self.state = AppState::TaskDetail { task, project_name };
+        self.selected_index = 0;
+    }
+
+    pub fn set_testcase_list(&mut self, testcases: Vec<Testcase>, product_name: Option<String>) {
+        self.state = AppState::TestcaseList { testcases, product_name };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_testcase_detail(&mut self, testcase: Testcase, product_name: Option<String>) {
+        self.state = AppState::TestcaseDetail { testcase, product_name };
+        self.selected_index = 0;
+    }
+
+    pub fn set_testtask_list(&mut self, testtasks: Vec<Testtask>, project_name: Option<String>) {
+        self.state = AppState::TesttaskList { testtasks, project_name };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_testtask_detail(&mut self, testtask: Testtask, project_name: Option<String>) {
+        self.state = AppState::TesttaskDetail { testtask, project_name };
+        self.selected_index = 0;
+    }
+
+    pub fn set_feedback_list(&mut self, feedbacks: Vec<Feedback>) {
+        self.state = AppState::FeedbackList { feedbacks };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_feedback_detail(&mut self, feedback: Feedback) {
+        self.state = AppState::FeedbackDetail { feedback };
+        self.selected_index = 0;
+    }
+
+    pub fn set_ticket_list(&mut self, tickets: Vec<Ticket>) {
+        self.state = AppState::TicketList { tickets };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_ticket_detail(&mut self, ticket: Ticket) {
+        self.state = AppState::TicketDetail { ticket };
+        self.selected_index = 0;
+    }
+
+    pub fn set_program_list(&mut self, programs: Vec<Program>) {
+        self.state = AppState::ProgramList { programs };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_program_detail(&mut self, program: Program) {
+        self.state = AppState::ProgramDetail { program };
+        self.selected_index = 0;
+    }
+
+    pub fn set_productplan_list(&mut self, plans: Vec<ProductPlan>, product_name: Option<String>) {
+        self.state = AppState::ProductPlanList { plans, product_name };
+        self.selected_index = 0;
+        self.list_state.borrow_mut().select(Some(0));
+    }
+
+    pub fn set_productplan_detail(&mut self, plan: ProductPlan, product_name: Option<String>) {
+        self.state = AppState::ProductPlanDetail { plan, product_name };
+        self.selected_index = 0;
+    }
+
+    pub fn get_main_menu_modules() -> Vec<&'static str> {
+        vec![
+            "Bug List",
+            "Story List",
+            "Execution List",
+            "Build List",
+            "Release List",
+            "Product List",
+            "Project List",
+            "Task List",
+            "Testcase List",
+            "Testtask List",
+            "Feedback List",
+            "Ticket List",
+            "Program List",
+            "ProductPlan List",
+            "User List",
+            "Department List",
+            "Settings",
+        ]
     }
 
     pub fn set_error(&mut self, message: String) {
@@ -103,11 +464,51 @@ impl App {
     pub fn go_back_to_list(&mut self) {
         match &self.state {
             AppState::BugDetail { .. } => {
-                // Go back to bug list - caller should reload
                 self.selected_index = 0;
             }
             AppState::StoryDetail { .. } => {
-                // Go back to story list - caller should reload
+                self.selected_index = 0;
+            }
+            AppState::ExecutionDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::BuildDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::ReleaseDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::UserDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::DepartmentDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::ProductDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::ProjectDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::TaskDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::TestcaseDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::TesttaskDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::FeedbackDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::TicketDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::ProgramDetail { .. } => {
+                self.selected_index = 0;
+            }
+            AppState::ProductPlanDetail { .. } => {
                 self.selected_index = 0;
             }
             _ => {}
@@ -118,8 +519,124 @@ impl App {
         self.state = AppState::Quit;
     }
 
+    pub fn save_list(&mut self) {
+        let saved = match &self.state {
+            AppState::BugList { bugs, product_name } => {
+                Some(SavedList::BugList(bugs.clone(), product_name.clone()))
+            }
+            AppState::StoryList { stories, product_name } => {
+                Some(SavedList::StoryList(stories.clone(), product_name.clone()))
+            }
+            AppState::ExecutionList { executions, project_name } => {
+                Some(SavedList::ExecutionList(executions.clone(), project_name.clone()))
+            }
+            AppState::BuildList { builds, product_name, project_name } => {
+                Some(SavedList::BuildList(builds.clone(), product_name.clone(), project_name.clone()))
+            }
+            AppState::ReleaseList { releases, product_name } => {
+                Some(SavedList::ReleaseList(releases.clone(), product_name.clone()))
+            }
+            AppState::UserList { users } => {
+                Some(SavedList::UserList(users.clone()))
+            }
+            AppState::DepartmentList { departments } => {
+                Some(SavedList::DepartmentList(departments.clone()))
+            }
+            AppState::ProductList { products } => {
+                Some(SavedList::ProductList(products.clone()))
+            }
+            AppState::ProjectList { projects } => {
+                Some(SavedList::ProjectList(projects.clone()))
+            }
+            AppState::TaskList { tasks, project_name } => {
+                Some(SavedList::TaskList(tasks.clone(), project_name.clone()))
+            }
+            AppState::TestcaseList { testcases, product_name } => {
+                Some(SavedList::TestcaseList(testcases.clone(), product_name.clone()))
+            }
+            AppState::TesttaskList { testtasks, project_name } => {
+                Some(SavedList::TesttaskList(testtasks.clone(), project_name.clone()))
+            }
+            AppState::FeedbackList { feedbacks } => {
+                Some(SavedList::FeedbackList(feedbacks.clone()))
+            }
+            AppState::TicketList { tickets } => {
+                Some(SavedList::TicketList(tickets.clone()))
+            }
+            AppState::ProgramList { programs } => {
+                Some(SavedList::ProgramList(programs.clone()))
+            }
+            AppState::ProductPlanList { plans, product_name } => {
+                Some(SavedList::ProductPlanList(plans.clone(), product_name.clone()))
+            }
+            _ => None,
+        };
+        self.saved_list = saved;
+        self.saved_index = self.selected_index;
+    }
+
+    pub fn restore_list(&mut self) {
+        if let Some(saved) = self.saved_list.take() {
+            match saved {
+                SavedList::BugList(bugs, product_name) => {
+                    self.set_bug_list(bugs, product_name);
+                }
+                SavedList::StoryList(stories, product_name) => {
+                    self.set_story_list(stories, product_name);
+                }
+                SavedList::ExecutionList(executions, project_name) => {
+                    self.set_execution_list(executions, project_name);
+                }
+                SavedList::BuildList(builds, product_name, project_name) => {
+                    self.set_build_list(builds, product_name, project_name);
+                }
+                SavedList::ReleaseList(releases, product_name) => {
+                    self.set_release_list(releases, product_name);
+                }
+                SavedList::UserList(users) => {
+                    self.set_user_list(users);
+                }
+                SavedList::DepartmentList(departments) => {
+                    self.set_department_list(departments);
+                }
+                SavedList::ProductList(products) => {
+                    self.set_product_list(products);
+                }
+                SavedList::ProjectList(projects) => {
+                    self.set_project_list(projects);
+                }
+                SavedList::TaskList(tasks, project_name) => {
+                    self.set_task_list(tasks, project_name);
+                }
+                SavedList::TestcaseList(testcases, product_name) => {
+                    self.set_testcase_list(testcases, product_name);
+                }
+                SavedList::TesttaskList(testtasks, project_name) => {
+                    self.set_testtask_list(testtasks, project_name);
+                }
+                SavedList::FeedbackList(feedbacks) => {
+                    self.set_feedback_list(feedbacks);
+                }
+                SavedList::TicketList(tickets) => {
+                    self.set_ticket_list(tickets);
+                }
+                SavedList::ProgramList(programs) => {
+                    self.set_program_list(programs);
+                }
+                SavedList::ProductPlanList(plans, product_name) => {
+                    self.set_productplan_list(plans, product_name);
+                }
+            }
+            // Restore the saved index
+            self.selected_index = self.saved_index;
+            self.list_state.borrow_mut().select(Some(self.saved_index));
+        } else {
+            self.set_main_menu();
+        }
+    }
+
     pub fn get_selected_bug_id(&self) -> Option<u64> {
-        if let AppState::BugList { bugs } = &self.state {
+        if let AppState::BugList { bugs, .. } = &self.state {
             bugs.get(self.selected_index).map(|b| b.id)
         } else {
             None
@@ -127,8 +644,96 @@ impl App {
     }
 
     pub fn get_selected_story_id(&self) -> Option<u64> {
-        if let AppState::StoryList { stories } = &self.state {
+        if let AppState::StoryList { stories, .. } = &self.state {
             stories.get(self.selected_index).map(|s| s.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_user_id(&self) -> Option<u64> {
+        if let AppState::UserList { users } = &self.state {
+            users.get(self.selected_index).map(|u| u.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_department_id(&self) -> Option<u64> {
+        if let AppState::DepartmentList { departments } = &self.state {
+            departments.get(self.selected_index).map(|d| d.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_product_id(&self) -> Option<u64> {
+        if let AppState::ProductList { products } = &self.state {
+            products.get(self.selected_index).map(|p| p.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_project_id(&self) -> Option<u64> {
+        if let AppState::ProjectList { projects } = &self.state {
+            projects.get(self.selected_index).map(|p| p.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_task_id(&self) -> Option<u64> {
+        if let AppState::TaskList { tasks, .. } = &self.state {
+            tasks.get(self.selected_index).map(|t| t.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_testcase_id(&self) -> Option<u64> {
+        if let AppState::TestcaseList { testcases, .. } = &self.state {
+            testcases.get(self.selected_index).map(|t| t.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_testtask_id(&self) -> Option<u64> {
+        if let AppState::TesttaskList { testtasks, .. } = &self.state {
+            testtasks.get(self.selected_index).map(|t| t.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_feedback_id(&self) -> Option<u64> {
+        if let AppState::FeedbackList { feedbacks } = &self.state {
+            feedbacks.get(self.selected_index).map(|f| f.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_ticket_id(&self) -> Option<u64> {
+        if let AppState::TicketList { tickets } = &self.state {
+            tickets.get(self.selected_index).map(|t| t.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_program_id(&self) -> Option<u64> {
+        if let AppState::ProgramList { programs } = &self.state {
+            programs.get(self.selected_index).map(|p| p.id)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_selected_productplan_id(&self) -> Option<u64> {
+        if let AppState::ProductPlanList { plans, .. } = &self.state {
+            plans.get(self.selected_index).map(|p| p.id)
         } else {
             None
         }

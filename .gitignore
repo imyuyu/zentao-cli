@@ -25,6 +25,7 @@ Thumbs.db
 node_modules/
 Cargo.lock
 package-lock.json
+vendor/
 
 # Claude Code
 .claude/

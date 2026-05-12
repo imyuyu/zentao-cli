@@ -17,7 +17,7 @@ use clap::{Parser, Subcommand};
 #[command(about = "ZenTao CLI - Command line tool for ZenTao project management")]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 
     #[arg(long, global = true, env = "ZENTAO_URL")]
     url: Option<String>,
@@ -115,6 +115,8 @@ enum Commands {
     },
     /// 诊断工具 - 检查配置和网络连接
     Doctor,
+    /// 浏览器 - TUI 模式浏览所有模块（默认）
+    Browse,
     /// Bug 浏览器 - TUI 模式浏览 Bug 列表
     BugBrowse {
         #[arg(long)]
@@ -427,7 +429,10 @@ pub fn run() -> Result<()> {
     let rt = tokio::runtime::Runtime::new()
         .expect("Failed to create Tokio runtime - system may be out of memory");
 
-    match cli.command {
+    // If no command provided, run TUI browse mode
+    let command = cli.command.unwrap_or(Commands::Browse);
+
+    match command {
         Commands::Story { action } => {
             log_command("root", format!("dispatch story {:?}", action));
             rt.block_on(story::run(&action, &ctx));
@@ -487,6 +492,10 @@ pub fn run() -> Result<()> {
         Commands::Doctor => {
             log_command("root", "dispatch doctor");
             rt.block_on(doctor::run_doctor())?;
+        }
+        Commands::Browse => {
+            log_command("root", "dispatch browse (home)");
+            browse::run_tui(&config).expect("Browse failed");
         }
         Commands::BugBrowse { product, account } => {
             let mut cfg = config.clone();

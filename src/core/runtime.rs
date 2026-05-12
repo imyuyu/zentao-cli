@@ -19,6 +19,7 @@ impl AppContext {
         }
     }
 
+    /// 获取 API 客户端
     pub fn client(&self) -> ApiClient {
         log(
             LogLevel::Debug,
@@ -31,6 +32,49 @@ impl AppContext {
         );
         ApiClient::new(&self.config.url, self.config.token.clone())
             .with_api_version(self.config.api_version.as_deref().unwrap_or("v1"))
+    }
+
+    /// 刷新认证 Token
+    ///
+    /// 当 API 返回 401 时调用此方法，从 keyring 获取凭据重新登录
+    pub async fn refresh_token(&mut self) -> Result<()> {
+        eprintln!("[DEBUG] refresh_token started");
+        let account = self.config.account.as_ref().ok_or_else(|| {
+            eprintln!("[DEBUG] refresh_token: no account");
+            ZentaoError::Auth("No account configured. Please login first.".into())
+        })?;
+
+        eprintln!("[DEBUG] refresh_token: getting credentials");
+        let creds = crate::core::Credentials::get(&self.config.url, account)
+            .map_err(|e| {
+                eprintln!("[DEBUG] refresh_token: credentials error: {}", e);
+                ZentaoError::Config(format!("Failed to get credentials: {}", e))
+            })?
+            .ok_or_else(|| {
+                eprintln!("[DEBUG] refresh_token: no credentials stored");
+                ZentaoError::Auth("No credentials stored. Please login first.".into())
+            })?;
+
+        let password = creds
+            .password
+            .ok_or_else(|| ZentaoError::Auth("Password not found in credentials".into()))?;
+
+        eprintln!("[DEBUG] refresh_token: calling login API");
+        let auth = crate::api::Auth::new(&self.config.url);
+        let new_token = auth.login(&creds.account, &password).await?;
+
+        eprintln!("[DEBUG] refresh_token: got new token, saving");
+        self.config.token = Some(new_token.clone());
+        crate::core::save_config(&self.config)?;
+
+        eprintln!("[DEBUG] refresh_token: success");
+        log(
+            LogLevel::Info,
+            "AppContext",
+            "Token refreshed successfully",
+        );
+
+        Ok(())
     }
 
     pub fn product_id(&self, cli_value: Option<u64>) -> Option<u64> {

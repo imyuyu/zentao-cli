@@ -1,11 +1,17 @@
 pub mod bug;
 pub mod build;
+pub mod department;
 pub mod doc;
 pub mod execution;
+pub mod feedback;
 pub mod product;
+pub mod productplan;
+pub mod program;
 pub mod project;
 pub mod release;
 pub mod story;
 pub mod task;
 pub mod testcase;
+pub mod testtask;
+pub mod ticket;
 pub mod user;

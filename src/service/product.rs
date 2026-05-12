@@ -57,4 +57,10 @@ impl ProductService {
         let client = ctx.client();
         ProductApi::delete(&client, id).await
     }
+
+    pub async fn get_name(ctx: &AppContext, id: u64) -> Result<String> {
+        log(LogLevel::Info, "ProductService", format!("get_name id={}", id));
+        let product = Self::get(ctx, id).await?;
+        Ok(product.name)
+    }
 }

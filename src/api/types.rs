@@ -4,6 +4,59 @@
 
 use serde::{Deserialize, Serialize};
 
+/// 从字符串或数字反序列化ID
+fn deserialize_id<'de, D>(deserializer: D) -> Result<u64, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum IdOrString {
+        Id(u64),
+        Str(String),
+    }
+
+    match IdOrString::deserialize(deserializer)? {
+        IdOrString::Id(n) => Ok(n),
+        IdOrString::Str(s) => {
+            // 尝试解析 "case_1" 或类似格式，提取数字部分
+            if let Some(num_str) = s.split('_').last() {
+                num_str.parse::<u64>().map_err(serde::de::Error::custom)
+            } else {
+                s.parse::<u64>().map_err(serde::de::Error::custom)
+            }
+        }
+    }
+}
+
+/// 从字符串、数字或空字符串反序列化可选ID
+pub(crate) fn deserialize_optional_id<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum OptIdOrString {
+        Null,
+        Id(u64),
+        Str(String),
+    }
+
+    match OptIdOrString::deserialize(deserializer)? {
+        OptIdOrString::Null => Ok(None),
+        OptIdOrString::Id(n) => Ok(Some(n)),
+        OptIdOrString::Str(s) => {
+            if s.is_empty() {
+                Ok(None)
+            } else if let Some(num_str) = s.split('_').last() {
+                num_str.parse::<u64>().map_err(serde::de::Error::custom).map(Some)
+            } else {
+                s.parse::<u64>().map_err(serde::de::Error::custom).map(Some)
+            }
+        }
+    }
+}
+
 // ============================================================
 // Story（需求）相关类型
 // ============================================================
@@ -47,6 +100,12 @@ pub struct Story {
     /// 版本号（更新时用于乐观锁）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<u64>,
+}
+
+impl Story {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/story-view-{}.html", base_url, self.id)
+    }
 }
 
 /// 需求列表查询参数
@@ -108,6 +167,12 @@ pub struct Bug {
     pub resolved_date: Option<String>,
 }
 
+impl Bug {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/bug-view-{}.html", base_url, self.id)
+    }
+}
+
 /// Bug 列表查询参数
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BugListQuery {
@@ -148,9 +213,10 @@ pub struct Release {
     /// 发布名称
     pub name: String,
     /// 所属产品 ID
-    pub product: u64,
+    #[serde(deserialize_with = "deserialize_optional_id")]
+    pub product: Option<u64>,
     /// 关联的 Build（版本）ID
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(deserialize_with = "deserialize_optional_id")]
     pub build: Option<u64>,
     /// 发布状态：normal/closed
     pub status: String,
@@ -160,6 +226,12 @@ pub struct Release {
     /// 发布日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<String>,
+}
+
+impl Release {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/release-view-{}.html", base_url, self.id)
+    }
 }
 
 // ============================================================
@@ -187,11 +259,47 @@ pub struct User {
     pub role: Option<String>,
 }
 
+impl User {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/user-view-{}.html", base_url, self.id)
+    }
+}
+
 /// 用户列表查询参数
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserListQuery {
     pub dept: Option<u64>,
     pub role: Option<String>,
+}
+
+// ============================================================
+// Department（部门）相关类型
+// ============================================================
+
+/// 部门数据结构
+///
+/// 对应 ZenTao 部门信息
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Department {
+    /// 部门 ID
+    pub id: u64,
+    /// 部门名称
+    pub name: String,
+    /// 父部门 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<u64>,
+    /// 部门排序
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order: Option<u64>,
+    /// 部门路径
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
+}
+
+impl Department {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/dept-view-{}.html", base_url, self.id)
+    }
 }
 
 // ============================================================
@@ -203,7 +311,8 @@ pub struct UserListQuery {
 /// 对应 ZenTao 测试用例模块的字段
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Testcase {
-    /// 用例 ID
+    /// 用例 ID - ZenTao有时返回字符串如"case_1"
+    #[serde(deserialize_with = "deserialize_id")]
     pub id: u64,
     /// 用例标题
     pub title: String,
@@ -211,9 +320,11 @@ pub struct Testcase {
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
     /// 严重程度：1-4（1最严重）
-    pub severity: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub severity: Option<u8>,
     /// 优先级：0-5
-    pub pri: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pri: Option<u8>,
     /// 用例状态：wait/normal/blocked/bypass
     pub status: String,
     /// 测试步骤
@@ -285,6 +396,12 @@ pub struct Execution {
     pub opened_date: Option<String>,
 }
 
+impl Execution {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/execution-view-{}.html", base_url, self.id)
+    }
+}
+
 // ============================================================
 // Build（版本）相关类型
 // ============================================================
@@ -354,6 +471,12 @@ pub struct Build {
 pub struct BuildListResponse {
     pub total: u64,
     pub builds: Vec<Build>,
+}
+
+impl Build {
+    pub fn web_url(&self, base_url: &str) -> String {
+        format!("{}/build-view-{}.html", base_url, self.id)
+    }
 }
 
 // ============================================================
