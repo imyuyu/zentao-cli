@@ -3,8 +3,9 @@ use crate::cmd::auth::AuthSubcommand;
 use crate::cmd::common::log_command;
 use crate::cmd::config_cmd::ConfigSubcommand;
 use crate::cmd::{
-    api_cmd, auth, browse, bug, build, config_cmd, doc, doctor, execution, product, project,
-    release, story, task, testcase, user,
+    api_cmd, auth, browse, bug, build, common, config_cmd, department, doctor, execution,
+    feedback, product, productplan, program, project, release, story, task, testcase,
+    testtask_cmd, ticket, user,
 };
 use crate::core::logging;
 use crate::core::{load_config, AppContext, Config, OutputFormat};
@@ -108,10 +109,35 @@ enum Commands {
         #[command(subcommand)]
         action: execution::ExecutionAction,
     },
-    /// 文档管理 - 查看和管理文档
-    Doc {
+    /// 部门管理 - 查看部门列表
+    Department {
         #[command(subcommand)]
-        action: doc::DocAction,
+        action: DepartmentSubcommand,
+    },
+    /// 项目集管理 - 查看项目集列表
+    Program {
+        #[command(subcommand)]
+        action: ProgramSubcommand,
+    },
+    /// 产品计划管理 - 查看产品计划
+    ProductPlan {
+        #[command(subcommand)]
+        action: ProductPlanSubcommand,
+    },
+    /// 测试单管理 - 查看测试单
+    Testtask {
+        #[command(subcommand)]
+        action: TesttaskSubcommand,
+    },
+    /// 反馈管理 - 查看反馈
+    Feedback {
+        #[command(subcommand)]
+        action: FeedbackSubcommand,
+    },
+    /// 工单管理 - 查看工单
+    Ticket {
+        #[command(subcommand)]
+        action: TicketSubcommand,
     },
     /// 诊断工具 - 检查配置和网络连接
     Doctor,
@@ -389,6 +415,74 @@ pub enum ReleaseSubcommand {
     Get { id: u64 },
 }
 
+#[derive(Subcommand, Clone, Debug)]
+pub enum DepartmentSubcommand {
+    /// 列出部门
+    #[command(name = "list")]
+    List,
+    /// 获取部门详情
+    #[command(name = "get")]
+    Get { id: u64 },
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum ProgramSubcommand {
+    /// 列出项目集
+    #[command(name = "list")]
+    List,
+    /// 获取项目集详情
+    #[command(name = "get")]
+    Get { id: u64 },
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum ProductPlanSubcommand {
+    /// 列出产品计划
+    #[command(name = "list")]
+    List {
+        /// 按产品 ID 筛选
+        #[arg(long)]
+        product: Option<u64>,
+    },
+    /// 获取产品计划详情
+    #[command(name = "get")]
+    Get { id: u64 },
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum TesttaskSubcommand {
+    /// 列出测试单
+    #[command(name = "list")]
+    List {
+        /// 按项目 ID 筛选
+        #[arg(long)]
+        project: Option<u64>,
+    },
+    /// 获取测试单详情
+    #[command(name = "get")]
+    Get { id: u64 },
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum FeedbackSubcommand {
+    /// 列出反馈
+    #[command(name = "list")]
+    List,
+    /// 获取反馈详情
+    #[command(name = "get")]
+    Get { id: u64 },
+}
+
+#[derive(Subcommand, Clone, Debug)]
+pub enum TicketSubcommand {
+    /// 列出工单
+    #[command(name = "list")]
+    List,
+    /// 获取工单详情
+    #[command(name = "get")]
+    Get { id: u64 },
+}
+
 pub fn run() -> Result<()> {
     let cli = Cli::parse();
     logging::init(cli.debug, cli.log_level);
@@ -485,9 +579,29 @@ pub fn run() -> Result<()> {
             log_command("root", format!("dispatch execution {:?}", action));
             rt.block_on(execution::run(&action, &ctx));
         }
-        Commands::Doc { action } => {
-            log_command("root", format!("dispatch doc {:?}", action));
-            rt.block_on(doc::run(&action, &ctx));
+        Commands::Department { action } => {
+            log_command("root", format!("dispatch department {:?}", action));
+            rt.block_on(department::run(&action, &ctx));
+        }
+        Commands::Program { action } => {
+            log_command("root", format!("dispatch program {:?}", action));
+            rt.block_on(program::run(&action, &ctx));
+        }
+        Commands::ProductPlan { action } => {
+            log_command("root", format!("dispatch productplan {:?}", action));
+            rt.block_on(productplan::run(&action, &ctx));
+        }
+        Commands::Testtask { action } => {
+            log_command("root", format!("dispatch testtask {:?}", action));
+            rt.block_on(testtask_cmd::run(&action, &ctx));
+        }
+        Commands::Feedback { action } => {
+            log_command("root", format!("dispatch feedback {:?}", action));
+            rt.block_on(feedback::run(&action, &ctx));
+        }
+        Commands::Ticket { action } => {
+            log_command("root", format!("dispatch ticket {:?}", action));
+            rt.block_on(ticket::run(&action, &ctx));
         }
         Commands::Doctor => {
             log_command("root", "dispatch doctor");
