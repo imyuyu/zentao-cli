@@ -2,6 +2,7 @@ pub mod api_selector;
 pub mod app;
 pub mod browser;
 pub mod config;
+pub mod pages;
 pub mod widgets;
 pub mod wizard;
 

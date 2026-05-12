@@ -26,8 +26,10 @@ use crate::service::{
     testtask::TesttaskService, ticket::TicketService, user::UserService,
 };
 
+use super::pages::*;
+
 // Strip HTML tags from a string
-fn strip_html_tags(html: &str) -> String {
+pub fn strip_html_tags(html: &str) -> String {
     let mut result = String::with_capacity(html.len());
     let mut in_tag = false;
     let mut in_entity = false;
@@ -311,100 +313,100 @@ impl Browser {
                             Self::render_loading(f, area, message, self.spinner_frame);
                         }
                         AppState::BugList { bugs, .. } => {
-                            Self::render_bug_list(f, area, bugs, selected, app);
+                            render_bug_list(f, area, bugs, selected, app);
                         }
                         AppState::BugDetail { bug, .. } => {
-                            Self::render_bug_detail(f, area, bug);
+                            render_bug_detail(f, area, bug);
                         }
                         AppState::StoryList { stories, .. } => {
-                            Self::render_story_list(f, area, stories, selected, app);
+                            render_story_list(f, area, stories, selected, app);
                         }
                         AppState::StoryDetail { story, .. } => {
-                            Self::render_story_detail(f, area, story);
+                            render_story_detail(f, area, story);
                         }
                         AppState::ExecutionList { executions, .. } => {
-                            Self::render_execution_list(f, area, executions, selected, app);
+                            render_execution_list(f, area, executions, selected, app);
                         }
                         AppState::ExecutionDetail { execution, .. } => {
-                            Self::render_execution_detail(f, area, execution);
+                            render_execution_detail(f, area, execution);
                         }
                         AppState::BuildList { builds, .. } => {
-                            Self::render_build_list(f, area, builds, selected, app);
+                            render_build_list(f, area, builds, selected, app);
                         }
                         AppState::BuildDetail { build, .. } => {
-                            Self::render_build_detail(f, area, build);
+                            render_build_detail(f, area, build);
                         }
                         AppState::ReleaseList { releases, .. } => {
-                            Self::render_release_list(f, area, releases, selected, app);
+                            render_release_list(f, area, releases, selected, app);
                         }
                         AppState::ReleaseDetail { release, .. } => {
-                            Self::render_release_detail(f, area, release);
+                            render_release_detail(f, area, release);
                         }
                         AppState::UserList { users, .. } => {
-                            Self::render_user_list(f, area, users, selected, app);
+                            render_user_list(f, area, users, selected, app);
                         }
                         AppState::UserDetail { user, .. } => {
-                            Self::render_user_detail(f, area, user);
+                            render_user_detail(f, area, user);
                         }
                         AppState::DepartmentList { departments, .. } => {
-                            Self::render_department_list(f, area, departments, selected, app);
+                            render_department_list(f, area, departments, selected, app);
                         }
                         AppState::DepartmentDetail { department, .. } => {
-                            Self::render_department_detail(f, area, department);
+                            render_department_detail(f, area, department);
                         }
                         AppState::ProductList { products, .. } => {
-                            Self::render_product_list(f, area, products, selected, app);
+                            render_product_list(f, area, products, selected, app);
                         }
                         AppState::ProductDetail { product, .. } => {
-                            Self::render_product_detail(f, area, product);
+                            render_product_detail(f, area, product);
                         }
                         AppState::ProjectList { projects, .. } => {
-                            Self::render_project_list(f, area, projects, selected, app);
+                            render_project_list(f, area, projects, selected, app);
                         }
                         AppState::ProjectDetail { project, .. } => {
-                            Self::render_project_detail(f, area, project);
+                            render_project_detail(f, area, project);
                         }
                         AppState::TaskList { tasks, .. } => {
-                            Self::render_task_list(f, area, tasks, selected, app);
+                            render_task_list(f, area, tasks, selected, app);
                         }
                         AppState::TaskDetail { task, .. } => {
-                            Self::render_task_detail(f, area, task);
+                            render_task_detail(f, area, task);
                         }
                         AppState::TestcaseList { testcases, .. } => {
-                            Self::render_testcase_list(f, area, testcases, selected, app);
+                            render_testcase_list(f, area, testcases, selected, app);
                         }
                         AppState::TestcaseDetail { testcase, .. } => {
-                            Self::render_testcase_detail(f, area, testcase);
+                            render_testcase_detail(f, area, testcase);
                         }
                         AppState::TesttaskList { testtasks, .. } => {
-                            Self::render_testtask_list(f, area, testtasks, selected, app);
+                            render_testtask_list(f, area, testtasks, selected, app);
                         }
                         AppState::TesttaskDetail { testtask, .. } => {
-                            Self::render_testtask_detail(f, area, testtask);
+                            render_testtask_detail(f, area, testtask);
                         }
                         AppState::FeedbackList { feedbacks, .. } => {
-                            Self::render_feedback_list(f, area, feedbacks, selected, app);
+                            render_feedback_list(f, area, feedbacks, selected, app);
                         }
                         AppState::FeedbackDetail { feedback, .. } => {
-                            Self::render_feedback_detail(f, area, feedback);
+                            render_feedback_detail(f, area, feedback);
                         }
                         AppState::TicketList { tickets, .. } => {
-                            Self::render_ticket_list(f, area, tickets, selected, app);
+                            render_ticket_list(f, area, tickets, selected, app);
                         }
                         AppState::TicketDetail { ticket, .. } => {
-                            Self::render_ticket_detail(f, area, ticket);
+                            render_ticket_detail(f, area, ticket);
                         }
                         AppState::ProgramList { programs, .. } => {
-                            Self::render_program_list(f, area, programs, selected, app);
+                            render_program_list(f, area, programs, selected, app);
                         }
                         AppState::ProgramDetail { program, .. } => {
-                            Self::render_program_detail(f, area, program);
+                            render_program_detail(f, area, program);
                         }
                         AppState::ProductPlanList { plans, .. } => {
-                            Self::render_productplan_list(f, area, plans, selected, app);
+                            render_productplan_list(f, area, plans, selected, app);
                         }
                         AppState::ProductPlanDetail { plan, .. } => {
-                            Self::render_productplan_detail(f, area, plan);
+                            render_productplan_detail(f, area, plan);
                         }
                         AppState::Error { message } => {
                             Self::render_error(f, area, message);
