@@ -294,6 +294,7 @@ impl Browser {
                         app.state = AppState::Loading {
                             message: format!("Loading {}...", name),
                         };
+                        self.loading_cancelled = false;
                         Some(name)
                     } else {
                         None
