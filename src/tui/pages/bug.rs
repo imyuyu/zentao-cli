@@ -12,8 +12,8 @@ pub fn render_bug_list(
     use ratatui::{
         layout::{Constraint, Direction, Layout},
         style::{Color, Modifier, Style},
-        text::{Line, Span, Text},
-        widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
+        text::{Line, Text},
+        widgets::{Block, Borders, List, ListItem, Paragraph},
     };
 
     let chunks = Layout::default()
@@ -117,7 +117,7 @@ pub fn render_bug_list(
 pub fn render_bug_detail(f: &mut Frame, area: Rect, bug: &Bug) {
     use ratatui::{
         layout::{Constraint, Direction, Layout},
-        style::{Color, Modifier, Style},
+        style::{Modifier, Style},
         text::{Line, Span, Text},
         widgets::{Block, Borders, Paragraph},
     };

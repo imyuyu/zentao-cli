@@ -78,7 +78,7 @@ pub fn render_build_list(
 pub fn render_build_detail(f: &mut Frame, area: Rect, build: &Build) {
     use ratatui::{
         layout::{Constraint, Direction, Layout},
-        style::{Color, Modifier, Style},
+        style::{Modifier, Style},
         text::{Line, Span, Text},
         widgets::{Block, Borders, Paragraph},
     };
@@ -112,13 +112,10 @@ pub fn render_build_detail(f: &mut Frame, area: Rect, build: &Build) {
         ]),
         Line::from(vec![
             Span::raw("Branch: "),
-            Span::raw(format!(
-                "{}",
-                build
+            Span::raw(build
                     .branch
                     .map(|b| b.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("SCM Path: "),

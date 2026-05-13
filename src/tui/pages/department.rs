@@ -85,7 +85,7 @@ pub fn render_department_list(
 pub fn render_department_detail(f: &mut Frame, area: Rect, department: &Department) {
     use ratatui::{
         layout::{Constraint, Direction, Layout},
-        style::{Color, Modifier, Style},
+        style::{Modifier, Style},
         text::{Line, Span, Text},
         widgets::{Block, Borders, Paragraph},
     };
@@ -123,23 +123,17 @@ pub fn render_department_detail(f: &mut Frame, area: Rect, department: &Departme
         Line::from(vec![Span::raw("Name: "), Span::raw(&department.name)]),
         Line::from(vec![
             Span::raw("Parent: "),
-            Span::raw(format!(
-                "{}",
-                department
+            Span::raw(department
                     .parent
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "root".to_string())
-            )),
+                    .unwrap_or_else(|| "root".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Order: "),
-            Span::raw(format!(
-                "{}",
-                department
+            Span::raw(department
                     .order
                     .map(|o| o.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Path: "),

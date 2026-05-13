@@ -32,6 +32,7 @@ impl DepartmentApi {
         enum DepartmentResponse {
             List(Vec<Department>),
             Wrapped { departments: Vec<Department> },
+            #[allow(dead_code)]
             Map(serde_json::Map<String, serde_json::Value>),
         }
 

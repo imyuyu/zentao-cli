@@ -76,7 +76,7 @@ pub fn render_user_list(
 pub fn render_user_detail(f: &mut Frame, area: Rect, user: &User) {
     use ratatui::{
         layout::{Constraint, Direction, Layout},
-        style::{Color, Modifier, Style},
+        style::{Modifier, Style},
         text::{Line, Span, Text},
         widgets::{Block, Borders, Paragraph},
     };
@@ -114,12 +114,9 @@ pub fn render_user_detail(f: &mut Frame, area: Rect, user: &User) {
         ]),
         Line::from(vec![
             Span::raw("Dept: "),
-            Span::raw(format!(
-                "{}",
-                user.dept
+            Span::raw(user.dept
                     .map(|d| d.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Role: "),

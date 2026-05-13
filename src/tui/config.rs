@@ -1,6 +1,7 @@
 use crate::api::{Product, Project};
 
 #[derive(Clone, Debug)]
+#[allow(clippy::enum_variant_names)]
 pub enum ConfigWizardState {
     Url,
     Account {

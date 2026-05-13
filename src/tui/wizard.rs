@@ -119,13 +119,12 @@ fn handle_key_event(
                 ConfigWizardState::Success { url, token } => {
                     wizard.set_select_product(url.clone(), token.clone());
                 }
-                ConfigWizardState::SelectProduct { loading, .. } => {
-                    if !*loading {
+                ConfigWizardState::SelectProduct { loading, .. }
+                    if !*loading => {
                         wizard.set_product_selected();
                     }
-                }
-                ConfigWizardState::SelectProject { loading, .. } => {
-                    if !*loading {
+                ConfigWizardState::SelectProject { loading, .. }
+                    if !*loading => {
                         // 保存配置
                         let (url, token, product_id, projects, selected) = match &wizard.state {
                             ConfigWizardState::SelectProject {
@@ -170,7 +169,6 @@ fn handle_key_event(
                             }
                         }
                     }
-                }
                 _ => {}
             }
         }
@@ -181,7 +179,7 @@ fn handle_key_event(
             wizard.move_down();
         }
         KeyCode::Esc => match &wizard.state {
-            ConfigWizardState::Account { url, .. } => {
+            ConfigWizardState::Account { url: _, .. } => {
                 wizard.state = ConfigWizardState::Url;
             }
             ConfigWizardState::Password { url, account, .. } => {
@@ -245,17 +243,16 @@ fn render_wizard_frame(frame: &mut Frame, area: Rect, wizard: &ConfigWizard) {
         }
         ConfigWizardState::SelectProduct {
             url,
-            token,
             products,
             selected,
             loading,
             error,
+            ..
         } => {
             render_select_product(
                 frame,
                 chunks[1],
                 url,
-                token,
                 products,
                 *selected,
                 *loading,
@@ -264,18 +261,17 @@ fn render_wizard_frame(frame: &mut Frame, area: Rect, wizard: &ConfigWizard) {
         }
         ConfigWizardState::SelectProject {
             url,
-            token,
             product_id,
             projects,
             selected,
             loading,
             error,
+            ..
         } => {
             render_select_project(
                 frame,
                 chunks[1],
                 url,
-                token,
                 *product_id,
                 projects,
                 *selected,
@@ -445,7 +441,6 @@ fn render_select_product(
     frame: &mut Frame,
     area: Rect,
     url: &str,
-    token: &str,
     products: &[crate::api::Product],
     selected: usize,
     loading: bool,
@@ -529,11 +524,11 @@ fn render_select_product(
 }
 
 /// 渲染项目选择状态
+#[allow(clippy::too_many_arguments)]
 fn render_select_project(
     frame: &mut Frame,
     area: Rect,
     url: &str,
-    token: &str,
     product_id: Option<u64>,
     projects: &[crate::api::Project],
     selected: usize,

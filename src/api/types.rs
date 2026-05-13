@@ -20,7 +20,7 @@ where
         IdOrString::Id(n) => Ok(n),
         IdOrString::Str(s) => {
             // 尝试解析 "case_1" 或类似格式，提取数字部分
-            if let Some(num_str) = s.split('_').last() {
+            if let Some(num_str) = s.split('_').next_back() {
                 num_str.parse::<u64>().map_err(serde::de::Error::custom)
             } else {
                 s.parse::<u64>().map_err(serde::de::Error::custom)
@@ -48,7 +48,7 @@ where
         OptIdOrString::Str(s) => {
             if s.is_empty() {
                 Ok(None)
-            } else if let Some(num_str) = s.split('_').last() {
+            } else if let Some(num_str) = s.split('_').next_back() {
                 num_str
                     .parse::<u64>()
                     .map_err(serde::de::Error::custom)

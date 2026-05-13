@@ -122,30 +122,21 @@ pub fn render_task_detail(f: &mut Frame, area: Rect, task: &Task) {
         ]),
         Line::from(vec![
             Span::raw("Estimate: "),
-            Span::raw(format!(
-                "{}",
-                task.estimate
+            Span::raw(task.estimate
                     .map(|e| format!("{}h", e))
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Consumed: "),
-            Span::raw(format!(
-                "{}",
-                task.consumed
+            Span::raw(task.consumed
                     .map(|c| format!("{}h", c))
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Left: "),
-            Span::raw(format!(
-                "{}",
-                task.left
+            Span::raw(task.left
                     .map(|l| format!("{}h", l))
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

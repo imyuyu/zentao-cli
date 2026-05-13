@@ -79,13 +79,10 @@ pub fn render_story_list(
                     Style::default().fg(Color::Blue),
                 ),
                 Span::raw(" | "),
-                Span::raw(format!(
-                    "{}",
-                    story
+                Span::raw(story
                         .estimate
                         .map(|e| format!("{}h", e))
-                        .unwrap_or_default()
-                )),
+                        .unwrap_or_default().to_string()),
             ]))
         })
         .collect();

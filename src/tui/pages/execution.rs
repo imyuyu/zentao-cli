@@ -142,13 +142,10 @@ pub fn render_execution_detail(
         ]),
         Line::from(vec![
             Span::raw("Days: "),
-            Span::raw(format!(
-                "{}",
-                execution
+            Span::raw(execution
                     .days
                     .map(|d| d.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

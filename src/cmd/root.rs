@@ -3,7 +3,7 @@ use crate::cmd::auth::AuthSubcommand;
 use crate::cmd::common::log_command;
 use crate::cmd::config_cmd::ConfigSubcommand;
 use crate::cmd::{
-    api_cmd, auth, browse, bug, build, common, config_cmd, department, doctor, execution, feedback,
+    api_cmd, auth, browse, bug, build, config_cmd, department, doctor, execution, feedback,
     product, productplan, program, project, release, story, task, testcase, testtask_cmd, ticket,
     user,
 };

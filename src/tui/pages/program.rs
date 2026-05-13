@@ -127,13 +127,10 @@ pub fn render_program_detail(f: &mut Frame, area: Rect, program: &Program) {
         ]),
         Line::from(vec![
             Span::raw("Parent: "),
-            Span::raw(format!(
-                "{}",
-                program
+            Span::raw(program
                     .parent
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Manager: "),

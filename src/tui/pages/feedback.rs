@@ -124,23 +124,17 @@ pub fn render_feedback_detail(f: &mut Frame, area: Rect, feedback: &Feedback) {
         ]),
         Line::from(vec![
             Span::raw("Priority: "),
-            Span::raw(format!(
-                "{}",
-                feedback
+            Span::raw(feedback
                     .pri
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Product: "),
-            Span::raw(format!(
-                "{}",
-                feedback
+            Span::raw(feedback
                     .product
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),

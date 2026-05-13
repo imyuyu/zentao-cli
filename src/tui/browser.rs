@@ -101,6 +101,7 @@ pub fn strip_html_tags(html: &str) -> String {
     result
 }
 
+#[allow(clippy::enum_variant_names)]
 enum EnterAction {
     BugDetail {
         bug: Bug,
@@ -153,12 +154,14 @@ enum EnterAction {
     },
 }
 
+#[allow(clippy::type_complexity)]
 pub struct Browser {
     terminal: Terminal<CrosstermBackend<Stdout>>,
     pending_products: Option<Vec<Product>>,
     pending_reload: Option<Box<dyn FnOnce(&mut App)>>,
     spinner_frame: usize,
     loading_cancelled: bool,
+    loading_module: Option<String>,
 }
 
 impl Browser {
@@ -166,6 +169,9 @@ impl Browser {
         let stdout = std::io::stdout();
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
+
+        // Clear the terminal first to ensure clean state (required for Clear widget to work)
+        terminal.clear()?;
 
         // Enter alternate screen to avoid terminal buffer conflicts
         crossterm::execute!(
@@ -180,6 +186,7 @@ impl Browser {
             pending_reload: None,
             spinner_frame: 0,
             loading_cancelled: false,
+            loading_module: None,
         })
     }
 
@@ -217,8 +224,42 @@ impl Browser {
             }
 
             // Check for async loading results (skip if loading was cancelled or user already back to MainMenu)
-            if !self.loading_cancelled {
+            let is_main_menu = matches!(app.state, AppState::MainMenu { .. });
+            if !self.loading_cancelled && !is_main_menu {
                 if let Ok((new_state, product_name, project_name)) = rx.try_recv() {
+                    // Only accept the result if we're still loading the same module
+                    let state_module_name = match &new_state {
+                        AppState::BugList { .. } => Some("Bug List"),
+                        AppState::StoryList { .. } => Some("Story List"),
+                        AppState::ProjectList { .. } => Some("Project List"),
+                        AppState::TaskList { .. } => Some("Task List"),
+                        AppState::ExecutionList { .. } => Some("Execution List"),
+                        AppState::BuildList { .. } => Some("Build List"),
+                        AppState::ReleaseList { .. } => Some("Release List"),
+                        AppState::UserList { .. } => Some("User List"),
+                        AppState::DepartmentList { .. } => Some("Department List"),
+                        AppState::ProductList { .. } => Some("Product List"),
+                        AppState::ProductPlanList { .. } => Some("ProductPlan List"),
+                        AppState::TestcaseList { .. } => Some("Testcase List"),
+                        AppState::TesttaskList { .. } => Some("Testtask List"),
+                        AppState::FeedbackList { .. } => Some("Feedback List"),
+                        AppState::TicketList { .. } => Some("Ticket List"),
+                        AppState::ProgramList { .. } => Some("Program List"),
+                        AppState::Error { .. } => None, // Error states are always valid
+                        _ => None,
+                    };
+
+                    // Skip stale results from previous module loads
+                    if let Some(name) = state_module_name {
+                        if self.loading_module.as_ref() != Some(&name.to_string()) {
+                            // This is a stale result, skip it
+                            self.loading_module = None;
+                            continue;
+                        }
+                    }
+                    self.loading_module = None;
+
+                    // Update state with the loaded data
                     app.state = new_state;
                     app.selected_index = 0;
                     app.list_state.borrow_mut().select(Some(0));
@@ -295,6 +336,7 @@ impl Browser {
                             message: format!("Loading {}...", name),
                         };
                         self.loading_cancelled = false;
+                        self.loading_module = Some(name.clone());
                         Some(name)
                     } else {
                         None
@@ -463,10 +505,6 @@ impl Browser {
                                 &format!("Loading {}...", module_name),
                                 self.spinner_frame,
                             );
-                        }
-                        // States without custom rendering - use Idle as fallback
-                        _ => {
-                            Self::render_idle(f, area, app);
                         }
                     }
                 }
@@ -1490,11 +1528,13 @@ impl Browser {
                 AppState::Loading { .. } => {
                     // Cancel loading and return to MainMenu
                     self.loading_cancelled = true;
+                    self.loading_module = None;
                     app.set_main_menu();
                 }
                 AppState::Error { .. } => {
                     // Return to MainMenu from error and cancel any pending loading
                     self.loading_cancelled = true;
+                    self.loading_module = None;
                     app.set_main_menu();
                 }
                 AppState::MainMenu { .. } => {
@@ -1579,7 +1619,7 @@ impl Browser {
     }
 
     fn render_help_overlay(f: &mut ratatui::Frame, area: Rect) {
-        let chunks = Layout::default()
+        let _chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
                 Constraint::Min(0),
@@ -1742,7 +1782,7 @@ impl Browser {
         f: &mut ratatui::Frame,
         area: Rect,
         multi_config: &crate::core::config::MultiAccountConfig,
-        selected: usize,
+        _selected: usize,
         current_account: &str,
         app: &App,
     ) {
@@ -1793,10 +1833,10 @@ impl Browser {
             Line::from(Span::raw("")),
         ];
 
-        let settings_para =
+        let _settings_para =
             Paragraph::new(Text::from(settings_text)).block(Block::default().borders(Borders::ALL));
 
-        let list = if items.is_empty() {
+        let _list = if items.is_empty() {
             Paragraph::new(Text::from(vec![Line::from(Span::styled(
                 "No accounts configured. Run 'zentao auth login' first.",
                 Style::default().fg(Color::DarkGray),
@@ -1870,7 +1910,7 @@ impl Browser {
         f: &mut ratatui::Frame,
         area: Rect,
         products: &[Product],
-        selected: usize,
+        _selected: usize,
         loading: bool,
     ) {
         let chunks = Layout::default()
@@ -1944,8 +1984,8 @@ impl Browser {
         f: &mut ratatui::Frame,
         area: Rect,
         multi_config: &crate::core::config::MultiAccountConfig,
-        selected: usize,
-        app: &App,
+        _selected: usize,
+        _app: &App,
     ) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
@@ -2010,7 +2050,7 @@ impl Browser {
         f.render_widget(footer, chunks[2]);
     }
 
-    fn render_main_menu(f: &mut ratatui::Frame, area: Rect, selected: usize, app: &App) {
+    fn render_main_menu(f: &mut ratatui::Frame, area: Rect, selected: usize, _app: &App) {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([

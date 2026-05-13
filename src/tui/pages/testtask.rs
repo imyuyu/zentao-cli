@@ -131,13 +131,10 @@ pub fn render_testtask_detail(f: &mut Frame, area: Rect, testtask: &Testtask) {
         ]),
         Line::from(vec![
             Span::raw("Product: "),
-            Span::raw(format!(
-                "{}",
-                testtask
+            Span::raw(testtask
                     .product
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-            )),
+                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),
