@@ -6,7 +6,7 @@ use ratatui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, List, ListItem, Paragraph, Wrap},
+    widgets::{Block, Borders, Clear, List, ListItem, Paragraph, Wrap},
     Terminal,
 };
 use std::io::Stdout;
@@ -302,6 +302,9 @@ impl Browser {
 
             self.terminal.draw(|f| {
                 let area = f.size();
+                // Clear the screen before rendering to avoid residual elements
+                f.render_widget(Clear, area);
+
                 if app.help_visible {
                     Self::render_help_overlay(f, area);
                 } else {
