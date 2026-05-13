@@ -209,8 +209,8 @@ impl Browser {
                 break;
             }
 
-            // Check for async loading results (skip if loading was cancelled)
-            if !self.loading_cancelled {
+            // Check for async loading results (skip if loading was cancelled or user already back to MainMenu)
+            if !self.loading_cancelled && !matches!(app.state, AppState::MainMenu { .. }) {
                 if let Ok((new_state, product_name, project_name)) = rx.try_recv() {
                     app.state = new_state;
                     app.selected_index = 0;
@@ -1485,7 +1485,8 @@ impl Browser {
                     app.set_main_menu();
                 }
                 AppState::Error { .. } => {
-                    // Return to MainMenu from error
+                    // Return to MainMenu from error and cancel any pending loading
+                    self.loading_cancelled = true;
                     app.set_main_menu();
                 }
                 AppState::MainMenu { .. } => {
