@@ -1481,6 +1481,10 @@ impl Browser {
                     self.loading_cancelled = true;
                     app.set_main_menu();
                 }
+                AppState::Error { .. } => {
+                    // Return to MainMenu from error
+                    app.set_main_menu();
+                }
                 AppState::MainMenu { .. } => {
                     app.state = AppState::ConfirmQuit;
                 }
