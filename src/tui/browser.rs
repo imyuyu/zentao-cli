@@ -13,8 +13,8 @@ use std::sync::mpsc;
 
 use super::app::{App, AppState};
 use crate::api::{
-    Bug, Department, Execution, Feedback, Product, ProductPlan, Program, Project, Release,
-    Story, Task, Testcase, Testtask, Ticket, User,
+    Bug, Department, Execution, Feedback, Product, ProductPlan, Program, Project, Release, Story,
+    Task, Testcase, Testtask, Ticket, User,
 };
 use crate::core::{AppContext, OutputFormat};
 use crate::service::{
@@ -1119,22 +1119,21 @@ impl Browser {
                             }
                         },
                         "ProductPlan List" => {
-                            let plans = match ProductPlanService::list(&ctx, config.product_id)
-                                .await
-                            {
-                                Ok(p) => Ok(p),
-                                Err(e) => {
-                                    eprintln!(
+                            let plans =
+                                match ProductPlanService::list(&ctx, config.product_id).await {
+                                    Ok(p) => Ok(p),
+                                    Err(e) => {
+                                        eprintln!(
                                         "Error loading product plans (trying token refresh): {}",
                                         e
                                     );
-                                    if ctx.refresh_token().await.is_ok() {
-                                        ProductPlanService::list(&ctx, config.product_id).await
-                                    } else {
-                                        Err(e)
+                                        if ctx.refresh_token().await.is_ok() {
+                                            ProductPlanService::list(&ctx, config.product_id).await
+                                        } else {
+                                            Err(e)
+                                        }
                                     }
-                                }
-                            };
+                                };
                             match plans {
                                 Ok(plans) => {
                                     let product_name = if let Some(id) = config.product_id {
@@ -1758,7 +1757,6 @@ impl Browser {
 
         f.render_widget(text, area);
     }
-
 
     fn render_error(f: &mut ratatui::Frame, area: Rect, message: &str) {
         let text = Paragraph::new(Text::from(vec![

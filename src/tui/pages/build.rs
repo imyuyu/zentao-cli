@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Build;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_build_list(
     f: &mut Frame,
@@ -112,10 +112,13 @@ pub fn render_build_detail(f: &mut Frame, area: Rect, build: &Build) {
         ]),
         Line::from(vec![
             Span::raw("Branch: "),
-            Span::raw(build
+            Span::raw(
+                build
                     .branch
                     .map(|b| b.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("SCM Path: "),

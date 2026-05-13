@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::ProductPlan;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_productplan_list(
     f: &mut Frame,
@@ -154,15 +154,21 @@ pub fn render_productplan_detail(f: &mut Frame, area: Rect, plan: &ProductPlan) 
         ]),
         Line::from(vec![
             Span::raw("Stories: "),
-            Span::raw(plan.story_count
+            Span::raw(
+                plan.story_count
                     .map(|s| s.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Bugs: "),
-            Span::raw(plan.bug_count
+            Span::raw(
+                plan.bug_count
                     .map(|b| b.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

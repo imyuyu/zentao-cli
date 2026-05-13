@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Testcase;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_testcase_list(
     f: &mut Frame,
@@ -158,10 +158,13 @@ pub fn render_testcase_detail(f: &mut Frame, area: Rect, testcase: &Testcase) {
         ]),
         Line::from(vec![
             Span::raw("Version: "),
-            Span::raw(testcase
+            Span::raw(
+                testcase
                     .version
                     .map(|v| v.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

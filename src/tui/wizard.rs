@@ -119,56 +119,54 @@ fn handle_key_event(
                 ConfigWizardState::Success { url, token } => {
                     wizard.set_select_product(url.clone(), token.clone());
                 }
-                ConfigWizardState::SelectProduct { loading, .. }
-                    if !*loading => {
-                        wizard.set_product_selected();
-                    }
-                ConfigWizardState::SelectProject { loading, .. }
-                    if !*loading => {
-                        // 保存配置
-                        let (url, token, product_id, projects, selected) = match &wizard.state {
-                            ConfigWizardState::SelectProject {
-                                url,
-                                token,
-                                product_id,
-                                projects,
-                                selected,
-                                ..
-                            } => (
-                                url.clone(),
-                                token.clone(),
-                                *product_id,
-                                projects.clone(),
-                                *selected,
-                            ),
-                            _ => return Ok(false),
-                        };
-
-                        let project_id = if !projects.is_empty() {
-                            Some(projects[selected.min(projects.len() - 1)].id)
-                        } else {
-                            None
-                        };
-
-                        let config = Config {
+                ConfigWizardState::SelectProduct { loading, .. } if !*loading => {
+                    wizard.set_product_selected();
+                }
+                ConfigWizardState::SelectProject { loading, .. } if !*loading => {
+                    // 保存配置
+                    let (url, token, product_id, projects, selected) = match &wizard.state {
+                        ConfigWizardState::SelectProject {
                             url,
-                            token: Some(token),
+                            token,
                             product_id,
-                            project_id,
-                            api_version: None,
-                            account: None,
-                        };
+                            projects,
+                            selected,
+                            ..
+                        } => (
+                            url.clone(),
+                            token.clone(),
+                            *product_id,
+                            projects.clone(),
+                            *selected,
+                        ),
+                        _ => return Ok(false),
+                    };
 
-                        match save_config_global(&config) {
-                            Ok(path) => {
-                                let path_str = path.to_string_lossy().to_string();
-                                wizard.set_saved(path_str.clone(), path_str);
-                            }
-                            Err(e) => {
-                                wizard.set_error(format!("保存失败: {}", e));
-                            }
+                    let project_id = if !projects.is_empty() {
+                        Some(projects[selected.min(projects.len() - 1)].id)
+                    } else {
+                        None
+                    };
+
+                    let config = Config {
+                        url,
+                        token: Some(token),
+                        product_id,
+                        project_id,
+                        api_version: None,
+                        account: None,
+                    };
+
+                    match save_config_global(&config) {
+                        Ok(path) => {
+                            let path_str = path.to_string_lossy().to_string();
+                            wizard.set_saved(path_str.clone(), path_str);
+                        }
+                        Err(e) => {
+                            wizard.set_error(format!("保存失败: {}", e));
                         }
                     }
+                }
                 _ => {}
             }
         }

@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Feedback;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_feedback_list(
     f: &mut Frame,
@@ -124,17 +124,23 @@ pub fn render_feedback_detail(f: &mut Frame, area: Rect, feedback: &Feedback) {
         ]),
         Line::from(vec![
             Span::raw("Priority: "),
-            Span::raw(feedback
+            Span::raw(
+                feedback
                     .pri
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Product: "),
-            Span::raw(feedback
+            Span::raw(
+                feedback
                     .product
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),

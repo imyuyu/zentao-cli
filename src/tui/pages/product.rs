@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Product;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_product_list(
     f: &mut Frame,

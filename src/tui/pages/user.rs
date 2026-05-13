@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::User;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_user_list(
     f: &mut Frame,
@@ -114,9 +114,12 @@ pub fn render_user_detail(f: &mut Frame, area: Rect, user: &User) {
         ]),
         Line::from(vec![
             Span::raw("Dept: "),
-            Span::raw(user.dept
+            Span::raw(
+                user.dept
                     .map(|d| d.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Role: "),

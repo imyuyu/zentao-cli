@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Story;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_story_list(
     f: &mut Frame,
@@ -20,7 +20,7 @@ pub fn render_story_list(
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3), // Header with search
-            Constraint::Min(0),  // List
+            Constraint::Min(0),    // List
             Constraint::Length(3), // Footer with shortcuts
         ])
         .split(area);
@@ -79,10 +79,13 @@ pub fn render_story_list(
                     Style::default().fg(Color::Blue),
                 ),
                 Span::raw(" | "),
-                Span::raw(story
+                Span::raw(
+                    story
                         .estimate
                         .map(|e| format!("{}h", e))
-                        .unwrap_or_default().to_string()),
+                        .unwrap_or_default()
+                        .to_string(),
+                ),
             ]))
         })
         .collect();

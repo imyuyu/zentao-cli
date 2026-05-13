@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Ticket;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_ticket_list(
     f: &mut Frame,
@@ -117,24 +117,33 @@ pub fn render_ticket_detail(f: &mut Frame, area: Rect, ticket: &Ticket) {
         ]),
         Line::from(vec![
             Span::raw("Priority: "),
-            Span::raw(ticket
+            Span::raw(
+                ticket
                     .pri
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Severity: "),
-            Span::raw(ticket
+            Span::raw(
+                ticket
                     .severity
                     .map(|s| s.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Product: "),
-            Span::raw(ticket
+            Span::raw(
+                ticket
                     .product
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),

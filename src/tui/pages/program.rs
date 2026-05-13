@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Program;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_program_list(
     f: &mut Frame,
@@ -127,10 +127,13 @@ pub fn render_program_detail(f: &mut Frame, area: Rect, program: &Program) {
         ]),
         Line::from(vec![
             Span::raw("Parent: "),
-            Span::raw(program
+            Span::raw(
+                program
                     .parent
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Manager: "),

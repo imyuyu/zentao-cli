@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Bug;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_bug_list(
     f: &mut Frame,
@@ -20,7 +20,7 @@ pub fn render_bug_list(
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3), // Header with search
-            Constraint::Min(0),  // List
+            Constraint::Min(0),    // List
             Constraint::Length(3), // Footer with shortcuts
         ])
         .split(area);
@@ -73,7 +73,10 @@ pub fn render_bug_list(
                     },
                 ),
                 ratatui::text::Span::raw(" | "),
-                ratatui::text::Span::styled(format!("Pri:{}", bug.pri), Style::default().fg(Color::Blue)),
+                ratatui::text::Span::styled(
+                    format!("Pri:{}", bug.pri),
+                    Style::default().fg(Color::Blue),
+                ),
                 ratatui::text::Span::raw(" | "),
                 ratatui::text::Span::styled(
                     format!("Sev:{}", bug.severity),

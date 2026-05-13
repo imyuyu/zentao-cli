@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Release;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_release_list(
     f: &mut Frame,
@@ -125,10 +125,13 @@ pub fn render_release_detail(f: &mut Frame, area: Rect, release: &Release) {
         ]),
         Line::from(vec![
             Span::raw("Build: "),
-            Span::raw(release
+            Span::raw(
+                release
                     .build
                     .map(|b| b.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Marker: "),

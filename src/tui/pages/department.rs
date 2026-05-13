@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Department;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_department_list(
     f: &mut Frame,
@@ -123,17 +123,23 @@ pub fn render_department_detail(f: &mut Frame, area: Rect, department: &Departme
         Line::from(vec![Span::raw("Name: "), Span::raw(&department.name)]),
         Line::from(vec![
             Span::raw("Parent: "),
-            Span::raw(department
+            Span::raw(
+                department
                     .parent
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "root".to_string()).to_string()),
+                    .unwrap_or_else(|| "root".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Order: "),
-            Span::raw(department
+            Span::raw(
+                department
                     .order
                     .map(|o| o.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Path: "),

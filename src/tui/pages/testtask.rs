@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Testtask;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_testtask_list(
     f: &mut Frame,
@@ -131,10 +131,13 @@ pub fn render_testtask_detail(f: &mut Frame, area: Rect, testtask: &Testtask) {
         ]),
         Line::from(vec![
             Span::raw("Product: "),
-            Span::raw(testtask
+            Span::raw(
+                testtask
                     .product
                     .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),

@@ -1,6 +1,6 @@
-use ratatui::Frame;
-use ratatui::layout::Rect;
 use crate::api::Execution;
+use ratatui::layout::Rect;
+use ratatui::Frame;
 
 pub fn render_execution_list(
     f: &mut Frame,
@@ -85,11 +85,7 @@ pub fn render_execution_list(
     f.render_widget(footer, chunks[2]);
 }
 
-pub fn render_execution_detail(
-    f: &mut Frame,
-    area: Rect,
-    execution: &Execution,
-) {
+pub fn render_execution_detail(f: &mut Frame, area: Rect, execution: &Execution) {
     use ratatui::{
         layout::{Constraint, Direction, Layout},
         style::{Modifier, Style},
@@ -142,10 +138,13 @@ pub fn render_execution_detail(
         ]),
         Line::from(vec![
             Span::raw("Days: "),
-            Span::raw(execution
+            Span::raw(
+                execution
                     .days
                     .map(|d| d.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()).to_string()),
+                    .unwrap_or_else(|| "N/A".to_string())
+                    .to_string(),
+            ),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));
