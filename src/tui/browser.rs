@@ -217,7 +217,7 @@ impl Browser {
             }
 
             // Check for async loading results (skip if loading was cancelled or user already back to MainMenu)
-            if !self.loading_cancelled && !matches!(app.state, AppState::MainMenu { .. }) {
+            if !self.loading_cancelled {
                 if let Ok((new_state, product_name, project_name)) = rx.try_recv() {
                     app.state = new_state;
                     app.selected_index = 0;
