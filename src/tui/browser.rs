@@ -166,7 +166,15 @@ impl Browser {
     pub fn new() -> Result<Self> {
         let stdout = std::io::stdout();
         let backend = CrosstermBackend::new(stdout);
-        let terminal = Terminal::new(backend)?;
+        let mut terminal = Terminal::new(backend)?;
+
+        // Enter alternate screen to avoid terminal buffer conflicts
+        crossterm::execute!(
+            terminal.backend_mut(),
+            crossterm::terminal::EnterAlternateScreen
+        )?;
+
+        terminal.hide_cursor()?;
         Ok(Self {
             terminal,
             pending_products: None,
