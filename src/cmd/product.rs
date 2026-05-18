@@ -70,8 +70,16 @@ pub async fn run(cmd: &ProductAction, ctx: &AppContext) {
         ProductAction::Create { name, code, desc } => {
             let req = CreateProductRequest {
                 name: name.clone(),
-                code: code.clone(),
+                code: code.as_ref().unwrap_or(&String::new()).clone(),
+                program: 0, // Program is required in API but user provides via config
                 desc: desc.clone(),
+                line: None,
+                PO: None,
+                QD: None,
+                RD: None,
+                type_: None,
+                acl: None,
+                whitelist: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(
@@ -94,8 +102,15 @@ pub async fn run(cmd: &ProductAction, ctx: &AppContext) {
         } => {
             let req = UpdateProductRequest {
                 name: name.clone(),
+                code: None,
+                type_: None,
+                line: None,
+                program: None,
                 status: status.clone(),
                 desc: desc.clone(),
+                PO: None,
+                QD: None,
+                RD: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

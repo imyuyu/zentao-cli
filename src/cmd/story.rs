@@ -116,9 +116,15 @@ pub async fn run(cmd: &StorySubcommand, ctx: &AppContext) {
         } => {
             let req = UpdateStoryRequest {
                 title: title.clone(),
-                status: status.clone(),
+                module: None,
+                source: None,
+                sourceNote: None,
                 pri: *pri,
+                category: None,
+                estimate: None,
+                keywords: None,
                 assigned_to: assigned_to.clone(),
+                status: status.clone(),
             };
 
             if ctx.dry_run {
@@ -144,9 +150,15 @@ pub async fn run(cmd: &StorySubcommand, ctx: &AppContext) {
         } => {
             let req = UpdateStoryRequest {
                 title: title.clone(),
-                status: status.clone(),
+                module: None,
+                source: None,
+                sourceNote: None,
                 pri: *pri,
+                category: None,
+                estimate: None,
+                keywords: None,
                 assigned_to: assigned_to.clone(),
+                status: status.clone(),
             };
 
             if ctx.dry_run {

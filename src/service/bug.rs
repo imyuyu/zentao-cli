@@ -39,6 +39,14 @@ impl BugService {
         type_: Option<String>,
         steps: Option<String>,
         story: Option<u64>,
+        branch: Option<u64>,
+        module: Option<u64>,
+        execution: Option<u64>,
+        keywords: Option<String>,
+        os: Option<String>,
+        browser: Option<String>,
+        deadline: Option<String>,
+        opened_build: Option<Vec<String>>,
     ) -> Result<Bug> {
         log(LogLevel::Info, "BugService", "create");
         let client = ctx.client();
@@ -50,7 +58,14 @@ impl BugService {
             type_,
             steps,
             story,
-            assigned_to: None,
+            branch,
+            module,
+            execution,
+            keywords,
+            os,
+            browser,
+            deadline,
+            opened_build,
         };
 
         BugApi::create(&client, &req).await
@@ -67,10 +82,24 @@ impl BugService {
         id: u64,
         resolution: &str,
         resolved_build: &str,
+        assigned_to: Option<&str>,
+        duplicate_bug: Option<u64>,
+        resolved_date: Option<&str>,
+        comment: Option<&str>,
     ) -> Result<Bug> {
         log(LogLevel::Info, "BugService", format!("resolve id={}", id));
         let client = ctx.client();
-        BugApi::resolve(&client, id, resolution, resolved_build).await
+        BugApi::resolve(
+            &client,
+            id,
+            resolution,
+            resolved_build,
+            assigned_to,
+            duplicate_bug,
+            resolved_date,
+            comment,
+        )
+        .await
     }
 
     pub async fn confirm(ctx: &AppContext, id: u64) -> Result<Bug> {

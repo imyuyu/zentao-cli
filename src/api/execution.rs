@@ -20,22 +20,46 @@ pub struct CreateExecutionRequest {
     pub name: String,
     /// 所属项目 ID（必填）
     pub project: u64,
+    /// 执行代号（必填）
+    pub code: String,
+    /// 计划开始日期（必填）
+    pub begin: String,
+    /// 计划结束日期（必填）
+    pub end: String,
     /// 执行类型：iteration/milestone
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "type")]
     pub type_: Option<String>,
-    /// 开始日期
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub begin: Option<String>,
-    /// 结束日期
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub end: Option<String>,
-    /// 预计工期（天）
+    /// 可用工作日
     #[serde(skip_serializing_if = "Option::is_none")]
     pub days: Option<u64>,
+    /// 类型(short/长期/long/短期/ops/运维)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lifetime: Option<String>,
+    /// 产品负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub PO: Option<String>,
+    /// 迭代负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub PM: Option<String>,
+    /// 测试负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub QD: Option<String>,
+    /// 发布负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub RD: Option<String>,
+    /// 团队成员
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub teamMembers: Option<Vec<String>>,
     /// 执行描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
+    /// 访问控制（private/私有/open/继承项目权限）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acl: Option<String>,
+    /// 白名单（acl=private时生效）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub whitelist: Option<Vec<String>>,
 }
 
 /// 更新执行的请求体
@@ -54,12 +78,21 @@ pub struct UpdateExecutionRequest {
     /// 结束日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end: Option<String>,
-    /// 预计工期（天）
+    /// 可用工作日
     #[serde(skip_serializing_if = "Option::is_none")]
     pub days: Option<u64>,
     /// 执行描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
+    /// 迭代负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub PM: Option<String>,
+    /// 测试负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub QD: Option<String>,
+    /// 发布负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub RD: Option<String>,
 }
 
 // ============================================================

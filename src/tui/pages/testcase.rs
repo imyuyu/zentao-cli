@@ -57,15 +57,10 @@ pub fn render_testcase_list(
                 ),
                 Span::raw(" | "),
                 Span::styled(
-                    format!(
-                        "Sev:{}",
-                        tc.severity
-                            .map(|s| s.to_string())
-                            .unwrap_or_else(|| "N/A".to_string())
-                    ),
-                    match tc.severity {
-                        Some(1) => Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
-                        Some(2) => Style::default().fg(Color::Yellow),
+                    format!("Pri:{}", tc.pri),
+                    match tc.pri {
+                        1 => Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                        2 => Style::default().fg(Color::Yellow),
                         _ => Style::default().fg(Color::DarkGray),
                     },
                 ),
@@ -132,25 +127,11 @@ pub fn render_testcase_detail(f: &mut Frame, area: Rect, testcase: &Testcase) {
         Line::from(vec![Span::raw("Status: "), Span::raw(&testcase.status)]),
         Line::from(vec![
             Span::raw("Type: "),
-            Span::raw(testcase.type_.as_deref().unwrap_or("N/A")),
-        ]),
-        Line::from(vec![
-            Span::raw("Severity: "),
-            Span::raw(
-                testcase
-                    .severity
-                    .map(|s| s.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()),
-            ),
+            Span::raw(&testcase.type_),
         ]),
         Line::from(vec![
             Span::raw("Priority: "),
-            Span::raw(
-                testcase
-                    .pri
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string()),
-            ),
+            Span::raw(testcase.pri.to_string()),
         ]),
         Line::from(vec![
             Span::raw("Product: "),
@@ -158,22 +139,25 @@ pub fn render_testcase_detail(f: &mut Frame, area: Rect, testcase: &Testcase) {
         ]),
         Line::from(vec![
             Span::raw("Version: "),
-            Span::raw(
-                testcase
-                    .version
-                    .map(|v| v.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-                    .to_string(),
-            ),
+            Span::raw(testcase.version.to_string()),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));
 
     f.render_widget(details, chunks[1]);
 
-    // Strip HTML tags from steps
-    let steps_text = testcase.steps.as_deref().unwrap_or("No steps provided.");
-    let steps_text = crate::tui::browser::strip_html_tags(steps_text);
+    // Format steps as text
+    let steps_text = if testcase.steps.is_empty() {
+        "No steps provided.".to_string()
+    } else {
+        testcase.steps
+            .iter()
+            .enumerate()
+            .map(|(i, step)| format!("{}. {}\n   Expect: {}", i + 1, step.desc, step.expect))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    let steps_text = crate::tui::browser::strip_html_tags(&steps_text);
     let steps_lines: Vec<Line> = steps_text
         .split('\n')
         .map(|s| Line::from(Span::raw(s)))

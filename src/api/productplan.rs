@@ -23,7 +23,7 @@ use super::ApiClient;
 /// {
 ///     "id": 1,
 ///     "product": 1,
-///     "name": "V1.0 计划",
+///     "title": "V1.0 计划",
 ///     "code": "V1",
 ///     "status": "done",
 ///     "type": "ship",
@@ -37,8 +37,11 @@ pub struct ProductPlan {
     pub id: u64,
     /// 所属产品 ID
     pub product: u64,
-    /// 计划名称
+    /// 计划标题（ZenTao API 使用 title 而非 name）
     #[serde(default)]
+    pub title: Option<String>,
+    /// 计划名称（兼容旧字段）
+    #[serde(default, alias = "name")]
     pub name: Option<String>,
     /// 计划代号
     #[serde(default)]
@@ -77,12 +80,19 @@ pub struct ProductPlan {
 // ============================================================
 
 /// 创建产品计划的请求体
+///
+/// POST /api.php/v1/products/{id}/plans
+/// ZenTao API 必填字段: title
 #[derive(Debug, Serialize)]
 pub struct CreateProductPlanRequest {
-    /// 所属产品 ID（必填）
-    pub product: u64,
-    /// 计划名称（必填）
-    pub name: String,
+    /// 计划标题（必填）
+    pub title: String,
+    /// 所属产品 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product: Option<u64>,
+    /// 分支 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<u64>,
     /// 计划代号
     #[serde(skip_serializing_if = "Option::is_none")]
     pub code: Option<String>,
@@ -98,6 +108,9 @@ pub struct CreateProductPlanRequest {
     /// 结束日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end: Option<String>,
+    /// 父计划 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<u64>,
 }
 
 /// 更新产品计划的请求体
@@ -186,15 +199,19 @@ impl ProductPlanApi {
 
     /// 创建产品计划
     ///
-    /// POST /api.php/v1/productplans
-    pub async fn create(client: &ApiClient, req: &CreateProductPlanRequest) -> Result<ProductPlan> {
+    /// POST /api.php/v1/products/{productId}/plans
+    pub async fn create(
+        client: &ApiClient,
+        product_id: u64,
+        req: &CreateProductPlanRequest,
+    ) -> Result<ProductPlan> {
         #[derive(Deserialize)]
         struct CreateResponse {
             id: Option<u64>,
         }
 
-        let path = "/api.php/v1/productplans";
-        let resp: CreateResponse = client.post(path, req).await?;
+        let path = format!("/api.php/v1/products/{}/plans", product_id);
+        let resp: CreateResponse = client.post(&path, req).await?;
 
         if let Some(id) = resp.id {
             Self::get(client, id).await
@@ -235,7 +252,8 @@ mod tests {
         let plan = ProductPlan {
             id: 1,
             product: 1,
-            name: Some("V1.0 Plan".to_string()),
+            title: Some("V1.0 Plan".to_string()),
+            name: None,
             code: Some("V1".to_string()),
             status: Some("doing".to_string()),
             type_: Some("ship".to_string()),
@@ -258,13 +276,13 @@ mod tests {
         let json = r#"{
             "id": 10,
             "product": 1,
-            "name": "My Plan",
+            "title": "My Plan",
             "code": "PLAN",
             "status": "wait"
         }"#;
         let plan: ProductPlan = serde_json::from_str(json).unwrap();
         assert_eq!(plan.id, 10);
-        assert_eq!(plan.name, Some("My Plan".to_string()));
+        assert_eq!(plan.title, Some("My Plan".to_string()));
         assert_eq!(plan.status, Some("wait".to_string()));
     }
 }

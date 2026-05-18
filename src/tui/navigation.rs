@@ -91,48 +91,44 @@ pub fn get_open_url(app: &App) -> Option<String> {
     let base_url = &app.config.url;
 
     match &app.state {
-        AppState::BugList { bugs, .. } => {
-            bugs.get(app.selected_index).map(|b| b.web_url(base_url))
-        }
+        AppState::BugList { bugs, .. } => bugs.get(app.selected_index).map(|b| b.web_url(base_url)),
         AppState::StoryList { stories, .. } => {
             stories.get(app.selected_index).map(|s| s.web_url(base_url))
         }
         AppState::ReleaseList { releases, .. } => releases
             .get(app.selected_index)
             .map(|r| r.web_url(base_url)),
-        AppState::UserList { users } => {
-            users.get(app.selected_index).map(|u| u.web_url(base_url))
-        }
+        AppState::UserList { users } => users.get(app.selected_index).map(|u| u.web_url(base_url)),
         AppState::DepartmentList { departments } => departments
             .get(app.selected_index)
             .map(|d| d.web_url(base_url)),
-        AppState::ProductList { products } => products.get(app.selected_index).map(|p| {
-            format!("{}/product-view-{}.html", base_url, p.id)
-        }),
-        AppState::ProjectList { projects } => projects.get(app.selected_index).map(|p| {
-            format!("{}/project-view-{}.html", base_url, p.id)
-        }),
-        AppState::TaskList { tasks, .. } => tasks.get(app.selected_index).map(|t| {
-            format!("{}/task-view-{}.html", base_url, t.id)
-        }),
-        AppState::TestcaseList { testcases, .. } => testcases.get(app.selected_index).map(|t| {
-            format!("{}/testcase-view-{}.html", base_url, t.id)
-        }),
-        AppState::TesttaskList { testtasks, .. } => testtasks.get(app.selected_index).map(|t| {
-            format!("{}/testtask-view-{}.html", base_url, t.id)
-        }),
-        AppState::FeedbackList { feedbacks } => feedbacks.get(app.selected_index).map(|f| {
-            format!("{}/feedback-view-{}.html", base_url, f.id)
-        }),
-        AppState::TicketList { tickets } => tickets.get(app.selected_index).map(|t| {
-            format!("{}/ticket-view-{}.html", base_url, t.id)
-        }),
-        AppState::ProgramList { programs } => programs.get(app.selected_index).map(|p| {
-            format!("{}/program-view-{}.html", base_url, p.id)
-        }),
-        AppState::ProductPlanList { plans, .. } => plans.get(app.selected_index).map(|p| {
-            format!("{}/productplan-view-{}.html", base_url, p.id)
-        }),
+        AppState::ProductList { products } => products
+            .get(app.selected_index)
+            .map(|p| format!("{}/product-view-{}.html", base_url, p.id)),
+        AppState::ProjectList { projects } => projects
+            .get(app.selected_index)
+            .map(|p| format!("{}/project-view-{}.html", base_url, p.id)),
+        AppState::TaskList { tasks, .. } => tasks
+            .get(app.selected_index)
+            .map(|t| format!("{}/task-view-{}.html", base_url, t.id)),
+        AppState::TestcaseList { testcases, .. } => testcases
+            .get(app.selected_index)
+            .map(|t| format!("{}/testcase-view-{}.html", base_url, t.id)),
+        AppState::TesttaskList { testtasks, .. } => testtasks
+            .get(app.selected_index)
+            .map(|t| format!("{}/testtask-view-{}.html", base_url, t.id)),
+        AppState::FeedbackList { feedbacks } => feedbacks
+            .get(app.selected_index)
+            .map(|f| format!("{}/feedback-view-{}.html", base_url, f.id)),
+        AppState::TicketList { tickets } => tickets
+            .get(app.selected_index)
+            .map(|t| format!("{}/ticket-view-{}.html", base_url, t.id)),
+        AppState::ProgramList { programs } => programs
+            .get(app.selected_index)
+            .map(|p| format!("{}/program-view-{}.html", base_url, p.id)),
+        AppState::ProductPlanList { plans, .. } => plans
+            .get(app.selected_index)
+            .map(|p| format!("{}/productplan-view-{}.html", base_url, p.id)),
         _ => None,
     }
 }

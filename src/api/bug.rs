@@ -14,6 +14,7 @@ use crate::core::ZentaoError;
 // ============================================================
 
 /// 创建 Bug 的请求体
+/// API Doc 721: POST /products/{productId}/bugs
 #[derive(Debug, Serialize)]
 pub struct CreateBugRequest {
     /// Bug 标题（必填）
@@ -34,27 +35,80 @@ pub struct CreateBugRequest {
     /// 关联的需求 ID
     #[serde(skip_serializing_if = "Option::is_none")]
     pub story: Option<u64>,
-    /// 指派给谁
-    #[serde(skip_serializing_if = "Option::is_none", rename = "assignedTo")]
-    pub assigned_to: Option<String>,
+    /// 所属分支
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<u64>,
+    /// 所属模块
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module: Option<u64>,
+    /// 所属执行
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub execution: Option<u64>,
+    /// 关键词
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keywords: Option<String>,
+    /// 操作系统
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub os: Option<String>,
+    /// 浏览器
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub browser: Option<String>,
+    /// 截止日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deadline: Option<String>,
+    /// 影响版本
+    #[serde(skip_serializing_if = "Option::is_none", rename = "openedBuild")]
+    pub opened_build: Option<Vec<String>>,
 }
 
 /// 更新 Bug 的请求体
-/// 所有字段可选，只更新传入的字段
+/// API Doc 723: PUT /bugs/{bug_id}
+/// 注意：官方 update 接口不支持 status/assignedTo/resolution，这些需要通过专用接口修改
 #[derive(Debug, Serialize)]
 pub struct UpdateBugRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
-    /// 新状态：active/resolved/closed
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
-    /// 解决方案：fixed/bydesign/duplicate/无法重现/延期处理
+    pub keywords: Option<String>,
+    /// 严重程度：1-4（1 最严重）
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub resolution: Option<String>,
+    pub severity: Option<u8>,
+    /// 优先级：0-5
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub resolved_build: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "assignedTo")]
-    pub assigned_to: Option<String>,
+    pub pri: Option<u8>,
+    /// Bug 类型：codeerror/interface/design/others
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub type_: Option<String>,
+    /// 操作系统
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub os: Option<String>,
+    /// 浏览器
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub browser: Option<String>,
+    /// 重现步骤
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps: Option<String>,
+    /// 相关任务 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub task: Option<u64>,
+    /// 相关需求 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub story: Option<u64>,
+    /// 截止日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deadline: Option<String>,
+    /// 影响版本
+    #[serde(skip_serializing_if = "Option::is_none", rename = "openedBuild")]
+    pub opened_build: Option<Vec<String>>,
+    /// 所属分支
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<u64>,
+    /// 所属模块
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module: Option<u64>,
+    /// 所属执行
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub execution: Option<u64>,
 }
 
 // ============================================================
@@ -176,24 +230,46 @@ impl BugApi {
     /// 解决 Bug
     ///
     /// POST /api.php/v1/bugs/{bug_id}/resolve
+    /// API Doc 1181
     ///
     /// # 参数
     /// - client: API 客户端
     /// - id: Bug ID
     /// - resolution: 解决方案 (bydesign/duplicate/external/fixed/notrepro/postponed/willnotfix/tostory)
     /// - resolved_build: 解决的版本 ID 或 "trunk"
+    /// - assigned_to: 指派给（可选）
+    /// - duplicate_bug: 重复 Bug ID（当 resolution 为 duplicate 时使用）
+    /// - resolved_date: 解决时间（可选）
+    /// - comment: 备注（可选）
     pub async fn resolve(
         client: &ApiClient,
         id: u64,
         resolution: &str,
         resolved_build: &str,
+        assigned_to: Option<&str>,
+        duplicate_bug: Option<u64>,
+        resolved_date: Option<&str>,
+        comment: Option<&str>,
     ) -> Result<Bug> {
         let path = format!("/api.php/v1/bugs/{}/resolve", id);
-        // resolved_build 可以是版本 ID 或 "trunk"
-        let body = serde_json::json!({
+        let mut body = serde_json::json!({
             "resolution": resolution,
             "resolvedBuild": resolved_build
         });
+
+        if let Some(at) = assigned_to {
+            body["assignedTo"] = serde_json::json!(at);
+        }
+        if let Some(db) = duplicate_bug {
+            body["duplicateBug"] = serde_json::json!(db);
+        }
+        if let Some(rd) = resolved_date {
+            body["resolvedDate"] = serde_json::json!(rd);
+        }
+        if let Some(c) = comment {
+            body["comment"] = serde_json::json!(c);
+        }
+
         let _: serde_json::Value = client.post(&path, &body).await?;
         Self::get(client, id).await
     }
@@ -246,10 +322,17 @@ mod tests {
             product: 1,
             severity: 3,
             pri: Some(2),
-            type_: Some("code".to_string()),
+            type_: Some("codeerror".to_string()),
             steps: Some("Step 1: Go to page".to_string()),
             story: None,
-            assigned_to: Some("dev".to_string()),
+            branch: None,
+            module: None,
+            execution: None,
+            keywords: None,
+            os: None,
+            browser: None,
+            deadline: None,
+            opened_build: Some(vec!["trunk".to_string()]),
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Test Bug"));
@@ -267,7 +350,14 @@ mod tests {
             type_: None,
             steps: None,
             story: None,
-            assigned_to: None,
+            branch: None,
+            module: None,
+            execution: None,
+            keywords: None,
+            os: None,
+            browser: None,
+            deadline: None,
+            opened_build: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Minimal Bug"));
@@ -279,28 +369,47 @@ mod tests {
     fn test_update_bug_request_serialization() {
         let req = UpdateBugRequest {
             title: Some("Fixed Bug".to_string()),
-            status: Some("closed".to_string()),
-            resolution: Some("fixed".to_string()),
-            resolved_build: None,
-            assigned_to: Some("admin".to_string()),
+            keywords: Some("fixed".to_string()),
+            severity: Some(3),
+            pri: Some(2),
+            type_: None,
+            os: None,
+            browser: None,
+            steps: None,
+            task: None,
+            story: None,
+            deadline: None,
+            opened_build: None,
+            branch: None,
+            module: None,
+            execution: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Fixed Bug"));
-        assert!(json.contains("closed"));
-        assert!(json.contains("fixed"));
+        assert!(json.contains("\"severity\":3"));
     }
 
     #[test]
     fn test_update_bug_request_partial() {
         let req = UpdateBugRequest {
             title: None,
-            status: Some("resolved".to_string()),
-            resolution: None,
-            resolved_build: None,
-            assigned_to: None,
+            keywords: Some("updated".to_string()),
+            severity: None,
+            pri: None,
+            type_: None,
+            os: None,
+            browser: None,
+            steps: None,
+            task: None,
+            story: None,
+            deadline: None,
+            opened_build: None,
+            branch: None,
+            module: None,
+            execution: None,
         };
         let json = serde_json::to_string(&req).unwrap();
-        assert!(json.contains("resolved"));
+        assert!(json.contains("updated"));
         assert!(!json.contains("\"title\""));
     }
 

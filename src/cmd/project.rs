@@ -22,7 +22,15 @@ pub enum ProjectAction {
         #[arg(long)]
         code: String,
         #[arg(long)]
+        begin: String,
+        #[arg(long)]
+        end: String,
+        #[arg(long)]
+        products: Option<String>,
+        #[arg(long)]
         desc: Option<String>,
+        #[arg(long)]
+        model: Option<String>,
     },
     #[command(name = "update")]
     Update {
@@ -33,6 +41,16 @@ pub enum ProjectAction {
         status: Option<String>,
         #[arg(long)]
         desc: Option<String>,
+        #[arg(long)]
+        PM: Option<String>,
+        #[arg(long)]
+        budget: Option<u64>,
+        #[arg(long)]
+        budgetUnit: Option<String>,
+        #[arg(long)]
+        days: Option<u64>,
+        #[arg(long)]
+        acl: Option<String>,
     },
     #[command(name = "delete")]
     Delete { id: u64 },
@@ -67,10 +85,28 @@ pub async fn run(cmd: &ProjectAction, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        ProjectAction::Create { name, code, desc } => {
+        ProjectAction::Create {
+            name,
+            code,
+            begin,
+            end,
+            products,
+            desc,
+            model,
+        } => {
+            // 解析 products 参数，格式如 "1,2,3"
+            let product_ids: Vec<u64> = products
+                .as_ref()
+                .map(|p| p.split(',').filter_map(|s| s.trim().parse().ok()).collect())
+                .unwrap_or_default();
             let req = CreateProjectRequest {
                 name: name.clone(),
                 code: code.clone(),
+                begin: begin.clone(),
+                end: end.clone(),
+                products: product_ids,
+                model: model.clone(),
+                parent: None,
                 desc: desc.clone(),
             };
             if ctx.dry_run {
@@ -91,11 +127,24 @@ pub async fn run(cmd: &ProjectAction, ctx: &AppContext) {
             name,
             status,
             desc,
+            PM,
+            budget,
+            budgetUnit,
+            days,
+            acl,
         } => {
             let req = UpdateProjectRequest {
                 name: name.clone(),
                 status: status.clone(),
                 desc: desc.clone(),
+                parent: None,
+                PM: PM.clone(),
+                budget: *budget,
+                budgetUnit: budgetUnit.clone(),
+                days: *days,
+                acl: acl.clone(),
+                whitelist: None,
+                auth: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

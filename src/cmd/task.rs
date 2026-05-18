@@ -26,15 +26,23 @@ pub enum TaskAction {
         #[arg(long)]
         name: String,
         #[arg(long)]
+        assigned_to: String,
+        #[arg(long)]
+        type_: String,
+        #[arg(long)]
+        est_started: String,
+        #[arg(long)]
+        deadline: String,
+        #[arg(long)]
         project: Option<u64>,
         #[arg(long)]
-        pri: u8,
-        #[arg(long)]
-        type_: Option<String>,
-        #[arg(long)]
-        assigned_to: Option<String>,
+        pri: Option<u8>,
         #[arg(long)]
         estimate: Option<f64>,
+        #[arg(long)]
+        module: Option<u64>,
+        #[arg(long)]
+        story: Option<u64>,
     },
     #[command(name = "update")]
     Update {
@@ -47,6 +55,10 @@ pub enum TaskAction {
         pri: Option<u8>,
         #[arg(long)]
         assigned_to: Option<String>,
+        #[arg(long)]
+        est_started: Option<String>,
+        #[arg(long)]
+        deadline: Option<String>,
     },
     #[command(name = "delete")]
     Delete { id: u64 },
@@ -105,25 +117,29 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
         ),
         TaskAction::Create {
             name,
+            assigned_to,
+            type_,
+            est_started,
+            deadline,
             project,
             pri,
-            type_,
-            assigned_to,
             estimate,
+            module,
+            story,
         } => {
-            let project_id = match ctx.require_project_id(*project) {
-                Ok(id) => id,
-                Err(e) => {
-                    print_error(&e);
-                    return;
-                }
-            };
+            let project_id = ctx.project_id(*project);
             let req = CreateTaskRequest {
                 name: name.clone(),
-                project: project_id,
-                pri: *pri,
-                type_: type_.clone(),
                 assigned_to: assigned_to.clone(),
+                type_: type_.clone(),
+                est_started: est_started.clone(),
+                deadline: deadline.clone(),
+                project: project_id,
+                execution: None,
+                pri: *pri,
+                module: *module,
+                story: *story,
+                from_bug: None,
                 estimate: *estimate,
             };
             if ctx.dry_run {
@@ -145,12 +161,21 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
             status,
             pri,
             assigned_to,
+            est_started,
+            deadline,
         } => {
             let req = UpdateTaskRequest {
                 name: name.clone(),
                 status: status.clone(),
                 pri: *pri,
                 assigned_to: assigned_to.clone(),
+                module: None,
+                story: None,
+                from_bug: None,
+                type_: None,
+                est_started: est_started.clone(),
+                deadline: deadline.clone(),
+                estimate: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

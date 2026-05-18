@@ -811,7 +811,10 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: format!("Failed to load departments: {}", e),
+                                                message: format!(
+                                                    "Failed to load departments: {}",
+                                                    e
+                                                ),
                                             },
                                             None,
                                             None,
@@ -1063,12 +1066,12 @@ impl Browser {
                                 }
                             }
                         },
-                        "Ticket List" => match TicketService::list(&ctx, 1, 100).await {
+                        "Ticket List" => match TicketService::list(&ctx, None, None, 1, 100).await {
                             Ok(tickets) => (AppState::TicketList { tickets }, None, None),
                             Err(e) => {
                                 eprintln!("Error loading tickets (trying token refresh): {}", e);
                                 if ctx.refresh_token().await.is_ok() {
-                                    match TicketService::list(&ctx, 1, 100).await {
+                                    match TicketService::list(&ctx, None, None, 1, 100).await {
                                         Ok(tickets) => {
                                             (AppState::TicketList { tickets }, None, None)
                                         }

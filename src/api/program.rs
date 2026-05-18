@@ -69,6 +69,8 @@ pub struct Program {
 // ============================================================
 
 /// 创建项目集的请求体
+///
+/// POST /api.php/v1/programs
 #[derive(Debug, Serialize)]
 pub struct CreateProgramRequest {
     /// 项目集名称（必填）
@@ -82,26 +84,67 @@ pub struct CreateProgramRequest {
     /// 描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
-    /// 父项目集 ID
+    /// 父项目集 ID，0 表示无父项目集
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parent: Option<u64>,
+    /// 项目经理
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub PM: Option<String>,
+    /// 预算金额
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget: Option<u64>,
+    /// 预算币种：CNY | USD
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budgetUnit: Option<String>,
+    /// 预计开始日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub begin: Option<String>,
+    /// 预计结束日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub end: Option<String>,
+    /// 访问控制：open（公开）/private（私有）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acl: Option<String>,
+    /// 白名单
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub whitelist: Option<Vec<String>>,
 }
 
 /// 更新项目集的请求体
+///
+/// PUT /api.php/v1/programs/{id}
 #[derive(Debug, Serialize)]
 pub struct UpdateProgramRequest {
+    /// 项目集名称
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
+    /// 描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
+    /// 负责人
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub manager: Option<String>,
+    pub PM: Option<String>,
+    /// 预算金额
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget: Option<u64>,
+    /// 预算币种：CNY | USD
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budgetUnit: Option<String>,
+    /// 预计开始日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub begin: Option<String>,
+    /// 预计结束日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub end: Option<String>,
+    /// 访问控制：open/private
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acl: Option<String>,
+    /// 白名单
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub whitelist: Option<Vec<String>>,
+    /// 父项目集 ID，0 表示无父项目集
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<u64>,
 }
 
 // ============================================================

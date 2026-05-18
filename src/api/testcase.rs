@@ -16,74 +16,104 @@ use crate::core::ZentaoError;
 /// 创建测试用例的请求体
 #[derive(Debug, Serialize)]
 pub struct CreateTestcaseRequest {
-    /// 用例标题（必填）
-    pub title: String,
     /// 所属产品 ID（必填）
     pub product: u64,
-    /// 用例类型：feature/performance/interface/security/concurrency/destructive/install/others
-    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
-    /// 严重程度：1-4（1 最严重）
+    /// 用例标题（必填）
+    pub title: String,
+    /// 用例类型：feature/performance/config/install/security/interface/unit/other（必填）
+    #[serde(rename = "type")]
+    pub type_: String,
+    /// 所属分支
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub severity: Option<u8>,
-    /// 优先级：0-5
+    pub branch: Option<u64>,
+    /// 所属模块
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pri: Option<u8>,
-    /// 测试步骤
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub steps: Option<String>,
-    /// 期望结果
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub expectation: Option<String>,
+    pub module: Option<u64>,
     /// 关联的需求 ID
     #[serde(skip_serializing_if = "Option::is_none")]
     pub story: Option<u64>,
-    /// 所属项目 ID
+    /// 适用阶段：unitest/feature/intergrate/system/smoke/bvt
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub project: Option<u64>,
+    pub stage: Option<String>,
+    /// 前置条件
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub precondition: Option<String>,
+    /// 优先级：0-5
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pri: Option<u8>,
+    /// 测试步骤（array of {desc, expect}）
+    pub steps: Vec<TestcaseStep>,
+    /// 关键词
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keywords: Option<String>,
+}
+
+/// 测试用例步骤
+#[derive(Debug, Serialize)]
+pub struct TestcaseStep {
+    /// 步骤描述
+    pub desc: String,
+    /// 期望结果
+    pub expect: String,
 }
 
 /// 更新测试用例的请求体
 /// 所有字段可选，只更新传入的字段
 #[derive(Debug, Serialize)]
 pub struct UpdateTestcaseRequest {
+    /// 所属分支
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<u64>,
+    /// 所属模块
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module: Option<u64>,
+    /// 关联的需求 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub story: Option<u64>,
     /// 新标题
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
-    /// 新状态：wait/normal/blocked/bypass
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
-    /// 新优先级
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pri: Option<u8>,
-    /// 新严重程度
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub severity: Option<u8>,
     /// 新用例类型
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
-    /// 新测试步骤
+    /// 适用阶段
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub steps: Option<String>,
-    /// 新期望结果
+    pub stage: Option<String>,
+    /// 前置条件
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expectation: Option<String>,
+    pub precondition: Option<String>,
+    /// 新优先级
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pri: Option<u8>,
+    /// 测试步骤
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub steps: Option<Vec<TestcaseStep>>,
+    /// 关键词
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keywords: Option<String>,
 }
 
 /// 执行测试用例的请求体
 #[derive(Debug, Serialize)]
 pub struct TestcaseResultRequest {
-    /// 执行结果：pass/fail/blocked
+    /// 测试单 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub testtask: Option<u64>,
+    /// 测试用例版本
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<u64>,
+    /// 用例结果和描述（array）
+    pub steps: Vec<TestcaseResultStep>,
+}
+
+/// 测试用例执行结果步骤
+#[derive(Debug, Serialize)]
+pub struct TestcaseResultStep {
+    /// 结果：n/a/fail/blocked/pass
     pub result: String,
-    /// 执行耗时（分钟）
+    /// 步骤描述
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub consumed: Option<f64>,
-    /// 执行备注
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub remark: Option<String>,
-    /// 关联的版本 ID
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub build: Option<u64>,
+    pub desc: Option<String>,
 }
 
 // ============================================================
@@ -238,29 +268,32 @@ mod tests {
             "severity": 3,
             "pri": 2,
             "status": "normal",
-            "steps": "Step 1: Do something\nStep 2: Verify result",
-            "expectation": "Expected result",
             "product": 1,
-            "project": 5,
+            "branch": 0,
+            "module": 0,
+            "story": 0,
+            "story_version": 1,
+            "precondition": "Precondition text",
+            "stage": "unitest",
             "opened_by": "admin",
-            "version": 2
+            "opened_date": "2024-01-01",
+            "version": 2,
+            "steps": [
+                {"id": 1, "desc": "Step 1: Do something", "expect": "Expected result"}
+            ]
         }"#;
         let testcase: Testcase = serde_json::from_str(json).unwrap();
         assert_eq!(testcase.id, 100);
         assert_eq!(testcase.title, "Test Case Title");
-        assert_eq!(testcase.type_, Some("feature".to_string()));
-        assert_eq!(testcase.severity, Some(3));
-        assert_eq!(testcase.pri, Some(2));
+        assert_eq!(testcase.type_, "feature");
+        assert_eq!(testcase.pri, 2);
         assert_eq!(testcase.status, "normal");
-        assert_eq!(
-            testcase.steps,
-            Some("Step 1: Do something\nStep 2: Verify result".to_string())
-        );
-        assert_eq!(testcase.expectation, Some("Expected result".to_string()));
         assert_eq!(testcase.product, 1);
-        assert_eq!(testcase.project, Some(5));
-        assert_eq!(testcase.opened_by, Some("admin".to_string()));
-        assert_eq!(testcase.version, Some(2));
+        assert_eq!(testcase.opened_by, "admin");
+        assert_eq!(testcase.version, 2);
+        assert_eq!(testcase.steps.len(), 1);
+        assert_eq!(testcase.steps[0].desc, "Step 1: Do something");
+        assert_eq!(testcase.steps[0].expect, "Expected result");
     }
 
     /// 测试最小 Testcase 反序列化（只有必填字段）
@@ -269,25 +302,29 @@ mod tests {
         let json = r#"{
             "id": 101,
             "title": "Minimal Case",
+            "type": "feature",
             "severity": 2,
             "pri": 1,
             "status": "wait",
-            "product": 2
+            "product": 2,
+            "branch": 0,
+            "module": 0,
+            "story": 0,
+            "story_version": 1,
+            "precondition": "",
+            "stage": "unitest",
+            "opened_by": "admin",
+            "opened_date": "2024-01-01",
+            "version": 1,
+            "steps": []
         }"#;
         let testcase: Testcase = serde_json::from_str(json).unwrap();
         assert_eq!(testcase.id, 101);
         assert_eq!(testcase.title, "Minimal Case");
-        assert_eq!(testcase.severity, Some(2));
-        assert_eq!(testcase.pri, Some(1));
+        assert_eq!(testcase.pri, 1);
         assert_eq!(testcase.status, "wait");
         assert_eq!(testcase.product, 2);
-        // 可选字段
-        assert_eq!(testcase.type_, None);
-        assert_eq!(testcase.steps, None);
-        assert_eq!(testcase.expectation, None);
-        assert_eq!(testcase.project, None);
-        assert_eq!(testcase.opened_by, None);
-        assert_eq!(testcase.version, None);
+        assert_eq!(testcase.steps.len(), 0);
     }
 
     /// 测试不同状态的 Testcase 反序列化
@@ -296,10 +333,21 @@ mod tests {
         let blocked_json = r#"{
             "id": 102,
             "title": "Blocked Case",
+            "type": "feature",
             "severity": 1,
             "pri": 0,
             "status": "blocked",
-            "product": 1
+            "product": 1,
+            "branch": 0,
+            "module": 0,
+            "story": 0,
+            "story_version": 1,
+            "precondition": "",
+            "stage": "unitest",
+            "opened_by": "admin",
+            "opened_date": "2024-01-01",
+            "version": 1,
+            "steps": []
         }"#;
         let blocked: Testcase = serde_json::from_str(blocked_json).unwrap();
         assert_eq!(blocked.status, "blocked");
@@ -307,10 +355,21 @@ mod tests {
         let bypass_json = r#"{
             "id": 103,
             "title": "Bypass Case",
+            "type": "feature",
             "severity": 4,
             "pri": 3,
             "status": "bypass",
-            "product": 1
+            "product": 1,
+            "branch": 0,
+            "module": 0,
+            "story": 0,
+            "story_version": 1,
+            "precondition": "",
+            "stage": "unitest",
+            "opened_by": "admin",
+            "opened_date": "2024-01-01",
+            "version": 1,
+            "steps": []
         }"#;
         let bypass: Testcase = serde_json::from_str(bypass_json).unwrap();
         assert_eq!(bypass.status, "bypass");

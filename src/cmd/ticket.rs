@@ -16,7 +16,7 @@ pub async fn run(cmd: &TicketSubcommand, ctx: &AppContext) {
                 );
                 return;
             }
-            match TicketService::list(ctx, 1, 100).await {
+            match TicketService::list(ctx, None, None, 1, 20).await {
                 Ok(tickets) => print_ticket_list(&tickets, ctx.format.clone()),
                 Err(e) => print_error(&e),
             }
@@ -42,13 +42,9 @@ fn print_ticket_list(tickets: &[crate::api::Ticket], format: OutputFormat) {
         OutputFormat::Table => {
             println!("Tickets:");
             for item in tickets {
-                let pri = item
-                    .pri
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string());
                 println!(
                     "  [{}] {} (pri: {}) - {}",
-                    item.id, item.title, pri, item.status
+                    item.id, item.title, item.pri, item.status
                 );
             }
         }

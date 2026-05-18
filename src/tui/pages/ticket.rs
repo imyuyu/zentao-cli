@@ -52,7 +52,7 @@ pub fn render_ticket_list(
                     },
                 ),
                 Span::raw(" | "),
-                Span::raw(ticket.type_.as_deref().unwrap_or("-")),
+                Span::raw(&ticket.type_),
             ]))
         })
         .collect();
@@ -113,37 +113,15 @@ pub fn render_ticket_detail(f: &mut Frame, area: Rect, ticket: &Ticket) {
         Line::from(vec![Span::raw("Status: "), Span::raw(&ticket.status)]),
         Line::from(vec![
             Span::raw("Type: "),
-            Span::raw(ticket.type_.as_deref().unwrap_or("N/A")),
+            Span::raw(&ticket.type_),
         ]),
         Line::from(vec![
             Span::raw("Priority: "),
-            Span::raw(
-                ticket
-                    .pri
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-                    .to_string(),
-            ),
-        ]),
-        Line::from(vec![
-            Span::raw("Severity: "),
-            Span::raw(
-                ticket
-                    .severity
-                    .map(|s| s.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-                    .to_string(),
-            ),
+            Span::raw(ticket.pri.to_string()),
         ]),
         Line::from(vec![
             Span::raw("Product: "),
-            Span::raw(
-                ticket
-                    .product
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-                    .to_string(),
-            ),
+            Span::raw(ticket.product.to_string()),
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),
@@ -151,15 +129,11 @@ pub fn render_ticket_detail(f: &mut Frame, area: Rect, ticket: &Ticket) {
         ]),
         Line::from(vec![
             Span::raw("Opened By: "),
-            Span::raw(ticket.opened_by.as_deref().unwrap_or("N/A")),
+            Span::raw(ticket.opened_by.realname.as_deref().unwrap_or(ticket.opened_by.account.as_deref().unwrap_or("N/A"))),
         ]),
         Line::from(vec![
             Span::raw("Resolution: "),
             Span::raw(ticket.resolution.as_deref().unwrap_or("N/A")),
-        ]),
-        Line::from(vec![
-            Span::raw("Ticket Code: "),
-            Span::raw(ticket.ticket_code.as_deref().unwrap_or("N/A")),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

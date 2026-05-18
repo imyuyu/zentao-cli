@@ -25,15 +25,23 @@ pub enum ExecutionAction {
         #[arg(long)]
         project: Option<u64>,
         #[arg(long)]
+        code: String,
+        #[arg(long)]
+        begin: String,
+        #[arg(long)]
+        end: String,
+        #[arg(long)]
         type_: Option<String>,
-        #[arg(long)]
-        begin: Option<String>,
-        #[arg(long)]
-        end: Option<String>,
         #[arg(long)]
         days: Option<u64>,
         #[arg(long)]
         desc: Option<String>,
+        #[arg(long)]
+        PM: Option<String>,
+        #[arg(long)]
+        QD: Option<String>,
+        #[arg(long)]
+        RD: Option<String>,
     },
     #[command(name = "update")]
     Update {
@@ -50,6 +58,12 @@ pub enum ExecutionAction {
         days: Option<u64>,
         #[arg(long)]
         desc: Option<String>,
+        #[arg(long)]
+        PM: Option<String>,
+        #[arg(long)]
+        QD: Option<String>,
+        #[arg(long)]
+        RD: Option<String>,
     },
     #[command(name = "delete")]
     Delete { id: u64 },
@@ -90,11 +104,15 @@ pub async fn run(cmd: &ExecutionAction, ctx: &AppContext) {
         ExecutionAction::Create {
             name,
             project,
-            type_,
+            code,
             begin,
             end,
+            type_,
             days,
             desc,
+            PM,
+            QD,
+            RD,
         } => {
             let project_id = match ctx.require_project_id(*project) {
                 Ok(id) => id,
@@ -106,11 +124,20 @@ pub async fn run(cmd: &ExecutionAction, ctx: &AppContext) {
             let req = CreateExecutionRequest {
                 name: name.clone(),
                 project: project_id,
-                type_: type_.clone(),
+                code: code.clone(),
                 begin: begin.clone(),
                 end: end.clone(),
+                type_: type_.clone(),
                 days: *days,
+                lifetime: None,
+                PO: None,
+                PM: PM.clone(),
+                QD: QD.clone(),
+                RD: RD.clone(),
+                teamMembers: None,
                 desc: desc.clone(),
+                acl: None,
+                whitelist: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(
@@ -136,6 +163,9 @@ pub async fn run(cmd: &ExecutionAction, ctx: &AppContext) {
             end,
             days,
             desc,
+            PM,
+            QD,
+            RD,
         } => {
             let req = UpdateExecutionRequest {
                 name: name.clone(),
@@ -144,6 +174,9 @@ pub async fn run(cmd: &ExecutionAction, ctx: &AppContext) {
                 end: end.clone(),
                 days: *days,
                 desc: desc.clone(),
+                PM: PM.clone(),
+                QD: QD.clone(),
+                RD: RD.clone(),
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

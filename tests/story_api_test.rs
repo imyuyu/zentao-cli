@@ -16,6 +16,10 @@ fn test_create_story_request_builder() {
         spec: Some("Story specification".to_string()),
         verify: None,
         estimate: Some(8.0),
+        source: None,
+        sourceNote: None,
+        module: None,
+        keywords: None,
     };
 
     let json = serde_json::to_string(&req).unwrap();
@@ -36,6 +40,10 @@ fn test_create_story_request_minimal() {
         spec: None,
         verify: None,
         estimate: None,
+        source: None,
+        sourceNote: None,
+        module: None,
+        keywords: None,
     };
 
     let json = serde_json::to_string(&req).unwrap();
@@ -49,9 +57,15 @@ fn test_update_story_request_partial() {
     // Only update title
     let req = UpdateStoryRequest {
         title: Some("Updated Title".to_string()),
-        status: None,
+        module: None,
+        source: None,
+        sourceNote: None,
         pri: None,
+        category: None,
+        estimate: None,
+        keywords: None,
         assigned_to: None,
+        status: None,
     };
 
     let json = serde_json::to_string(&req).unwrap();
@@ -65,9 +79,15 @@ fn test_update_story_request_empty() {
     // All fields None - should serialize to empty object
     let req = UpdateStoryRequest {
         title: None,
-        status: None,
+        module: None,
+        source: None,
+        sourceNote: None,
         pri: None,
+        category: None,
+        estimate: None,
+        keywords: None,
         assigned_to: None,
+        status: None,
     };
 
     let json = serde_json::to_string(&req).unwrap();

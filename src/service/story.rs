@@ -48,6 +48,10 @@ impl StoryService {
             spec,
             verify: None,
             estimate,
+            source: None,
+            sourceNote: None,
+            module: None,
+            keywords: None,
         };
 
         StoryApi::create(&client, &req).await

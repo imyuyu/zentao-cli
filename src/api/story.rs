@@ -14,15 +14,17 @@ use crate::core::ZentaoError;
 // ============================================================
 
 /// 创建需求的请求体
+///
+/// POST /api.php/v1/stories
 #[derive(Debug, Serialize)]
 pub struct CreateStoryRequest {
     /// 需求标题（必填）
     pub title: String,
     /// 所属产品 ID（必填）
     pub product: u64,
-    /// 优先级（必填）：0-5
+    /// 优先级：0-5
     pub pri: u8,
-    /// 需求类别：feature/requirement/bug/improvement
+    /// 需求类别：feature/requirement/bug/improvement/interface/performance/safe/experience/other
     #[serde(skip_serializing_if = "Option::is_none")]
     pub category: Option<String>,
     /// 需求描述/规格说明
@@ -34,24 +36,55 @@ pub struct CreateStoryRequest {
     /// 预估工时（小时）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub estimate: Option<f64>,
+    /// 需求来源
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+    /// 来源备注
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sourceNote: Option<String>,
+    /// 所属模块 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module: Option<u64>,
+    /// 关键字
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keywords: Option<String>,
 }
 
 /// 更新需求的请求体
-/// 所有字段可选，只更新传入的字段
+///
+/// PUT /api.php/v1/stories/{id}
 #[derive(Debug, Serialize)]
 pub struct UpdateStoryRequest {
     /// 新标题
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
-    /// 新状态：draft/active/closed
+    /// 所属模块 ID
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<String>,
+    pub module: Option<u64>,
+    /// 需求来源
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<String>,
+    /// 来源备注
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sourceNote: Option<String>,
     /// 新优先级
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pri: Option<u8>,
+    /// 需求类别
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub category: Option<String>,
+    /// 预估工时（小时）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub estimate: Option<f64>,
+    /// 关键字
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keywords: Option<String>,
     /// 指派给谁
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assigned_to: Option<String>,
+    /// 状态：draft/active/closed
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
 }
 
 // ============================================================
@@ -221,6 +254,10 @@ mod tests {
             spec: Some("Story spec".to_string()),
             verify: None,
             estimate: Some(5.0),
+            source: None,
+            sourceNote: None,
+            module: None,
+            keywords: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Test Story"));
@@ -242,6 +279,10 @@ mod tests {
             spec: None,
             verify: None,
             estimate: None,
+            source: None,
+            sourceNote: None,
+            module: None,
+            keywords: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Minimal Story"));
@@ -253,9 +294,15 @@ mod tests {
     fn test_update_story_request_serialization() {
         let req = UpdateStoryRequest {
             title: Some("Updated Title".to_string()),
-            status: Some("closed".to_string()),
+            module: None,
+            source: None,
+            sourceNote: None,
             pri: None,
+            category: None,
+            estimate: None,
+            keywords: None,
             assigned_to: None,
+            status: Some("closed".to_string()),
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Updated Title"));
@@ -269,9 +316,15 @@ mod tests {
         // 所有字段都为 None 时，应序列化为空对象
         let req = UpdateStoryRequest {
             title: None,
-            status: None,
+            module: None,
+            source: None,
+            sourceNote: None,
             pri: None,
+            category: None,
+            estimate: None,
+            keywords: None,
             assigned_to: None,
+            status: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert_eq!(json, "{}");

@@ -63,12 +63,14 @@ pub async fn run(cmd: &TestcaseSubcommand, ctx: &AppContext) {
             product,
             title,
             type_,
-            severity,
+            stage,
+            precondition,
             pri,
             steps,
-            expectation,
+            keywords,
             story,
-            project,
+            module,
+            branch,
         } => {
             let product_id = match ctx.require_product_id(*product) {
                 Ok(id) => id,
@@ -77,16 +79,25 @@ pub async fn run(cmd: &TestcaseSubcommand, ctx: &AppContext) {
                     return;
                 }
             };
+            let steps_vec: Vec<crate::api::testcase::TestcaseStep> = steps
+                .iter()
+                .map(|s| crate::api::testcase::TestcaseStep {
+                    desc: s.clone(),
+                    expect: String::new(),
+                })
+                .collect();
             let req = CreateTestcaseRequest {
-                title: title.clone(),
                 product: product_id,
+                title: title.clone(),
                 type_: type_.clone(),
-                severity: *severity,
-                pri: *pri,
-                steps: steps.clone(),
-                expectation: expectation.clone(),
+                branch: *branch,
+                module: *module,
                 story: *story,
-                project: ctx.project_id(*project),
+                stage: stage.clone(),
+                precondition: precondition.clone(),
+                pri: *pri,
+                steps: steps_vec,
+                keywords: keywords.clone(),
             };
             if ctx.dry_run {
                 print_dry_run_with_body(
@@ -107,21 +118,33 @@ pub async fn run(cmd: &TestcaseSubcommand, ctx: &AppContext) {
         TestcaseSubcommand::Update {
             id,
             title,
-            status,
+            status: _,
             pri,
-            severity,
+            severity: _,
             type_,
             steps,
-            expectation,
+            expectation: _,
         } => {
+            let steps_vec: Option<Vec<crate::api::testcase::TestcaseStep>> =
+                steps.as_ref().map(|s| {
+                    s.iter()
+                        .map(|desc| crate::api::testcase::TestcaseStep {
+                            desc: desc.clone(),
+                            expect: String::new(),
+                        })
+                        .collect()
+                });
             let req = UpdateTestcaseRequest {
+                branch: None,
+                module: None,
+                story: None,
                 title: title.clone(),
-                status: status.clone(),
-                pri: *pri,
-                severity: *severity,
                 type_: type_.clone(),
-                steps: steps.clone(),
-                expectation: expectation.clone(),
+                stage: None,
+                precondition: None,
+                pri: *pri,
+                steps: steps_vec,
+                keywords: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(
@@ -152,15 +175,18 @@ pub async fn run(cmd: &TestcaseSubcommand, ctx: &AppContext) {
         TestcaseSubcommand::Result {
             id,
             result,
-            consumed,
-            remark,
-            build,
+            consumed: _,
+            remark: _,
+            build: _,
         } => {
-            let req = TestcaseResultRequest {
+            let steps = vec![crate::api::testcase::TestcaseResultStep {
                 result: result.clone(),
-                consumed: *consumed,
-                remark: remark.clone(),
-                build: *build,
+                desc: None,
+            }];
+            let req = TestcaseResultRequest {
+                testtask: None,
+                version: None,
+                steps,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

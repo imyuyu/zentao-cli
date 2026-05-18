@@ -56,6 +56,18 @@ pub struct CreateProjectRequest {
     pub name: String,
     /// 项目代号（必填）
     pub code: String,
+    /// 计划开始日期（必填）
+    pub begin: String,
+    /// 计划结束日期（必填）
+    pub end: String,
+    /// 关联产品（必填），如 [1, 2]，不能为空
+    pub products: Vec<u64>,
+    /// 项目模型，默认为 "scrum"
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model: Option<String>,
+    /// 所属项目集，默认为 0
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<u64>,
     /// 项目描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
@@ -67,12 +79,36 @@ pub struct UpdateProjectRequest {
     /// 新名称
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
-    /// 新状态：wait/doing/closed
+    /// 新状态：wait/doing/closed/suspend
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
-    /// 新描述
+    /// 项目描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
+    /// 所属项目集
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent: Option<u64>,
+    /// 项目经理
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub PM: Option<String>,
+    /// 项目预算金额
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget: Option<u64>,
+    /// 预算币种（CNY | USD）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budgetUnit: Option<String>,
+    /// 可用工作日
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub days: Option<u64>,
+    /// 访问控制（open 公开 | private 私有）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acl: Option<String>,
+    /// 白名单（acl=private时生效）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub whitelist: Option<Vec<String>>,
+    /// 权限控制（extend 继承 | reset 重新定义）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auth: Option<String>,
 }
 
 // ============================================================

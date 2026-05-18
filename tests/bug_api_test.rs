@@ -16,7 +16,14 @@ fn test_create_bug_request_builder() {
         type_: Some("code".to_string()),
         steps: Some("1. Go to page\n2. Click button".to_string()),
         story: Some(100),
-        assigned_to: Some("dev".to_string()),
+        branch: None,
+        module: None,
+        execution: None,
+        keywords: None,
+        os: None,
+        browser: None,
+        deadline: None,
+        opened_build: Some(vec!["trunk".to_string()]),
     };
 
     let json = serde_json::to_string(&req).unwrap();
@@ -36,7 +43,14 @@ fn test_create_bug_request_minimal() {
         type_: None,
         steps: None,
         story: None,
-        assigned_to: None,
+        branch: None,
+        module: None,
+        execution: None,
+        keywords: None,
+        os: None,
+        browser: None,
+        deadline: None,
+        opened_build: None,
     };
 
     let json = serde_json::to_string(&req).unwrap();
@@ -46,34 +60,28 @@ fn test_create_bug_request_minimal() {
 }
 
 #[test]
-fn test_update_bug_request_resolution() {
-    let req = UpdateBugRequest {
-        title: None,
-        status: Some("resolved".to_string()),
-        resolution: Some("fixed".to_string()),
-        resolved_build: None,
-        assigned_to: None,
-    };
-
-    let json = serde_json::to_string(&req).unwrap();
-    assert!(json.contains("resolved"));
-    assert!(json.contains("fixed"));
-    assert!(!json.contains("title"));
-}
-
-#[test]
 fn test_update_bug_request_all_fields() {
+    // UpdateBugRequest only supports: title, keywords, severity, pri, type_, os, browser, steps, task, story, deadline, opened_build, branch, module, execution
     let req = UpdateBugRequest {
         title: Some("Fixed Bug".to_string()),
-        status: Some("closed".to_string()),
-        resolution: Some("fixed".to_string()),
-        resolved_build: None,
-        assigned_to: Some("admin".to_string()),
+        keywords: Some("fixed".to_string()),
+        severity: Some(3),
+        pri: Some(2),
+        type_: None,
+        os: None,
+        browser: None,
+        steps: None,
+        task: None,
+        story: None,
+        deadline: None,
+        opened_build: None,
+        branch: None,
+        module: None,
+        execution: None,
     };
 
     let json = serde_json::to_string(&req).unwrap();
     assert!(json.contains("Fixed Bug"));
-    assert!(json.contains("closed"));
+    assert!(json.contains("\"severity\":3"));
     assert!(json.contains("fixed"));
-    assert!(json.contains("admin"));
 }

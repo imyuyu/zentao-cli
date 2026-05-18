@@ -63,6 +63,14 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
             type_,
             steps,
             story,
+            branch,
+            module,
+            execution,
+            keywords,
+            os,
+            browser,
+            deadline,
+            opened_build,
         } => {
             let product_id = match ctx.require_product_id(*product) {
                 Ok(id) => id,
@@ -72,18 +80,24 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                 }
             };
 
-            let req = serde_json::json!({
-                "title": title,
-                "product": product_id,
-                "severity": severity,
-                "pri": pri,
-                "type": type_,
-                "steps": steps,
-                "story": story,
-                "assigned_to": serde_json::Value::Null,
-            });
-
             if ctx.dry_run {
+                let req = serde_json::json!({
+                    "title": title,
+                    "product": product_id,
+                    "severity": severity,
+                    "pri": pri,
+                    "type": type_,
+                    "steps": steps,
+                    "story": story,
+                    "branch": branch,
+                    "module": module,
+                    "execution": execution,
+                    "keywords": keywords,
+                    "os": os,
+                    "browser": browser,
+                    "deadline": deadline,
+                    "openedBuild": opened_build,
+                });
                 print_dry_run_with_body(
                     "BugService::create()",
                     &format!("{}/api.php/v1/bugs", ctx.config.url),
@@ -101,6 +115,14 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                 type_.clone(),
                 steps.clone(),
                 *story,
+                *branch,
+                *module,
+                *execution,
+                keywords.clone(),
+                os.clone(),
+                browser.clone(),
+                deadline.clone(),
+                opened_build.clone(),
             )
             .await
             {
@@ -111,17 +133,37 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
         BugSubcommand::Update {
             id,
             title,
-            status,
-            resolution,
-            resolved_build,
-            assigned_to,
+            keywords,
+            severity,
+            pri,
+            type_,
+            os,
+            browser,
+            steps,
+            task,
+            story,
+            deadline,
+            opened_build,
+            branch,
+            module,
+            execution,
         } => {
             let req = UpdateBugRequest {
                 title: title.clone(),
-                status: status.clone(),
-                resolution: resolution.clone(),
-                resolved_build: *resolved_build,
-                assigned_to: assigned_to.clone(),
+                keywords: keywords.clone(),
+                severity: *severity,
+                pri: *pri,
+                type_: type_.clone(),
+                os: os.clone(),
+                browser: browser.clone(),
+                steps: steps.clone(),
+                task: *task,
+                story: *story,
+                deadline: deadline.clone(),
+                opened_build: opened_build.clone(),
+                branch: *branch,
+                module: *module,
+                execution: *execution,
             };
 
             if ctx.dry_run {
@@ -142,6 +184,10 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
             id,
             resolution,
             resolved_build,
+            assigned_to,
+            duplicate_bug,
+            resolved_date,
+            comment,
         } => {
             if ctx.dry_run {
                 print_dry_run(
@@ -149,13 +195,24 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                     &format!("{}/api.php/v1/bugs/{}/resolve", ctx.config.url, id),
                 );
                 println!(
-                    "  Body: {{ resolution: {}, resolved_build: {} }}",
-                    resolution, resolved_build
+                    "  Body: {{ resolution: {}, resolvedBuild: {}, assignedTo: {:?} }}",
+                    resolution, resolved_build, assigned_to
                 );
                 return;
             }
 
-            match BugService::resolve(ctx, *id, resolution, resolved_build).await {
+            match BugService::resolve(
+                ctx,
+                *id,
+                resolution,
+                resolved_build,
+                assigned_to.as_deref(),
+                *duplicate_bug,
+                resolved_date.as_deref(),
+                comment.as_deref(),
+            )
+            .await
+            {
                 Ok(bug) => print_json(&bug),
                 Err(e) => print_error(&e),
             }

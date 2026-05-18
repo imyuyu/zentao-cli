@@ -52,10 +52,16 @@ fn test_task_minimal() {
 fn test_create_task_request() {
     let req = CreateTaskRequest {
         name: "New Task".to_string(),
-        project: 1,
-        pri: 2,
-        type_: Some("development".to_string()),
-        assigned_to: Some("dev1".to_string()),
+        assigned_to: "dev1".to_string(),
+        type_: "development".to_string(),
+        est_started: "2024-01-01".to_string(),
+        deadline: "2024-01-15".to_string(),
+        project: Some(1),
+        execution: None,
+        pri: Some(2),
+        module: None,
+        story: None,
+        from_bug: None,
         estimate: Some(13.5),
     };
 
@@ -75,6 +81,13 @@ fn test_update_task_request_partial() {
         status: Some("done".to_string()),
         pri: None,
         assigned_to: None,
+        module: None,
+        story: None,
+        from_bug: None,
+        type_: None,
+        est_started: None,
+        deadline: None,
+        estimate: None,
     };
 
     let json = serde_json::to_string(&req).unwrap();

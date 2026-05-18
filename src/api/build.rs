@@ -16,42 +16,55 @@ use crate::core::ZentaoError;
 /// 创建版本(Build)的请求体
 #[derive(Debug, Serialize)]
 pub struct CreateBuildRequest {
+    /// 所属执行（必填）
+    pub execution: u64,
+    /// 所属产品（必填）
+    pub product: u64,
     /// 版本名称（必填）
     pub name: String,
-    /// 所属项目 ID（必填）
-    pub project: u64,
-    /// 所属产品 ID（必填）
-    pub product: u64,
-    /// 分支/平台 ID
+    /// 构建者（必填）
+    pub builder: String,
+    /// 所属分支
     #[serde(skip_serializing_if = "Option::is_none")]
     pub branch: Option<u64>,
-    /// SCM 路径
+    /// 打包日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub date: Option<String>,
+    /// 源代码地址
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scm_path: Option<String>,
-    /// CI 名称
+    /// 下载地址
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub ci: Option<String>,
-    /// 包路径
+    #[serde(rename = "filePath")]
+    pub file_path: Option<String>,
+    /// 版本描述
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pkg: Option<String>,
+    pub desc: Option<String>,
 }
 
 /// 更新版本(Build)的请求体
 /// 所有字段可选，只更新传入的字段
 #[derive(Debug, Serialize)]
 pub struct UpdateBuildRequest {
+    /// 版本名称
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    /// 源代码地址
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scm_path: Option<String>,
+    /// 下载地址
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub ci: Option<String>,
+    #[serde(rename = "filePath")]
+    pub file_path: Option<String>,
+    /// 打包日期
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pkg: Option<String>,
+    pub date: Option<String>,
+    /// 构建者
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub file_size: Option<String>,
+    pub builder: Option<String>,
+    /// 版本描述
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub generated_at: Option<String>,
+    pub desc: Option<String>,
 }
 
 // ============================================================
@@ -318,31 +331,35 @@ mod tests {
     #[test]
     fn test_create_build_request_serialization() {
         let req = CreateBuildRequest {
-            name: "v1.0.0".to_string(),
-            project: 1,
+            execution: 1,
             product: 1,
+            name: "v1.0.0".to_string(),
+            builder: "admin".to_string(),
             branch: Some(1),
+            date: Some("2024-01-15".to_string()),
             scm_path: Some("git@gitlab.example.com:repo.git".to_string()),
-            ci: Some("Jenkins #123".to_string()),
-            pkg: Some("/path/to/package.tar.gz".to_string()),
+            file_path: Some("/path/to/package.tar.gz".to_string()),
+            desc: Some("Build description".to_string()),
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("v1.0.0"));
-        assert!(json.contains("\"project\":1"));
+        assert!(json.contains("\"execution\":1"));
         assert!(json.contains("\"product\":1"));
-        assert!(json.contains("Jenkins"));
+        assert!(json.contains("\"builder\":\"admin\""));
     }
 
     #[test]
     fn test_create_build_request_skips_optional_fields() {
         let req = CreateBuildRequest {
-            name: "Minimal Build".to_string(),
-            project: 1,
+            execution: 1,
             product: 1,
+            name: "Minimal Build".to_string(),
+            builder: "admin".to_string(),
             branch: None,
+            date: None,
             scm_path: None,
-            ci: None,
-            pkg: None,
+            file_path: None,
+            desc: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Minimal Build"));
@@ -355,15 +372,14 @@ mod tests {
         let req = UpdateBuildRequest {
             name: Some("Updated Build".to_string()),
             scm_path: Some("git@gitlab.example.com:updated.git".to_string()),
-            ci: None,
-            pkg: None,
-            file_size: None,
-            generated_at: None,
+            file_path: None,
+            date: None,
+            builder: None,
+            desc: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Updated Build"));
         assert!(json.contains("updated.git"));
-        assert!(!json.contains("ci"));
     }
 
     #[test]
@@ -371,13 +387,13 @@ mod tests {
         let req = UpdateBuildRequest {
             name: None,
             scm_path: None,
-            ci: Some("GitLab CI".to_string()),
-            pkg: None,
-            file_size: None,
-            generated_at: None,
+            file_path: Some("/new/path.tar.gz".to_string()),
+            date: Some("2024-02-01".to_string()),
+            builder: Some("developer".to_string()),
+            desc: None,
         };
         let json = serde_json::to_string(&req).unwrap();
-        assert!(json.contains("GitLab CI"));
+        assert!(json.contains("/new/path.tar.gz"));
         assert!(!json.contains("\"name\""));
     }
 }

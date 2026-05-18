@@ -32,6 +32,7 @@ impl ProductPlanService {
     /// 获取产品计划名称
     pub async fn get_name(ctx: &AppContext, id: u64) -> Result<String> {
         let plan = Self::get(ctx, id).await?;
-        Ok(plan.name.unwrap_or_default())
+        // 优先使用 title，fallback 到 name
+        Ok(plan.title.or(plan.name).unwrap_or_default())
     }
 }

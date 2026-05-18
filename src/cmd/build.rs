@@ -29,15 +29,19 @@ pub enum BuildAction {
         #[arg(long)]
         project: Option<u64>,
         #[arg(long)]
+        execution: Option<u64>,
+        #[arg(long)]
         product: Option<u64>,
         #[arg(long)]
         branch: Option<u64>,
         #[arg(long)]
+        builder: Option<String>,
+        #[arg(long)]
         scm_path: Option<String>,
         #[arg(long)]
-        ci: Option<String>,
+        file_path: Option<String>,
         #[arg(long)]
-        pkg: Option<String>,
+        date: Option<String>,
     },
     #[command(name = "update")]
     Update {
@@ -47,9 +51,9 @@ pub enum BuildAction {
         #[arg(long)]
         scm_path: Option<String>,
         #[arg(long)]
-        ci: Option<String>,
+        file_path: Option<String>,
         #[arg(long)]
-        pkg: Option<String>,
+        builder: Option<String>,
     },
     #[command(name = "delete")]
     Delete { id: u64 },
@@ -107,17 +111,32 @@ pub async fn run(cmd: &BuildAction, ctx: &AppContext) {
         BuildAction::Create {
             name,
             project,
+            execution,
             product,
             branch,
+            builder,
             scm_path,
-            ci,
-            pkg,
+            file_path,
+            date,
         } => {
             let project_id = match ctx.require_project_id(*project) {
                 Ok(id) => id,
                 Err(e) => {
                     print_error(&e);
                     return;
+                }
+            };
+            // 获取 execution_id，如果没有指定则尝试从 project 获取第一个执行
+            let execution_id = if let Some(eid) = *execution {
+                eid
+            } else {
+                // 尝试获取项目的第一个执行
+                match crate::api::ExecutionApi::list(&ctx.client(), Some(project_id)).await {
+                    Ok(execs) if !execs.is_empty() => execs[0].id,
+                    _ => {
+                        print_error(&anyhow::anyhow!("Execution ID required. Use --execution to specify, or ensure the project has at least one execution."));
+                        return;
+                    }
                 }
             };
             let product_id = match ctx.require_product_id(*product) {
@@ -129,12 +148,14 @@ pub async fn run(cmd: &BuildAction, ctx: &AppContext) {
             };
             let req = CreateBuildRequest {
                 name: name.clone(),
-                project: project_id,
+                execution: execution_id,
                 product: product_id,
+                builder: builder.clone().unwrap_or_else(|| "admin".to_string()),
                 branch: *branch,
+                date: date.clone(),
                 scm_path: scm_path.clone(),
-                ci: ci.clone(),
-                pkg: pkg.clone(),
+                file_path: file_path.clone(),
+                desc: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(
@@ -156,16 +177,16 @@ pub async fn run(cmd: &BuildAction, ctx: &AppContext) {
             id,
             name,
             scm_path,
-            ci,
-            pkg,
+            file_path,
+            builder,
         } => {
             let req = UpdateBuildRequest {
                 name: name.clone(),
                 scm_path: scm_path.clone(),
-                ci: ci.clone(),
-                pkg: pkg.clone(),
-                file_size: None,
-                generated_at: None,
+                file_path: file_path.clone(),
+                date: None,
+                builder: builder.clone(),
+                desc: None,
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

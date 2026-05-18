@@ -244,21 +244,58 @@ pub enum BugSubcommand {
         steps: Option<String>,
         #[arg(long)]
         story: Option<u64>,
+        #[arg(long)]
+        branch: Option<u64>,
+        #[arg(long)]
+        module: Option<u64>,
+        #[arg(long)]
+        execution: Option<u64>,
+        #[arg(long)]
+        keywords: Option<String>,
+        #[arg(long)]
+        os: Option<String>,
+        #[arg(long)]
+        browser: Option<String>,
+        #[arg(long)]
+        deadline: Option<String>,
+        #[arg(long)]
+        opened_build: Option<Vec<String>>,
     },
     /// 更新 Bug（API Commands）
+    /// 注意：status/assignedTo/resolution 不能通过此接口修改，需使用专用接口
     #[command(name = "update")]
     Update {
         id: u64,
         #[arg(long)]
         title: Option<String>,
         #[arg(long)]
-        status: Option<String>,
+        keywords: Option<String>,
         #[arg(long)]
-        resolution: Option<String>,
+        severity: Option<u8>,
         #[arg(long)]
-        resolved_build: Option<u64>,
+        pri: Option<u8>,
         #[arg(long)]
-        assigned_to: Option<String>,
+        type_: Option<String>,
+        #[arg(long)]
+        os: Option<String>,
+        #[arg(long)]
+        browser: Option<String>,
+        #[arg(long)]
+        steps: Option<String>,
+        #[arg(long)]
+        task: Option<u64>,
+        #[arg(long)]
+        story: Option<u64>,
+        #[arg(long)]
+        deadline: Option<String>,
+        #[arg(long)]
+        opened_build: Option<Vec<String>>,
+        #[arg(long)]
+        branch: Option<u64>,
+        #[arg(long)]
+        module: Option<u64>,
+        #[arg(long)]
+        execution: Option<u64>,
     },
     /// 解决 Bug（API Commands）
     #[command(name = "resolve")]
@@ -268,6 +305,14 @@ pub enum BugSubcommand {
         resolution: String,
         #[arg(long)]
         resolved_build: String,
+        #[arg(long)]
+        assigned_to: Option<String>,
+        #[arg(long)]
+        duplicate_bug: Option<u64>,
+        #[arg(long)]
+        resolved_date: Option<String>,
+        #[arg(long)]
+        comment: Option<String>,
     },
     /// 确认 Bug（API Commands）
     #[command(name = "confirm")]
@@ -309,27 +354,33 @@ pub enum TestcaseSubcommand {
         /// 用例标题（必填）
         #[arg(long)]
         title: String,
-        /// 用例类型：feature/performance/interface/security/concurrency/destructive/install/others
+        /// 用例类型：feature/performance/config/install/security/interface/unit/other（必填）
         #[arg(long)]
-        type_: Option<String>,
-        /// 严重程度：1-4（1 最严重）
+        type_: String,
+        /// 所属分支
         #[arg(long)]
-        severity: Option<u8>,
-        /// 优先级：0-5
+        branch: Option<u64>,
+        /// 所属模块
         #[arg(long)]
-        pri: Option<u8>,
-        /// 测试步骤
-        #[arg(long)]
-        steps: Option<String>,
-        /// 期望结果
-        #[arg(long)]
-        expectation: Option<String>,
+        module: Option<u64>,
         /// 关联的需求 ID
         #[arg(long)]
         story: Option<u64>,
-        /// 所属项目 ID
+        /// 适用阶段：unitest/feature/intergrate/system/smoke/bvt
         #[arg(long)]
-        project: Option<u64>,
+        stage: Option<String>,
+        /// 前置条件
+        #[arg(long)]
+        precondition: Option<String>,
+        /// 优先级：0-5
+        #[arg(long)]
+        pri: Option<u8>,
+        /// 测试步骤（多个步骤用|分隔）
+        #[arg(long)]
+        steps: Vec<String>,
+        /// 关键词
+        #[arg(long)]
+        keywords: Option<String>,
     },
     /// 更新测试用例
     #[command(name = "update")]
@@ -339,7 +390,7 @@ pub enum TestcaseSubcommand {
         /// 新标题
         #[arg(long)]
         title: Option<String>,
-        /// 新状态：wait/normal/blocked/bypass
+        /// 新状态
         #[arg(long)]
         status: Option<String>,
         /// 新优先级
@@ -353,7 +404,7 @@ pub enum TestcaseSubcommand {
         type_: Option<String>,
         /// 新测试步骤
         #[arg(long)]
-        steps: Option<String>,
+        steps: Option<Vec<String>>,
         /// 新期望结果
         #[arg(long)]
         expectation: Option<String>,

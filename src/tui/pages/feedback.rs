@@ -56,7 +56,7 @@ pub fn render_feedback_list(
                     },
                 ),
                 Span::raw(" | "),
-                Span::raw(fb.type_.as_deref().unwrap_or("-")),
+                Span::raw(&fb.type_),
             ]))
         })
         .collect();
@@ -120,27 +120,11 @@ pub fn render_feedback_detail(f: &mut Frame, area: Rect, feedback: &Feedback) {
         Line::from(vec![Span::raw("Status: "), Span::raw(&feedback.status)]),
         Line::from(vec![
             Span::raw("Type: "),
-            Span::raw(feedback.type_.as_deref().unwrap_or("N/A")),
-        ]),
-        Line::from(vec![
-            Span::raw("Priority: "),
-            Span::raw(
-                feedback
-                    .pri
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-                    .to_string(),
-            ),
+            Span::raw(&feedback.type_),
         ]),
         Line::from(vec![
             Span::raw("Product: "),
-            Span::raw(
-                feedback
-                    .product
-                    .map(|p| p.to_string())
-                    .unwrap_or_else(|| "N/A".to_string())
-                    .to_string(),
-            ),
+            Span::raw(feedback.product.to_string()),
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),
@@ -148,15 +132,7 @@ pub fn render_feedback_detail(f: &mut Frame, area: Rect, feedback: &Feedback) {
         ]),
         Line::from(vec![
             Span::raw("Opened By: "),
-            Span::raw(feedback.opened_by.as_deref().unwrap_or("N/A")),
-        ]),
-        Line::from(vec![
-            Span::raw("Source: "),
-            Span::raw(feedback.source.as_deref().unwrap_or("N/A")),
-        ]),
-        Line::from(vec![
-            Span::raw("Contact: "),
-            Span::raw(feedback.contact.as_deref().unwrap_or("N/A")),
+            Span::raw(feedback.opened_by.realname.as_deref().unwrap_or(feedback.opened_by.account.as_deref().unwrap_or("N/A"))),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

@@ -317,36 +317,57 @@ pub struct Testcase {
     /// 用例 ID - ZenTao有时返回字符串如"case_1"
     #[serde(deserialize_with = "deserialize_id")]
     pub id: u64,
+    /// 所属产品
+    pub product: u64,
+    /// 所属分支
+    pub branch: u64,
+    /// 所属模块
+    pub module: u64,
+    /// 关联的需求
+    pub story: u64,
+    /// 需求版本
+    pub story_version: u64,
     /// 用例标题
     pub title: String,
-    /// 用例类型：feature/performance/interface/安全/concurrency/危险/destructive/install/其他
-    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
-    /// 严重程度：1-4（1最严重）
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub severity: Option<u8>,
+    /// 前置条件
+    pub precondition: String,
     /// 优先级：0-5
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub pri: Option<u8>,
-    /// 用例状态：wait/normal/blocked/bypass
+    pub pri: u8,
+    /// 用例类型：feature/performance/config/install/security/interface/unit/other
+    #[serde(rename = "type")]
+    pub type_: String,
+    /// 适用阶段：unitest/feature/intergrate/system/smoke/bvt
+    pub stage: String,
+    /// 用例状态：wait/normal/blocked/investigate
     pub status: String,
-    /// 测试步骤
+    /// 测试步骤列表
+    pub steps: Vec<TestcaseStep>,
+    /// 来自于Bug
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub steps: Option<String>,
-    /// 期望结果
+    pub from_bug: Option<u64>,
+    /// 来自于用例
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub expectation: Option<String>,
-    /// 所属产品 ID
-    pub product: u64,
-    /// 所属项目 ID
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub project: Option<u64>,
-    /// 创建者
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub opened_by: Option<String>,
+    pub from_case_id: Option<u64>,
+    /// 创建人
+    pub opened_by: String,
+    /// 创建时间
+    pub opened_date: String,
     /// 版本号
+    pub version: u64,
+    /// 是否删除
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub version: Option<u64>,
+    pub deleted: Option<bool>,
+}
+
+/// 测试用例步骤
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TestcaseStep {
+    /// 步骤 ID
+    pub id: Option<u64>,
+    /// 步骤描述
+    pub desc: String,
+    /// 期望结果
+    pub expect: String,
 }
 
 /// 测试用例列表查询参数

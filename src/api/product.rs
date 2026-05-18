@@ -54,31 +54,78 @@ pub struct Product {
 // ============================================================
 
 /// 创建产品的请求体
+///
+/// POST /api.php/v1/products
+/// ZenTao API 必填字段: name, code, program
 #[derive(Debug, Serialize)]
 pub struct CreateProductRequest {
     /// 产品名称（必填）
     pub name: String,
-    /// 产品代号（英文标识）
+    /// 产品代号（必填）
+    pub code: String,
+    /// 项目集 ID（必填）
+    pub program: u64,
+    /// 产品线
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub code: Option<String>,
+    pub line: Option<u64>,
+    /// 产品负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub PO: Option<String>,
+    /// 测试负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub QD: Option<String>,
+    /// 发布负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub RD: Option<String>,
+    /// 产品类型: normal（普通产品）/branch（多分支产品）/platform（多平台产品）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub type_: Option<String>,
     /// 产品描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
+    /// 访问控制: open（公开）/private（私有）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub acl: Option<String>,
+    /// 白名单
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub whitelist: Option<Vec<String>>,
 }
 
 /// 更新产品的请求体
-/// 所有字段可选，只更新传入的字段
+///
+/// PUT /api.php/v1/products/{id}
 #[derive(Debug, Serialize)]
 pub struct UpdateProductRequest {
     /// 新名称
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    /// 新代号
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
+    /// 产品类型: normal/branch/platform
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub type_: Option<String>,
+    /// 产品线
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub line: Option<u64>,
+    /// 项目集
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub program: Option<u64>,
     /// 新状态：normal/closed
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
     /// 新描述
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
+    /// 产品负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub PO: Option<String>,
+    /// 测试负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub QD: Option<String>,
+    /// 发布负责人
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub RD: Option<String>,
 }
 
 // ============================================================
@@ -177,7 +224,7 @@ impl ProductApi {
 
     /// 更新产品
     ///
-    /// PUT /api.php/v1/product/{id}
+    /// PUT /api.php/v1/products/{id}
     ///
     /// ZenTao PUT 接口返回空 JSON {}，需要再调用 get 获取更新后的信息
     pub async fn update(
@@ -185,7 +232,7 @@ impl ProductApi {
         id: u64,
         req: &UpdateProductRequest,
     ) -> Result<Product> {
-        let path = format!("/api.php/v1/product/{}", id);
+        let path = format!("/api.php/v1/products/{}", id);
         let _: serde_json::Value = client.put(&path, req).await?;
         Self::get(client, id).await
     }

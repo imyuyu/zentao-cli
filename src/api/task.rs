@@ -57,17 +57,34 @@ pub struct Task {
 pub struct CreateTaskRequest {
     /// 任务名称（必填）
     pub name: String,
-    /// 所属项目 ID（必填）
-    pub project: u64,
-    /// 优先级：1-5（必填）
-    pub pri: u8,
-    /// 任务类型：development（开发）/design（设计）/test（测试）/study（研究）/discuss（讨论）/ui（界面）/other（其他）
+    /// 指派给（必填）
+    pub assigned_to: String,
+    /// 任务类型（必填）：development（开发）/design（设计）/test（测试）/study（研究）/discuss（讨论）/ui（界面）/other（其他）
+    #[serde(rename = "type")]
+    pub type_: String,
+    /// 预计开始日期（必填）
+    pub est_started: String,
+    /// 预计结束日期（必填）
+    pub deadline: String,
+    /// 所属项目 ID
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_: Option<String>,
-    /// 指派给谁（可选）
+    pub project: Option<u64>,
+    /// 所属执行 ID
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub assigned_to: Option<String>,
-    /// 预估工时，小时（可选）
+    pub execution: Option<u64>,
+    /// 优先级：1-5
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pri: Option<u8>,
+    /// 所属模块
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module: Option<u64>,
+    /// 关联需求
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub story: Option<u64>,
+    /// 来自于Bug
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from_bug: Option<u64>,
+    /// 预估工时，小时
     #[serde(skip_serializing_if = "Option::is_none")]
     pub estimate: Option<f64>,
 }
@@ -89,6 +106,28 @@ pub struct UpdateTaskRequest {
     /// 新的指派人
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assigned_to: Option<String>,
+    /// 所属模块
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub module: Option<u64>,
+    /// 关联需求
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub story: Option<u64>,
+    /// 来自于Bug
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub from_bug: Option<u64>,
+    /// 任务类型
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type")]
+    pub type_: Option<String>,
+    /// 预计开始日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub est_started: Option<String>,
+    /// 预计结束日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deadline: Option<String>,
+    /// 预估工时
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub estimate: Option<f64>,
 }
 
 /// 任务工时日志结构
@@ -325,18 +364,23 @@ mod tests {
     fn test_create_task_request_serialization() {
         let req = CreateTaskRequest {
             name: "Test Task".to_string(),
-            project: 1,
-            pri: 3,
-            type_: Some("development".to_string()),
-            assigned_to: Some("dev".to_string()),
+            assigned_to: "dev".to_string(),
+            type_: "development".to_string(),
+            est_started: "2024-01-01".to_string(),
+            deadline: "2024-01-15".to_string(),
+            project: Some(1),
+            execution: Some(1),
+            pri: Some(3),
+            module: None,
+            story: None,
+            from_bug: None,
             estimate: Some(8.0),
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Test Task"));
-        assert!(json.contains("\"project\":1"));
+        assert!(json.contains("\"assigned_to\":\"dev\""));
+        assert!(json.contains("\"type\":\"development\""));
         assert!(json.contains("\"pri\":3"));
-        assert!(json.contains("development"));
-        assert!(json.contains("dev"));
     }
 
     /// 测试可选字段被正确跳过
@@ -344,18 +388,23 @@ mod tests {
     fn test_create_task_request_skips_optional_fields() {
         let req = CreateTaskRequest {
             name: "Minimal Task".to_string(),
-            project: 2,
-            pri: 1,
-            type_: None,
-            assigned_to: None,
+            assigned_to: "admin".to_string(),
+            type_: "development".to_string(),
+            est_started: "2024-01-01".to_string(),
+            deadline: "2024-01-15".to_string(),
+            project: None,
+            execution: None,
+            pri: None,
+            module: None,
+            story: None,
+            from_bug: None,
             estimate: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Minimal Task"));
-        // 可选字段不应该出现在 JSON 中
-        assert!(!json.contains("type_"));
-        assert!(!json.contains("assigned_to"));
-        assert!(!json.contains("estimate"));
+        assert!(!json.contains("\"project\""));
+        assert!(!json.contains("\"pri\""));
+        assert!(!json.contains("\"estimate\""));
     }
 
     // ==================== UpdateTaskRequest 测试 ====================
@@ -368,6 +417,13 @@ mod tests {
             status: Some("done".to_string()),
             pri: Some(5),
             assigned_to: Some("admin".to_string()),
+            module: None,
+            story: None,
+            from_bug: None,
+            type_: None,
+            est_started: None,
+            deadline: None,
+            estimate: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Updated Task"));
@@ -383,6 +439,13 @@ mod tests {
             status: Some("in progress".to_string()),
             pri: None,
             assigned_to: None,
+            module: None,
+            story: None,
+            from_bug: None,
+            type_: None,
+            est_started: None,
+            deadline: None,
+            estimate: None,
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("in progress"));
