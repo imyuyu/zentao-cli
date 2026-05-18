@@ -31,26 +31,42 @@ impl UserApi {
         dept: Option<u64>,
         role: Option<String>,
     ) -> Result<Vec<User>> {
-        let mut path = String::from("/api.php/v1/users?");
+        let mut all_users = Vec::new();
+        let mut page = 1;
+        let limit = 100;
 
-        if let Some(d) = dept {
-            path.push_str(&format!("dept={}", d));
-        }
-        if let Some(ref r) = role {
-            if path.contains('=') {
-                path.push('&');
+        loop {
+            let mut path = format!("/api.php/v1/users?page={}&limit={}", page, limit);
+
+            if let Some(d) = dept {
+                path.push_str(&format!("&dept={}", d));
             }
-            path.push_str(&format!("role={}", r));
+            if let Some(ref r) = role {
+                path.push_str(&format!("&role={}", r));
+            }
+
+            #[derive(Deserialize)]
+            struct UserListResponse {
+                #[serde(rename = "users")]
+                users: Option<Vec<User>>,
+            }
+
+            let resp: UserListResponse = client.get(&path).await?;
+            let users = resp.users.unwrap_or_default();
+            let count = users.len();
+
+            if users.is_empty() {
+                break;
+            }
+            all_users.extend(users);
+
+            if count < limit as usize {
+                break;
+            }
+            page += 1;
         }
 
-        #[derive(Deserialize)]
-        struct UserListResponse {
-            #[serde(rename = "users")]
-            users: Option<Vec<User>>,
-        }
-
-        let resp: UserListResponse = client.get(&path).await?;
-        Ok(resp.users.unwrap_or_default())
+        Ok(all_users)
     }
 
     /// 获取单个用户详情

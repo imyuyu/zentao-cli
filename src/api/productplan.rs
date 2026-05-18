@@ -235,9 +235,9 @@ mod tests {
         let plan = ProductPlan {
             id: 1,
             product: 1,
-            name: "V1.0 Plan".to_string(),
-            code: "V1".to_string(),
-            status: "doing".to_string(),
+            name: Some("V1.0 Plan".to_string()),
+            code: Some("V1".to_string()),
+            status: Some("doing".to_string()),
             type_: Some("ship".to_string()),
             desc: None,
             begin: Some("2024-01-01".to_string()),
@@ -264,7 +264,7 @@ mod tests {
         }"#;
         let plan: ProductPlan = serde_json::from_str(json).unwrap();
         assert_eq!(plan.id, 10);
-        assert_eq!(plan.name, "My Plan");
-        assert_eq!(plan.status, "wait");
+        assert_eq!(plan.name, Some("My Plan".to_string()));
+        assert_eq!(plan.status, Some("wait".to_string()));
     }
 }

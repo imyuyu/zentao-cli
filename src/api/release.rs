@@ -37,7 +37,11 @@ pub struct Release {
     #[serde(deserialize_with = "crate::api::types::deserialize_optional_id")]
     pub product: Option<u64>,
     /// 关联的 Build（版本）ID
-    #[serde(deserialize_with = "crate::api::types::deserialize_optional_id")]
+    #[serde(
+        default,
+        deserialize_with = "crate::api::types::deserialize_optional_id",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub build: Option<u64>,
     /// 发布状态：normal（正常）/closed（关闭）
     pub status: String,
@@ -146,7 +150,7 @@ mod tests {
         let release = Release {
             id: 1,
             name: "v1.0.0".to_string(),
-            product: 1,
+            product: Some(1),
             build: Some(10),
             status: "normal".to_string(),
             marker: Some("stable".to_string()),
@@ -214,7 +218,7 @@ mod tests {
         let release = Release {
             id: 1,
             name: "No Optional".to_string(),
-            product: 1,
+            product: Some(1),
             build: None,
             status: "normal".to_string(),
             marker: None,

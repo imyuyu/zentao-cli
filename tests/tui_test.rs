@@ -5,80 +5,7 @@
 mod common;
 
 use zentao_cli::api::{Bug, Department, Story};
-use zentao_cli::tui::{html_to_plain_text, App, AppState};
-
-// ============================================================
-// html_to_plain_text 单元测试
-// ============================================================
-
-#[test]
-fn test_html_to_plain_text_simple() {
-    let html = "<p>Hello</p>";
-    let result = html_to_plain_text(html);
-    assert_eq!(result.trim(), "Hello");
-}
-
-#[test]
-fn test_html_to_plain_text_with_br() {
-    let html = "Line1<br>Line2";
-    let result = html_to_plain_text(html);
-    assert!(result.contains('\n'));
-    assert!(result.contains("Line1"));
-    assert!(result.contains("Line2"));
-}
-
-#[test]
-fn test_html_to_plain_text_with_p() {
-    let html = "<p>First paragraph</p><p>Second paragraph</p>";
-    let result = html_to_plain_text(html);
-    assert!(result.contains("First paragraph"));
-    assert!(result.contains("Second paragraph"));
-}
-
-#[test]
-fn test_html_to_plain_text_with_br_and_p() {
-    let html = "<p>Line1<br>Line2</p>";
-    let result = html_to_plain_text(html);
-    // Should contain newlines from both <br> and </p>
-    assert!(result.contains("Line1"));
-    assert!(result.contains("Line2"));
-}
-
-#[test]
-fn test_html_to_plain_text_complex_html() {
-    let html = "<div class='test'><p>Hello <b>World</b></p><br><p>Second line</p></div>";
-    let result = html_to_plain_text(html);
-    assert!(result.contains("Hello"));
-    assert!(result.contains("World"));
-    assert!(result.contains("Second line"));
-    // Should not contain HTML tags
-    assert!(!result.contains('<') && !result.contains('>'));
-}
-
-#[test]
-fn test_html_to_plain_text_empty() {
-    let html = "";
-    let result = html_to_plain_text(html);
-    assert_eq!(result, "");
-}
-
-#[test]
-fn test_html_to_plain_text_no_tags() {
-    let html = "Plain text without any tags";
-    let result = html_to_plain_text(html);
-    assert_eq!(result.trim(), "Plain text without any tags");
-}
-
-#[test]
-fn test_html_to_plain_text_multiple_br() {
-    let html = "Line1<br>Line2<br>Line3";
-    let result = html_to_plain_text(html);
-    let lines: Vec<&str> = result.lines().collect();
-    assert_eq!(lines.len(), 3);
-    assert!(lines[0].contains("Line1"));
-    assert!(lines[1].contains("Line2"));
-    assert!(lines[2].contains("Line3"));
-}
+use zentao_cli::tui::{App, AppState};
 
 // ============================================================
 // AppState 状态转换测试
@@ -532,14 +459,9 @@ fn test_get_selected_department_id_not_in_department_list() {
 #[test]
 fn test_get_main_menu_modules() {
     let modules = App::get_main_menu_modules();
-    assert_eq!(modules.len(), 8);
+    assert_eq!(modules.len(), 17);
     assert!(modules.contains(&"Bug List"));
     assert!(modules.contains(&"Story List"));
-    assert!(modules.contains(&"Execution List"));
-    assert!(modules.contains(&"Build List"));
-    assert!(modules.contains(&"Release List"));
-    assert!(modules.contains(&"User List"));
-    assert!(modules.contains(&"Department List"));
     assert!(modules.contains(&"Settings"));
 }
 

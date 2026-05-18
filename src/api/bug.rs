@@ -35,7 +35,7 @@ pub struct CreateBugRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub story: Option<u64>,
     /// 指派给谁
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "assignedTo")]
     pub assigned_to: Option<String>,
 }
 
@@ -53,7 +53,7 @@ pub struct UpdateBugRequest {
     pub resolution: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolved_build: Option<u64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "assignedTo")]
     pub assigned_to: Option<String>,
 }
 

@@ -249,8 +249,8 @@ mod tests {
         assert_eq!(testcase.id, 100);
         assert_eq!(testcase.title, "Test Case Title");
         assert_eq!(testcase.type_, Some("feature".to_string()));
-        assert_eq!(testcase.severity, 3);
-        assert_eq!(testcase.pri, 2);
+        assert_eq!(testcase.severity, Some(3));
+        assert_eq!(testcase.pri, Some(2));
         assert_eq!(testcase.status, "normal");
         assert_eq!(
             testcase.steps,
@@ -277,8 +277,8 @@ mod tests {
         let testcase: Testcase = serde_json::from_str(json).unwrap();
         assert_eq!(testcase.id, 101);
         assert_eq!(testcase.title, "Minimal Case");
-        assert_eq!(testcase.severity, 2);
-        assert_eq!(testcase.pri, 1);
+        assert_eq!(testcase.severity, Some(2));
+        assert_eq!(testcase.pri, Some(1));
         assert_eq!(testcase.status, "wait");
         assert_eq!(testcase.product, 2);
         // 可选字段
