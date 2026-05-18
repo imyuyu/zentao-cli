@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.1-beta.7] - 2026-05-18
+
+### Added
+
+- Full API audit: all API structs aligned with official ZenTao API documentation
+- Bug: Added `resolve()` API with full parameter support (resolution, resolvedBuild, assignedTo, duplicateBug, resolvedDate, comment)
+- Story: Added `source`, `sourceNote`, `module`, `keywords`, `category` fields to create/update
+- Task: Added `estStarted`, `deadline`, `fromBug`, `estimate`, `consumed` fields to create/update
+- ProductPlan: Fixed title/name field aliasing per API docs
+
+### Changed
+
+- Bug: CreateRequest/UpdateRequest restructured to match official API fields
+- Story: CreateRequest/UpdateRequest restructured with complete field set
+- Task: CreateRequest/UpdateRequest restructured with complete field set
+- All list response structs standardized with proper pagination fields
+- TUI pages updated to match changed API struct types
+
+### Fixed
+
+- `user list` pagination (Issue #2) - now fetches all pages
+- `bug update --assigned-to` correctly routes to resolve endpoint (Issue #3)
+
 ## [0.0.1-beta.6] - 2026-05-18
 
 ### Added
