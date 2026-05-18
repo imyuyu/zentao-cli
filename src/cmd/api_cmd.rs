@@ -587,32 +587,6 @@ impl SchemaService {
                     },
                 ],
             },
-            // Doc 服务
-            SchemaService {
-                name: "doc",
-                description: "文档管理",
-                methods: vec![
-                    SchemaMethod {
-                        name: "list",
-                        http_method: "GET",
-                        path: "/api.php/v1/docs",
-                        description: "获取文档列表",
-                        params: vec![],
-                    },
-                    SchemaMethod {
-                        name: "get",
-                        http_method: "GET",
-                        path: "/api.php/v1/docs/{id}",
-                        description: "获取单个文档详情",
-                        params: vec![SchemaParam {
-                            name: "id",
-                            required: true,
-                            type_: "u64",
-                            description: "文档 ID",
-                        }],
-                    },
-                ],
-            },
         ]
     }
 
@@ -725,19 +699,6 @@ impl ApiEndpoint {
                 method: "GET",
                 path: "/api.php/v1/testcases/{id}",
                 description: "获取单个测试用例详情",
-            },
-            // 文档
-            ApiEndpoint {
-                name: "文档列表",
-                method: "GET",
-                path: "/api.php/v1/docs",
-                description: "获取文档列表",
-            },
-            ApiEndpoint {
-                name: "文档详情",
-                method: "GET",
-                path: "/api.php/v1/docs/{id}",
-                description: "获取单个文档详情",
             },
         ]
     }

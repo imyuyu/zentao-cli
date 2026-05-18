@@ -1,7 +1,6 @@
 pub mod bug;
 pub mod build;
 pub mod department;
-pub mod doc;
 pub mod execution;
 pub mod feedback;
 pub mod product;

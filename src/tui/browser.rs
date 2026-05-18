@@ -12,6 +12,7 @@ use std::io::Stdout;
 use std::sync::mpsc;
 
 use super::app::{App, AppState};
+use super::navigation::{get_open_url, handle_navigation_down, handle_navigation_up};
 use crate::api::{
     Bug, Department, Execution, Feedback, Product, ProductPlan, Program, Project, Release, Story,
     Task, Testcase, Testtask, Ticket, User,
@@ -553,9 +554,9 @@ impl Browser {
                                     let pn = product_name.clone();
                                     (AppState::BugList { bugs, product_name }, pn, None)
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load bugs".to_string(),
+                                        message: format!("Failed to load bugs: {}", e),
                                     },
                                     None,
                                     None,
@@ -607,9 +608,9 @@ impl Browser {
                                         None,
                                     )
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load stories".to_string(),
+                                        message: format!("Failed to load stories: {}", e),
                                     },
                                     None,
                                     None,
@@ -649,9 +650,9 @@ impl Browser {
                                         pn,
                                     )
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load executions".to_string(),
+                                        message: format!("Failed to load executions: {}", e),
                                     },
                                     None,
                                     None,
@@ -707,9 +708,9 @@ impl Browser {
                                         pjn,
                                     )
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load builds".to_string(),
+                                        message: format!("Failed to load builds: {}", e),
                                     },
                                     None,
                                     None,
@@ -759,9 +760,9 @@ impl Browser {
                                         None,
                                     )
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load releases".to_string(),
+                                        message: format!("Failed to load releases: {}", e),
                                     },
                                     None,
                                     None,
@@ -777,7 +778,7 @@ impl Browser {
                                         Ok(users) => (AppState::UserList { users }, None, None),
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load users".to_string(),
+                                                message: format!("Failed to load users: {}", e),
                                             },
                                             None,
                                             None,
@@ -786,7 +787,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load users".to_string(),
+                                            message: format!("Failed to load users: {}", e),
                                         },
                                         None,
                                         None,
@@ -810,7 +811,7 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load departments".to_string(),
+                                                message: format!("Failed to load departments: {}", e),
                                             },
                                             None,
                                             None,
@@ -819,7 +820,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load departments".to_string(),
+                                            message: format!("Failed to load departments: {}", e),
                                         },
                                         None,
                                         None,
@@ -838,7 +839,7 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load products".to_string(),
+                                                message: format!("Failed to load products: {}", e),
                                             },
                                             None,
                                             None,
@@ -847,7 +848,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load products".to_string(),
+                                            message: format!("Failed to load products: {}", e),
                                         },
                                         None,
                                         None,
@@ -866,7 +867,7 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load projects".to_string(),
+                                                message: format!("Failed to load projects: {}", e),
                                             },
                                             None,
                                             None,
@@ -875,7 +876,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load projects".to_string(),
+                                            message: format!("Failed to load projects: {}", e),
                                         },
                                         None,
                                         None,
@@ -913,9 +914,9 @@ impl Browser {
                                         pn,
                                     )
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load tasks".to_string(),
+                                        message: format!("Failed to load tasks: {}", e),
                                     },
                                     None,
                                     None,
@@ -969,9 +970,9 @@ impl Browser {
                                         None,
                                     )
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load testcases".to_string(),
+                                        message: format!("Failed to load testcases: {}", e),
                                     },
                                     None,
                                     None,
@@ -1017,7 +1018,7 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load testtasks".to_string(),
+                                                message: format!("Failed to load testtasks: {}", e),
                                             },
                                             None,
                                             None,
@@ -1026,7 +1027,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load testtasks".to_string(),
+                                            message: format!("Failed to load testtasks: {}", e),
                                         },
                                         None,
                                         None,
@@ -1045,7 +1046,7 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load feedbacks".to_string(),
+                                                message: format!("Failed to load feedbacks: {}", e),
                                             },
                                             None,
                                             None,
@@ -1054,7 +1055,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load feedbacks".to_string(),
+                                            message: format!("Failed to load feedbacks: {}", e),
                                         },
                                         None,
                                         None,
@@ -1073,7 +1074,7 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load tickets".to_string(),
+                                                message: format!("Failed to load tickets: {}", e),
                                             },
                                             None,
                                             None,
@@ -1082,7 +1083,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load tickets".to_string(),
+                                            message: format!("Failed to load tickets: {}", e),
                                         },
                                         None,
                                         None,
@@ -1101,7 +1102,7 @@ impl Browser {
                                         }
                                         Err(_) => (
                                             AppState::Error {
-                                                message: "Failed to load programs".to_string(),
+                                                message: format!("Failed to load programs: {}", e),
                                             },
                                             None,
                                             None,
@@ -1110,7 +1111,7 @@ impl Browser {
                                 } else {
                                     (
                                         AppState::Error {
-                                            message: "Failed to load programs".to_string(),
+                                            message: format!("Failed to load programs: {}", e),
                                         },
                                         None,
                                         None,
@@ -1151,9 +1152,9 @@ impl Browser {
                                         None,
                                     )
                                 }
-                                Err(_) => (
+                                Err(e) => (
                                     AppState::Error {
-                                        message: "Failed to load product plans".to_string(),
+                                        message: format!("Failed to load product plans: {}", e),
                                     },
                                     None,
                                     None,
@@ -1255,66 +1256,10 @@ impl Browser {
 
         match key.code {
             KeyCode::Up | KeyCode::Char('k') => {
-                app.selected_index = app.selected_index.saturating_sub(1);
-                // Sync with list_state for MainMenu
-                if matches!(app.state, AppState::MainMenu { .. }) {
-                    let _ = app.main_menu_state.borrow().selected();
-                    app.main_menu_state
-                        .borrow_mut()
-                        .select(Some(app.selected_index));
-                } else {
-                    // Sync with list_state for other list states
-                    let _ = app.list_state.borrow().selected();
-                    app.list_state.borrow_mut().select(Some(app.selected_index));
-                }
+                handle_navigation_up(app);
             }
             KeyCode::Down | KeyCode::Char('j') => {
-                let max = match &app.state {
-                    AppState::BugList { bugs, .. } => bugs.len().saturating_sub(1),
-                    AppState::StoryList { stories, .. } => stories.len().saturating_sub(1),
-                    AppState::ExecutionList { executions, .. } => {
-                        executions.len().saturating_sub(1)
-                    }
-                    AppState::BuildList { builds, .. } => builds.len().saturating_sub(1),
-                    AppState::ReleaseList { releases, .. } => releases.len().saturating_sub(1),
-                    AppState::UserList { users, .. } => users.len().saturating_sub(1),
-                    AppState::DepartmentList { departments, .. } => {
-                        departments.len().saturating_sub(1)
-                    }
-                    AppState::ProductList { products, .. } => products.len().saturating_sub(1),
-                    AppState::ProjectList { projects, .. } => projects.len().saturating_sub(1),
-                    AppState::TaskList { tasks, .. } => tasks.len().saturating_sub(1),
-                    AppState::TestcaseList { testcases, .. } => testcases.len().saturating_sub(1),
-                    AppState::TesttaskList { testtasks, .. } => testtasks.len().saturating_sub(1),
-                    AppState::FeedbackList { feedbacks, .. } => feedbacks.len().saturating_sub(1),
-                    AppState::TicketList { tickets, .. } => tickets.len().saturating_sub(1),
-                    AppState::ProgramList { programs, .. } => programs.len().saturating_sub(1),
-                    AppState::ProductPlanList { plans, .. } => plans.len().saturating_sub(1),
-                    AppState::Settings { multi_config, .. } => {
-                        multi_config.list_account_names().len().saturating_sub(1)
-                    }
-                    AppState::ProductSelect { products, .. } => products.len().saturating_sub(1),
-                    AppState::AccountSelect { multi_config, .. } => {
-                        multi_config.list_account_names().len().saturating_sub(1)
-                    }
-                    AppState::MainMenu { .. } => {
-                        App::get_main_menu_modules().len().saturating_sub(1)
-                    }
-                    _ => 0,
-                };
-                if app.selected_index < max {
-                    app.selected_index += 1;
-                }
-                // Sync with list_state
-                if matches!(app.state, AppState::MainMenu { .. }) {
-                    let _ = app.main_menu_state.borrow().selected();
-                    app.main_menu_state
-                        .borrow_mut()
-                        .select(Some(app.selected_index));
-                } else {
-                    let _ = app.list_state.borrow().selected();
-                    app.list_state.borrow_mut().select(Some(app.selected_index));
-                }
+                handle_navigation_down(app);
             }
             KeyCode::Enter => {
                 // Enter key handling for navigation
@@ -1552,59 +1497,17 @@ impl Browser {
                 _ => {}
             },
             KeyCode::Char('r') | KeyCode::F(5) => {
-                if let Some(reload) = self.pending_reload.take() {
+                // Handle retry in Error state
+                if matches!(app.state, AppState::Error { .. }) {
+                    if let Some(ref module_name) = self.loading_module {
+                        app.set_module_selected(module_name.clone());
+                    }
+                } else if let Some(reload) = self.pending_reload.take() {
                     reload(app);
                 }
             }
             KeyCode::Char('o') => {
-                let base_url = &app.config.url;
-                let url = match &app.state {
-                    AppState::BugList { bugs, .. } => {
-                        bugs.get(app.selected_index).map(|b| b.web_url(base_url))
-                    }
-                    AppState::StoryList { stories, .. } => {
-                        stories.get(app.selected_index).map(|s| s.web_url(base_url))
-                    }
-                    AppState::ReleaseList { releases, .. } => releases
-                        .get(app.selected_index)
-                        .map(|r| r.web_url(base_url)),
-                    AppState::UserList { users } => {
-                        users.get(app.selected_index).map(|u| u.web_url(base_url))
-                    }
-                    AppState::DepartmentList { departments } => departments
-                        .get(app.selected_index)
-                        .map(|d| d.web_url(base_url)),
-                    AppState::ProductList { products } => products
-                        .get(app.selected_index)
-                        .map(|p| format!("{}/product-view-{}.html", base_url, p.id)),
-                    AppState::ProjectList { projects } => projects
-                        .get(app.selected_index)
-                        .map(|p| format!("{}/project-view-{}.html", base_url, p.id)),
-                    AppState::TaskList { tasks, .. } => tasks
-                        .get(app.selected_index)
-                        .map(|t| format!("{}/task-view-{}.html", base_url, t.id)),
-                    AppState::TestcaseList { testcases, .. } => testcases
-                        .get(app.selected_index)
-                        .map(|t| format!("{}/testcase-view-{}.html", base_url, t.id)),
-                    AppState::TesttaskList { testtasks, .. } => testtasks
-                        .get(app.selected_index)
-                        .map(|t| format!("{}/testtask-view-{}.html", base_url, t.id)),
-                    AppState::FeedbackList { feedbacks } => feedbacks
-                        .get(app.selected_index)
-                        .map(|f| format!("{}/feedback-view-{}.html", base_url, f.id)),
-                    AppState::TicketList { tickets } => tickets
-                        .get(app.selected_index)
-                        .map(|t| format!("{}/ticket-view-{}.html", base_url, t.id)),
-                    AppState::ProgramList { programs } => programs
-                        .get(app.selected_index)
-                        .map(|p| format!("{}/program-view-{}.html", base_url, p.id)),
-                    AppState::ProductPlanList { plans, .. } => plans
-                        .get(app.selected_index)
-                        .map(|p| format!("{}/productplan-view-{}.html", base_url, p.id)),
-                    _ => None,
-                };
-
-                if let Some(url) = url {
+                if let Some(url) = get_open_url(app) {
                     let _ = open::that(&url);
                 }
             }
@@ -1767,7 +1670,7 @@ impl Browser {
             Line::from(Span::raw(message)),
             Line::from(Span::raw("")),
             Line::from(Span::styled(
-                "Press q to quit",
+                "Press r or F5 to retry, q to quit",
                 Style::default().fg(Color::DarkGray),
             )),
         ]))
