@@ -1,10 +1,10 @@
 # bug update
 
-更新缺陷信息。
+更新缺陷信息。注意：状态变更（status）、解决方案（resolution）、指派（assignedTo）需要使用 `bug resolve` 命令。
 
 ## Command
 ```bash
-zentao-cli bug update <id> [--title <title>] [--status <status>] [--resolution <resolution>] [--resolved-build <id>] [--assigned-to <user>]
+zentao-cli bug update <id> [--title <title>] [--keywords <keywords>] [--severity <severity>] [--pri <pri>] [--type <type>] [--os <os>] [--browser <browser>] [--steps <steps>] [--task <task>] [--story <story>] [--deadline <deadline>] [--opened-build <opened_build>] [--branch <branch>] [--module <module>] [--execution <execution>]
 ```
 
 ## Options
@@ -13,21 +13,29 @@ zentao-cli bug update <id> [--title <title>] [--status <status>] [--resolution <
 |--------|----------|-------------|
 | `<id>` | Yes | Bug ID |
 | `--title` | No | New title |
-| `--status` | No | New status (active, resolved, closed) |
-| `--resolution` | No | Resolution (fixed, duplicate, notrepro, wonfix, bydesign) |
-| `--resolved-build` | No | Resolved build/version ID (required when status=resolved) |
-| `--assigned-to` | No | Assign to user |
+| `--keywords` | No | Keywords |
+| `--severity` | No | Severity level (1-5) |
+| `--pri` | No | Priority (0-5) |
+| `--type` | No | Bug type (codeerror/interface/design/others) |
+| `--os` | No | Operating system |
+| `--browser` | No | Browser |
+| `--steps` | No | Steps to reproduce |
+| `--task` | No | Related task ID |
+| `--story` | No | Related story ID |
+| `--deadline` | No | Deadline |
+| `--opened-build` | No | Affected build |
+| `--branch` | No | Branch ID |
+| `--module` | No | Module ID |
+| `--execution` | No | Execution ID |
 
 ## Examples
 
 ```bash
-# Resolve a bug (requires --resolved-build)
-zentao-cli bug update 123 --status resolved --resolution fixed --resolved-build 1
+# Update bug title and severity
+zentao-cli bug update 123 --title "新标题" --severity 2
 
-# Assign bug
-zentao-cli bug update 123 --assigned-to developer-name
-
-# Close a bug
-zentao-cli bug update 123 --status closed
+# Update priority and deadline
+zentao-cli bug update 123 --pri 1 --deadline "2026-06-01"
 ```
 
+**注意**：要解决/关闭 Bug 或指派给他人，请使用 `bug resolve` 命令。

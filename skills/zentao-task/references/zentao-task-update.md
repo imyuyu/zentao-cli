@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli task update <id> [--name <name>] [--status <status>] [--pri <priority>] [--assigned-to <user>]
+zentao-cli task update <id> [--name <name>] [--status <status>] [--pri <priority>] [--assigned-to <user>] [--est-started <date>] [--deadline <date>]
 ```
 
 ## Options
@@ -16,6 +16,8 @@ zentao-cli task update <id> [--name <name>] [--status <status>] [--pri <priority
 | `--status` | No | New status (wait, doing, done, closed) |
 | `--pri` | No | New priority (1-4) |
 | `--assigned-to` | No | Assign to user |
+| `--est-started` | No | Estimated start date |
+| `--deadline` | No | Deadline |
 
 ## Examples
 

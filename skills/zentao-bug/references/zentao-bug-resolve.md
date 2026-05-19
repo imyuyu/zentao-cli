@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli bug resolve <id> --resolution <resolution> --resolved-build <build>
+zentao-cli bug resolve <id> --resolution <resolution> --resolved-build <build> [--assigned-to <user>] [--duplicate-bug <id>] [--resolved-date <date>] [--comment <comment>]
 ```
 
 ## Options
@@ -14,6 +14,10 @@ zentao-cli bug resolve <id> --resolution <resolution> --resolved-build <build>
 | `<id>` | Yes | Bug ID |
 | `--resolution` | Yes | 解决方案 |
 | `--resolved-build` | Yes | 解决版本（版本 ID 或 "trunk"） |
+| `--assigned-to` | No | 指派给用户 |
+| `--duplicate-bug` | No | 重复Bug ID（当 resolution=duplicate 时使用） |
+| `--resolved-date` | No | 解决日期 |
+| `--comment` | No | 备注 |
 
 ## Resolution 值
 
@@ -34,11 +38,11 @@ zentao-cli bug resolve <id> --resolution <resolution> --resolved-build <build>
 # 解决 Bug（使用 trunk 主干）
 zentao-cli bug resolve 5703 --resolution fixed --resolved-build trunk
 
-# 解决 Bug（使用版本 ID）
-zentao-cli bug resolve 5703 --resolution fixed --resolved-build 1
+# 解决 Bug 并指派
+zentao-cli bug resolve 5703 --resolution fixed --resolved-build trunk --assigned-to developer-name
 
-# 设计如此
-zentao-cli bug resolve 5703 --resolution bydesign --resolved-build trunk
+# 重复 Bug
+zentao-cli bug resolve 5703 --resolution duplicate --resolved-build trunk --duplicate-bug 1234
 ```
 
 ## API Endpoint
