@@ -1,6 +1,7 @@
 //! ZenTao ProductPlan(产品计划)命令模块
 
-use crate::cmd::common::{log_command, print_dry_run, print_error, print_json};
+use crate::api::productplan::{CreateProductPlanRequest, UpdateProductPlanRequest};
+use crate::cmd::common::{log_command, print_dry_run, print_dry_run_with_body, print_error, print_json};
 use crate::cmd::root::ProductPlanSubcommand;
 use crate::core::{AppContext, OutputFormat};
 use crate::service::productplan::ProductPlanService;
@@ -36,6 +37,89 @@ pub async fn run(cmd: &ProductPlanSubcommand, ctx: &AppContext) {
             }
             match ProductPlanService::get(ctx, *id).await {
                 Ok(plan) => print_json(&plan),
+                Err(e) => print_error(&e),
+            }
+        }
+        ProductPlanSubcommand::Create {
+            product,
+            title,
+            code,
+            desc,
+            begin,
+            end,
+        } => {
+            let product_id = match ctx.require_product_id(*product) {
+                Ok(id) => id,
+                Err(e) => {
+                    print_error(&e);
+                    return;
+                }
+            };
+            let req = CreateProductPlanRequest {
+                title: title.clone(),
+                product: Some(product_id),
+                branch: None,
+                code: code.clone(),
+                type_: None,
+                desc: desc.clone(),
+                begin: begin.clone(),
+                end: end.clone(),
+                parent: None,
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "ProductPlanService::create()",
+                    &format!("{}/api.php/v1/products/{}/plans", ctx.config.url, product_id),
+                    &req,
+                );
+                return;
+            }
+            match ProductPlanService::create(ctx, product_id, req).await {
+                Ok(plan) => print_json(&plan),
+                Err(e) => print_error(&e),
+            }
+        }
+        ProductPlanSubcommand::Update {
+            id,
+            name,
+            desc,
+            begin,
+            end,
+            status,
+        } => {
+            let req = UpdateProductPlanRequest {
+                name: name.clone(),
+                status: status.clone(),
+                desc: desc.clone(),
+                begin: begin.clone(),
+                end: end.clone(),
+                owner: None,
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "ProductPlanService::update()",
+                    &format!("{}/api.php/v1/productplans/{}", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match ProductPlanService::update(ctx, *id, req).await {
+                Ok(plan) => print_json(&plan),
+                Err(e) => print_error(&e),
+            }
+        }
+        ProductPlanSubcommand::Delete { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "ProductPlanService::delete()",
+                    &format!("{}/api.php/v1/productplans/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match ProductPlanService::delete(ctx, *id).await {
+                Ok(_) => {
+                    println!("ProductPlan [{}] deleted successfully", id);
+                }
                 Err(e) => print_error(&e),
             }
         }

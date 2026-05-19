@@ -55,7 +55,10 @@ pub use program::{Program, ProgramApi};
 pub use project::{CreateProjectRequest, Project, ProjectApi, UpdateProjectRequest};
 pub use release::{Release, ReleaseApi};
 pub use story::{CreateStoryRequest, StoryApi, UpdateStoryRequest};
-pub use task::{CreateTaskRequest, Task, TaskApi, TaskEstimate, UpdateTaskRequest};
+pub use task::{
+    BatchEstimateRequest, CloseTaskRequest, CreateTaskRequest, FinishTaskRequest, PauseTaskRequest,
+    RestartTaskRequest, StartTaskRequest, Task, TaskApi, TaskEstimate, UpdateTaskRequest,
+};
 pub use testcase::{
     CreateTestcaseRequest, TestcaseApi, TestcaseResultRequest, UpdateTestcaseRequest,
 };
@@ -63,4 +66,4 @@ pub use testtask::{Testtask, TesttaskApi};
 pub use ticket::{CreateTicketRequest, Ticket, TicketApi, UpdateTicketRequest};
 pub use types::*;
 pub use types::{Bug, Department, Story, Testcase, TestcaseListQuery, User};
-pub use user::UserApi;
+pub use user::{CreateUserRequest, UpdateUserRequest, UserApi};

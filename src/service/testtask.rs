@@ -6,10 +6,17 @@ use anyhow::Result;
 pub struct TesttaskService;
 
 impl TesttaskService {
-    pub async fn list(ctx: &AppContext, page: u32, limit: u32) -> Result<Vec<Testtask>> {
+    pub async fn list(
+        ctx: &AppContext,
+        page: u32,
+        limit: u32,
+        order: Option<String>,
+        product: Option<u64>,
+        branch: Option<u64>,
+    ) -> Result<Vec<Testtask>> {
         log(LogLevel::Info, "TesttaskService", "list");
         let client = ctx.client();
-        TesttaskApi::list(&client, page, limit).await
+        TesttaskApi::list(&client, page, limit, order, product, branch).await
     }
 
     pub async fn list_by_project(

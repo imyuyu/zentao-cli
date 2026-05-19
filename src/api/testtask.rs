@@ -33,6 +33,21 @@ pub struct Testtask {
     /// 所属产品 ID
     #[serde(skip_serializing_if = "Option::is_none")]
     pub product: Option<u64>,
+    /// 所属产品名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub productName: Option<String>,
+    /// 关联执行名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub executionName: Option<String>,
+    /// 关联版本/构建名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub buildName: Option<String>,
+    /// 所属分支
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<u64>,
+    /// 关联的版本/构建 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build: Option<u64>,
     /// 开始日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub begin: Option<String>,
@@ -42,13 +57,16 @@ pub struct Testtask {
     /// 负责人
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assigned_to: Option<String>,
+    /// 负责人名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub owner: Option<String>,
     /// 创建者
     #[serde(skip_serializing_if = "Option::is_none")]
     pub opened_by: Option<String>,
     /// 创建日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub opened_date: Option<String>,
-    /// 结束日期
+    /// 实际开始日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub real_begin: Option<String>,
     /// 实际结束日期
@@ -102,10 +120,30 @@ impl TesttaskApi {
     /// GET /api.php/v1/testtasks
     ///
     /// # 参数
+    /// - client: API 客户端
     /// - page: 页码（默认 1）
     /// - limit: 每页数量（默认 100）
-    pub async fn list(client: &ApiClient, page: u32, limit: u32) -> Result<Vec<Testtask>> {
-        let path = format!("/api.php/v1/testtasks?page={}&limit={}", page, limit);
+    /// - order: 排序字段（如 created_date_DESC）
+    /// - product: 按产品 ID 筛选
+    /// - branch: 按分支筛选
+    pub async fn list(
+        client: &ApiClient,
+        page: u32,
+        limit: u32,
+        order: Option<String>,
+        product: Option<u64>,
+        branch: Option<u64>,
+    ) -> Result<Vec<Testtask>> {
+        let mut path = format!("/api.php/v1/testtasks?page={}&limit={}", page, limit);
+        if let Some(ref o) = order {
+            path.push_str(&format!("&order={}", o));
+        }
+        if let Some(p) = product {
+            path.push_str(&format!("&product={}", p));
+        }
+        if let Some(b) = branch {
+            path.push_str(&format!("&branch={}", b));
+        }
 
         let resp: TesttaskListResponse = client.get(&path).await?;
         Ok(resp.testtasks.unwrap_or_default())

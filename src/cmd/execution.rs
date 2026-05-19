@@ -169,6 +169,7 @@ pub async fn run(cmd: &ExecutionAction, ctx: &AppContext) {
         } => {
             let req = UpdateExecutionRequest {
                 name: name.clone(),
+                code: None,
                 status: status.clone(),
                 begin: begin.clone(),
                 end: end.clone(),

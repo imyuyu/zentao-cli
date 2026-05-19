@@ -1,6 +1,7 @@
 //! ZenTao Release(发布)命令模块
 
-use crate::cmd::common::{log_command, print_dry_run, print_error, print_json};
+use crate::api::release::{CreateReleaseRequest, UpdateReleaseRequest};
+use crate::cmd::common::{log_command, print_dry_run, print_dry_run_with_body, print_error, print_json};
 use crate::cmd::root::ReleaseSubcommand;
 use crate::core::{AppContext, OutputFormat};
 use crate::service::release::ReleaseService;
@@ -45,6 +46,78 @@ pub async fn run(cmd: &ReleaseSubcommand, ctx: &AppContext) {
             }
             match ReleaseService::get(ctx, *id).await {
                 Ok(release) => print_json(&release),
+                Err(e) => print_error(&e),
+            }
+        }
+        ReleaseSubcommand::Create {
+            name,
+            product,
+            project,
+            build,
+            date,
+            desc,
+        } => {
+            let req = CreateReleaseRequest {
+                name: name.clone(),
+                product: ctx.product_id(*product),
+                project: ctx.project_id(*project),
+                build: *build,
+                date: date.clone(),
+                desc: desc.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "ReleaseService::create()",
+                    &format!("{}/api.php/v1/releases", ctx.config.url),
+                    &req,
+                );
+                return;
+            }
+            match ReleaseService::create(ctx, req).await {
+                Ok(release) => print_json(&release),
+                Err(e) => print_error(&e),
+            }
+        }
+        ReleaseSubcommand::Update {
+            id,
+            name,
+            build,
+            date,
+            desc,
+            status,
+        } => {
+            let req = UpdateReleaseRequest {
+                name: name.clone(),
+                build: *build,
+                date: date.clone(),
+                desc: desc.clone(),
+                status: status.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "ReleaseService::update()",
+                    &format!("{}/api.php/v1/releases/{}", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match ReleaseService::update(ctx, *id, req).await {
+                Ok(release) => print_json(&release),
+                Err(e) => print_error(&e),
+            }
+        }
+        ReleaseSubcommand::Delete { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "ReleaseService::delete()",
+                    &format!("{}/api.php/v1/releases/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match ReleaseService::delete(ctx, *id).await {
+                Ok(_) => {
+                    println!("Release [{}] deleted successfully", id);
+                }
                 Err(e) => print_error(&e),
             }
         }

@@ -111,7 +111,8 @@ pub struct TestcaseResultRequest {
 pub struct TestcaseResultStep {
     /// 结果：n/a/fail/blocked/pass
     pub result: String,
-    /// 步骤描述
+    /// 步骤描述（API 可能返回 `desc` 或 `real`，两者兼容）
+    #[serde(alias = "real")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
 }

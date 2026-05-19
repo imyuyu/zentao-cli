@@ -982,7 +982,7 @@ impl Browser {
                                 ),
                             }
                         }
-                        "Testtask List" => match TesttaskService::list(&ctx, 1, 100).await {
+                        "Testtask List" => match TesttaskService::list(&ctx, 1, 100, None, None, None).await {
                             Ok(testtasks) => {
                                 let project_name = if let Some(id) = config.project_id {
                                     ProjectService::get_name(&ctx, id).await.ok()
@@ -1002,7 +1002,7 @@ impl Browser {
                             Err(e) => {
                                 eprintln!("Error loading testtasks (trying token refresh): {}", e);
                                 if ctx.refresh_token().await.is_ok() {
-                                    match TesttaskService::list(&ctx, 1, 100).await {
+                                    match TesttaskService::list(&ctx, 1, 100, None, None, None).await {
                                         Ok(testtasks) => {
                                             let project_name = if let Some(id) = config.project_id {
                                                 ProjectService::get_name(&ctx, id).await.ok()

@@ -1,12 +1,38 @@
 //! ZenTao 用户(User) API 模块
 //!
-//! 提供用户的查询操作
+//! 提供用户的查询和操作
 
 use anyhow::Result;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use super::ApiClient;
 use crate::api::types::User;
+
+// ============================================================
+/// 用户创建请求
+#[derive(Debug, Clone, Serialize)]
+pub struct CreateUserRequest {
+    pub account: String,
+    pub password: String,
+    pub realname: String,
+    pub role: Option<String>,
+    pub dept: Option<u64>,
+    pub mobile: Option<String>,
+    pub email: Option<String>,
+    pub phone: Option<String>,
+}
+
+/// 用户更新请求
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateUserRequest {
+    pub dept: Option<u64>,
+    pub role: Option<String>,
+    pub mobile: Option<String>,
+    pub realname: Option<String>,
+    pub email: Option<String>,
+    pub phone: Option<String>,
+}
 
 // ============================================================
 // User API - 用户相关 API 调用
@@ -76,6 +102,42 @@ impl UserApi {
         let path = format!("/api.php/v1/users/{}", id);
         let resp: User = client.get(&path).await?;
         Ok(resp)
+    }
+
+    /// 获取当前登录用户信息
+    ///
+    /// GET /api.php/v1/user
+    pub async fn me(client: &ApiClient) -> Result<User> {
+        let path = "/api.php/v1/user".to_string();
+        let resp: User = client.get(&path).await?;
+        Ok(resp)
+    }
+
+    /// 创建用户
+    ///
+    /// POST /api.php/v1/users
+    pub async fn create(client: &ApiClient, req: &CreateUserRequest) -> Result<User> {
+        let path = "/api.php/v1/users".to_string();
+        let resp: User = client.post(&path, req).await?;
+        Ok(resp)
+    }
+
+    /// 更新用户信息
+    ///
+    /// PUT /api.php/v1/users/{user_id}
+    pub async fn update(client: &ApiClient, user_id: u64, req: &UpdateUserRequest) -> Result<User> {
+        let path = format!("/api.php/v1/users/{}", user_id);
+        let resp: User = client.put(&path, req).await?;
+        Ok(resp)
+    }
+
+    /// 删除用户
+    ///
+    /// DELETE /api.php/v1/users/{user_id}
+    pub async fn delete(client: &ApiClient, user_id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/users/{}", user_id);
+        client.delete::<()>(&path).await?;
+        Ok(())
     }
 }
 

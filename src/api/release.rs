@@ -36,6 +36,13 @@ pub struct Release {
     /// 所属产品 ID
     #[serde(deserialize_with = "crate::api::types::deserialize_optional_id")]
     pub product: Option<u64>,
+    /// 关联的项目 ID
+    #[serde(
+        default,
+        deserialize_with = "crate::api::types::deserialize_optional_id",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub project: Option<u64>,
     /// 关联的 Build（版本）ID
     #[serde(
         default,
@@ -51,6 +58,9 @@ pub struct Release {
     /// 发布日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<String>,
+    /// 描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
 }
 
 impl Release {
@@ -130,6 +140,79 @@ impl ReleaseApi {
         let resp: Release = client.get(&path).await?;
         Ok(resp)
     }
+
+    /// 创建发布
+    ///
+    /// POST /api.php/v1/releases
+    pub async fn create(client: &ApiClient, req: &CreateReleaseRequest) -> Result<Release> {
+        let path = "/api.php/v1/releases";
+        let resp: Release = client.post(path, req).await?;
+        Ok(resp)
+    }
+
+    /// 更新发布
+    ///
+    /// PUT /api.php/v1/releases/{id}
+    pub async fn update(client: &ApiClient, id: u64, req: &UpdateReleaseRequest) -> Result<Release> {
+        let path = format!("/api.php/v1/releases/{}", id);
+        let resp: Release = client.put(&path, req).await?;
+        Ok(resp)
+    }
+
+    /// 删除发布
+    ///
+    /// DELETE /api.php/v1/releases/{id}
+    pub async fn delete(client: &ApiClient, id: u64) -> Result<()> {
+        let path = format!("/api.php/v1/releases/{}", id);
+        let _: serde_json::Value = client.delete(&path).await?;
+        Ok(())
+    }
+}
+
+// ============================================================
+// 请求结构体
+// ============================================================
+
+/// 创建发布的请求体
+#[derive(Debug, Serialize)]
+pub struct CreateReleaseRequest {
+    /// 发布名称（必填）
+    pub name: String,
+    /// 所属产品 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub product: Option<u64>,
+    /// 关联的项目 ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project: Option<u64>,
+    /// 关联的 Build ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build: Option<u64>,
+    /// 发布日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub date: Option<String>,
+    /// 描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+}
+
+/// 更新发布的请求体
+#[derive(Debug, Serialize)]
+pub struct UpdateReleaseRequest {
+    /// 发布名称
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    /// 关联的 Build ID
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build: Option<u64>,
+    /// 发布日期
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub date: Option<String>,
+    /// 描述
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
+    /// 发布状态
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub status: Option<String>,
 }
 
 // ============================================================
@@ -155,6 +238,8 @@ mod tests {
             status: "normal".to_string(),
             marker: Some("stable".to_string()),
             date: Some("2024-01-15".to_string()),
+            desc: None,
+            project: None,
         };
         let json = serde_json::to_string(&release).unwrap();
         // 验证基本字段存在
@@ -223,6 +308,8 @@ mod tests {
             status: "normal".to_string(),
             marker: None,
             date: None,
+            desc: None,
+            project: None,
         };
         let json = serde_json::to_string(&release).unwrap();
         // None 的可选字段不应该出现在 JSON 中

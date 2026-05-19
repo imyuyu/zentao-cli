@@ -16,6 +16,8 @@ fn test_release_serialization() {
         status: "normal".to_string(),
         marker: Some("stable".to_string()),
         date: Some("2024-01-15".to_string()),
+        desc: None,
+        project: None,
     };
 
     let json = serde_json::to_string(&release).unwrap();
@@ -35,6 +37,8 @@ fn test_release_without_optional_fields() {
         status: "normal".to_string(),
         marker: None,
         date: None,
+        desc: None,
+        project: None,
     };
 
     let json = serde_json::to_string(&release).unwrap();

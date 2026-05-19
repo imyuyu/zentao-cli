@@ -1,6 +1,7 @@
 //! ZenTao Ticket(工单)命令模块
 
-use crate::cmd::common::{log_command, print_dry_run, print_error, print_json};
+use crate::api::ticket::{CreateTicketRequest, UpdateTicketRequest};
+use crate::cmd::common::{log_command, print_dry_run, print_dry_run_with_body, print_error, print_json};
 use crate::cmd::root::TicketSubcommand;
 use crate::core::{AppContext, OutputFormat};
 use crate::service::ticket::TicketService;
@@ -31,6 +32,78 @@ pub async fn run(cmd: &TicketSubcommand, ctx: &AppContext) {
             }
             match TicketService::get(ctx, *id).await {
                 Ok(ticket) => print_json(&ticket),
+                Err(e) => print_error(&e),
+            }
+        }
+        TicketSubcommand::Create {
+            product,
+            title,
+            type_,
+            desc,
+        } => {
+            let product_id = match ctx.require_product_id(*product) {
+                Ok(id) => id,
+                Err(e) => {
+                    print_error(&e);
+                    return;
+                }
+            };
+            let req = CreateTicketRequest {
+                product: product_id,
+                title: title.clone(),
+                module: None,
+                type_: type_.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TicketService::create()",
+                    &format!("{}/api.php/v1/tickets", ctx.config.url),
+                    &req,
+                );
+                return;
+            }
+            match TicketService::create(ctx, req).await {
+                Ok(ticket) => print_json(&ticket),
+                Err(e) => print_error(&e),
+            }
+        }
+        TicketSubcommand::Update {
+            id,
+            title,
+            desc,
+        } => {
+            let req = UpdateTicketRequest {
+                product: None,
+                module: None,
+                title: title.clone(),
+                type_: None,
+                desc: desc.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TicketService::update()",
+                    &format!("{}/api.php/v1/tickets/{}", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match TicketService::update(ctx, *id, req).await {
+                Ok(ticket) => print_json(&ticket),
+                Err(e) => print_error(&e),
+            }
+        }
+        TicketSubcommand::Delete { id } => {
+            if ctx.dry_run {
+                print_dry_run(
+                    "TicketService::delete()",
+                    &format!("{}/api.php/v1/tickets/{}", ctx.config.url, id),
+                );
+                return;
+            }
+            match TicketService::delete(ctx, *id).await {
+                Ok(_) => {
+                    println!("Ticket [{}] deleted successfully", id);
+                }
                 Err(e) => print_error(&e),
             }
         }

@@ -148,6 +148,105 @@ pub struct TaskEstimate {
     pub notes: Option<String>,
 }
 
+/// 开始任务请求体
+///
+/// POST /api.php/v1/tasks/{id}/start
+#[derive(Debug, Serialize)]
+pub struct StartTaskRequest {
+    /// 剩余工时（必填）
+    pub left: f64,
+    /// 已消耗工时（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub consumed: Option<f64>,
+    /// 指派人（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub assigned_to: Option<String>,
+    /// 实际开始时间（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub real_started: Option<String>,
+    /// 备注（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comment: Option<String>,
+}
+
+/// 暂停任务请求体
+///
+/// POST /api.php/v1/tasks/{id}/pause
+#[derive(Debug, Serialize)]
+pub struct PauseTaskRequest {
+    /// 备注（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comment: Option<String>,
+}
+
+/// 继续任务请求体
+///
+/// POST /api.php/v1/tasks/{id}/restart
+#[derive(Debug, Serialize)]
+pub struct RestartTaskRequest {
+    /// 剩余工时（必填）
+    pub left: f64,
+    /// 已消耗工时（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub consumed: Option<f64>,
+    /// 指派人（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub assigned_to: Option<String>,
+    /// 实际开始时间（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub real_started: Option<String>,
+    /// 备注（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comment: Option<String>,
+}
+
+/// 完成任务请求体
+///
+/// POST /api.php/v1/tasks/{id}/finish
+#[derive(Debug, Serialize)]
+pub struct FinishTaskRequest {
+    /// 当前消耗工时（必填）
+    pub current_consumed: f64,
+    /// 完成日期（必填）
+    pub finished_date: String,
+    /// 指派人（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub assigned_to: Option<String>,
+    /// 实际开始时间（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub real_started: Option<String>,
+    /// 备注（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comment: Option<String>,
+}
+
+/// 关闭任务请求体
+///
+/// POST /api.php/v1/tasks/{id}/close
+#[derive(Debug, Serialize)]
+pub struct CloseTaskRequest {
+    /// 备注（可选）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comment: Option<String>,
+}
+
+/// 批量添加工时请求体
+///
+/// POST /api.php/v1/tasks/{id}/estimate
+#[derive(Debug, Serialize)]
+pub struct BatchEstimateRequest {
+    pub dates: Vec<String>,
+    pub work: Vec<f64>,
+    pub consumed: Vec<f64>,
+    pub left: Vec<f64>,
+}
+
+/// 工时响应（用于 estimate GET 响应格式 {effort: {...}}）
+#[derive(Debug, Deserialize)]
+pub struct EstimateResponse {
+    pub effort: Option<TaskEstimate>,
+}
+
 // ============================================================
 // Task API
 // ============================================================
@@ -266,86 +365,108 @@ impl TaskApi {
     /// 开始任务
     ///
     /// POST /api.php/v1/tasks/{id}/start
-    pub async fn start(client: &ApiClient, id: u64) -> Result<Task> {
+    ///
+    /// # 参数
+    /// - left: 剩余工时（必填）
+    /// - consumed: 已消耗工时（可选）
+    /// - assignedTo: 指派人（可选）
+    /// - realStarted: 实际开始时间（可选）
+    /// - comment: 备注（可选）
+    pub async fn start(client: &ApiClient, id: u64, req: &StartTaskRequest) -> Result<Task> {
         let path = format!("/api.php/v1/tasks/{}/start", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        let _: serde_json::Value = client.post(&path, req).await?;
         Self::get(client, id).await
     }
 
     /// 暂停任务
     ///
     /// POST /api.php/v1/tasks/{id}/pause
-    pub async fn pause(client: &ApiClient, id: u64) -> Result<Task> {
+    ///
+    /// # 参数
+    /// - comment: 备注（可选）
+    pub async fn pause(client: &ApiClient, id: u64, req: &PauseTaskRequest) -> Result<Task> {
         let path = format!("/api.php/v1/tasks/{}/pause", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        let _: serde_json::Value = client.post(&path, req).await?;
         Self::get(client, id).await
     }
 
     /// 继续任务
     ///
     /// POST /api.php/v1/tasks/{id}/restart
-    pub async fn restart(client: &ApiClient, id: u64) -> Result<Task> {
+    ///
+    /// # 参数
+    /// - left: 剩余工时（必填）
+    /// - consumed: 已消耗工时（可选）
+    /// - assignedTo: 指派人（可选）
+    /// - realStarted: 实际开始时间（可选）
+    /// - comment: 备注（可选）
+    pub async fn restart(client: &ApiClient, id: u64, req: &RestartTaskRequest) -> Result<Task> {
         let path = format!("/api.php/v1/tasks/{}/restart", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        let _: serde_json::Value = client.post(&path, req).await?;
         Self::get(client, id).await
     }
 
     /// 完成任务
     ///
     /// POST /api.php/v1/tasks/{id}/finish
-    pub async fn finish(client: &ApiClient, id: u64) -> Result<Task> {
+    ///
+    /// # 参数
+    /// - currentConsumed: 当前消耗工时（必填）
+    /// - finishedDate: 完成日期（必填）
+    /// - assignedTo: 指派人（可选）
+    /// - realStarted: 实际开始时间（可选）
+    /// - comment: 备注（可选）
+    pub async fn finish(client: &ApiClient, id: u64, req: &FinishTaskRequest) -> Result<Task> {
         let path = format!("/api.php/v1/tasks/{}/finish", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        let _: serde_json::Value = client.post(&path, req).await?;
         Self::get(client, id).await
     }
 
     /// 关闭任务
     ///
     /// POST /api.php/v1/tasks/{id}/close
-    pub async fn close(client: &ApiClient, id: u64) -> Result<Task> {
+    ///
+    /// # 参数
+    /// - comment: 备注（可选）
+    pub async fn close(client: &ApiClient, id: u64, req: &CloseTaskRequest) -> Result<Task> {
         let path = format!("/api.php/v1/tasks/{}/close", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        let _: serde_json::Value = client.post(&path, req).await?;
         Self::get(client, id).await
     }
 
-    /// 添加任务日志（工时）
+    /// 添加任务日志（工时）- 批量
     ///
     /// POST /api.php/v1/tasks/{id}/estimate
+    /// 请求体为数组格式: {dates: [...], work: [...], consumed: [...], left: [...]}
     pub async fn add_estimate(
         client: &ApiClient,
         id: u64,
-        consumed: f64,
-        left: f64,
-        notes: Option<String>,
+        req: &BatchEstimateRequest,
     ) -> Result<TaskEstimate> {
         let path = format!("/api.php/v1/tasks/{}/estimate", id);
-        #[derive(Serialize)]
-        struct EstimateRequest {
-            consumed: f64,
-            left: f64,
-            #[serde(skip_serializing_if = "Option::is_none")]
-            notes: Option<String>,
-        }
-        let req = EstimateRequest {
-            consumed,
-            left,
-            notes,
-        };
-        let estimate: TaskEstimate = client.post(&path, &req).await?;
-        Ok(estimate)
+        let estimate: EstimateResponse = client.post(&path, req).await?;
+        Ok(estimate.effort.unwrap_or(TaskEstimate {
+            id: 0,
+            task: id,
+            consumed: 0.0,
+            left: 0.0,
+            date: String::new(),
+            notes: None,
+        }))
     }
 
     /// 获取任务日志列表
     ///
     /// GET /api.php/v1/tasks/{id}/estimate
+    /// 响应格式: {effort: {...}}
     pub async fn get_estimates(client: &ApiClient, id: u64) -> Result<Vec<TaskEstimate>> {
         let path = format!("/api.php/v1/tasks/{}/estimate", id);
         #[derive(Deserialize)]
         struct EstimateListResponse {
-            estimates: Option<Vec<TaskEstimate>>,
+            effort: Option<Vec<TaskEstimate>>,
         }
         let resp: EstimateListResponse = client.get(&path).await?;
-        Ok(resp.estimates.unwrap_or_default())
+        Ok(resp.effort.unwrap_or_default())
     }
 }
 

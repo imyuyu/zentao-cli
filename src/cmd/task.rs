@@ -2,7 +2,10 @@
 
 use clap::Subcommand;
 
-use crate::api::{CreateTaskRequest, UpdateTaskRequest};
+use crate::api::{
+    BatchEstimateRequest, CloseTaskRequest, CreateTaskRequest, FinishTaskRequest, PauseTaskRequest,
+    RestartTaskRequest, StartTaskRequest, UpdateTaskRequest,
+};
 use crate::cmd::common::{
     log_command, print_deleted, print_dry_run, print_dry_run_with_body, print_error, print_json,
 };
@@ -59,28 +62,97 @@ pub enum TaskAction {
         est_started: Option<String>,
         #[arg(long)]
         deadline: Option<String>,
+        #[arg(long)]
+        from_bug: Option<u64>,
     },
     #[command(name = "delete")]
     Delete { id: u64 },
     #[command(name = "start")]
-    Start { id: u64 },
+    Start {
+        id: u64,
+        /// 剩余工时（必填）
+        #[arg(long)]
+        left: f64,
+        /// 已消耗工时（可选）
+        #[arg(long)]
+        consumed: Option<f64>,
+        /// 指派人（可选）
+        #[arg(long)]
+        assigned_to: Option<String>,
+        /// 实际开始时间（可选）
+        #[arg(long)]
+        real_started: Option<String>,
+        /// 备注（可选）
+        #[arg(long)]
+        comment: Option<String>,
+    },
     #[command(name = "pause")]
-    Pause { id: u64 },
+    Pause {
+        id: u64,
+        /// 备注（可选）
+        #[arg(long)]
+        comment: Option<String>,
+    },
     #[command(name = "restart")]
-    Restart { id: u64 },
+    Restart {
+        id: u64,
+        /// 剩余工时（必填）
+        #[arg(long)]
+        left: f64,
+        /// 已消耗工时（可选）
+        #[arg(long)]
+        consumed: Option<f64>,
+        /// 指派人（可选）
+        #[arg(long)]
+        assigned_to: Option<String>,
+        /// 实际开始时间（可选）
+        #[arg(long)]
+        real_started: Option<String>,
+        /// 备注（可选）
+        #[arg(long)]
+        comment: Option<String>,
+    },
     #[command(name = "finish")]
-    Finish { id: u64 },
+    Finish {
+        id: u64,
+        /// 当前消耗工时（必填）
+        #[arg(long)]
+        current_consumed: f64,
+        /// 完成日期（必填）
+        #[arg(long)]
+        finished_date: String,
+        /// 指派人（可选）
+        #[arg(long)]
+        assigned_to: Option<String>,
+        /// 实际开始时间（可选）
+        #[arg(long)]
+        real_started: Option<String>,
+        /// 备注（可选）
+        #[arg(long)]
+        comment: Option<String>,
+    },
     #[command(name = "close")]
-    Close { id: u64 },
+    Close {
+        id: u64,
+        /// 备注（可选）
+        #[arg(long)]
+        comment: Option<String>,
+    },
     #[command(name = "estimate")]
     Estimate {
         id: u64,
+        /// 日期列表（多个用逗号分隔）
         #[arg(long)]
-        consumed: f64,
+        dates: String,
+        /// 工作内容列表（多个用逗号分隔）
         #[arg(long)]
-        left: f64,
+        work: String,
+        /// 消耗工时列表（多个用逗号分隔）
         #[arg(long)]
-        notes: Option<String>,
+        consumed: String,
+        /// 剩余工时列表（多个用逗号分隔）
+        #[arg(long)]
+        left: String,
     },
     #[command(name = "get-estimate")]
     GetEstimate { id: u64 },
@@ -163,6 +235,7 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
             assigned_to,
             est_started,
             deadline,
+            from_bug,
         } => {
             let req = UpdateTaskRequest {
                 name: name.clone(),
@@ -171,7 +244,7 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
                 assigned_to: assigned_to.clone(),
                 module: None,
                 story: None,
-                from_bug: None,
+                from_bug: *from_bug,
                 type_: None,
                 est_started: est_started.clone(),
                 deadline: deadline.clone(),
@@ -198,54 +271,157 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
             "Task",
             TaskService::delete(ctx, *id).await,
         ),
-        TaskAction::Start { id } => handle_json(
-            ctx,
-            "TaskService::start()",
-            &format!("{}/api.php/v1/tasks/{}/start", ctx.config.url, id),
-            TaskService::start(ctx, *id).await,
-        ),
-        TaskAction::Pause { id } => handle_json(
-            ctx,
-            "TaskService::pause()",
-            &format!("{}/api.php/v1/tasks/{}/pause", ctx.config.url, id),
-            TaskService::pause(ctx, *id).await,
-        ),
-        TaskAction::Restart { id } => handle_json(
-            ctx,
-            "TaskService::restart()",
-            &format!("{}/api.php/v1/tasks/{}/restart", ctx.config.url, id),
-            TaskService::restart(ctx, *id).await,
-        ),
-        TaskAction::Finish { id } => handle_json(
-            ctx,
-            "TaskService::finish()",
-            &format!("{}/api.php/v1/tasks/{}/finish", ctx.config.url, id),
-            TaskService::finish(ctx, *id).await,
-        ),
-        TaskAction::Close { id } => handle_json(
-            ctx,
-            "TaskService::close()",
-            &format!("{}/api.php/v1/tasks/{}/close", ctx.config.url, id),
-            TaskService::close(ctx, *id).await,
-        ),
-        TaskAction::Estimate {
+        TaskAction::Start {
             id,
-            consumed,
             left,
-            notes,
+            consumed,
+            assigned_to,
+            real_started,
+            comment,
         } => {
+            let req = StartTaskRequest {
+                left: *left,
+                consumed: *consumed,
+                assigned_to: assigned_to.clone(),
+                real_started: real_started.clone(),
+                comment: comment.clone(),
+            };
             if ctx.dry_run {
-                print_dry_run(
-                    "TaskService::add_estimate()",
-                    &format!("{}/api.php/v1/tasks/{}/estimate", ctx.config.url, id),
+                print_dry_run_with_body(
+                    "TaskService::start()",
+                    &format!("{}/api.php/v1/tasks/{}/start", ctx.config.url, id),
+                    &req,
                 );
-                println!("  consumed: {}, left: {}", consumed, left);
-                if let Some(n) = notes {
-                    println!("  notes: {}", n);
-                }
                 return;
             }
-            match TaskService::add_estimate(ctx, *id, *consumed, *left, notes.clone()).await {
+            match TaskService::start(ctx, *id, req).await {
+                Ok(task) => print_json(&task),
+                Err(e) => print_error(&e),
+            }
+        }
+        TaskAction::Pause {
+            id,
+            comment,
+        } => {
+            let req = PauseTaskRequest { comment: comment.clone() };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TaskService::pause()",
+                    &format!("{}/api.php/v1/tasks/{}/pause", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match TaskService::pause(ctx, *id, req).await {
+                Ok(task) => print_json(&task),
+                Err(e) => print_error(&e),
+            }
+        }
+        TaskAction::Restart {
+            id,
+            left,
+            consumed,
+            assigned_to,
+            real_started,
+            comment,
+        } => {
+            let req = RestartTaskRequest {
+                left: *left,
+                consumed: *consumed,
+                assigned_to: assigned_to.clone(),
+                real_started: real_started.clone(),
+                comment: comment.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TaskService::restart()",
+                    &format!("{}/api.php/v1/tasks/{}/restart", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match TaskService::restart(ctx, *id, req).await {
+                Ok(task) => print_json(&task),
+                Err(e) => print_error(&e),
+            }
+        }
+        TaskAction::Finish {
+            id,
+            current_consumed,
+            finished_date,
+            assigned_to,
+            real_started,
+            comment,
+        } => {
+            let req = FinishTaskRequest {
+                current_consumed: *current_consumed,
+                finished_date: finished_date.clone(),
+                assigned_to: assigned_to.clone(),
+                real_started: real_started.clone(),
+                comment: comment.clone(),
+            };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TaskService::finish()",
+                    &format!("{}/api.php/v1/tasks/{}/finish", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match TaskService::finish(ctx, *id, req).await {
+                Ok(task) => print_json(&task),
+                Err(e) => print_error(&e),
+            }
+        }
+        TaskAction::Close {
+            id,
+            comment,
+        } => {
+            let req = CloseTaskRequest { comment: comment.clone() };
+            if ctx.dry_run {
+                print_dry_run_with_body(
+                    "TaskService::close()",
+                    &format!("{}/api.php/v1/tasks/{}/close", ctx.config.url, id),
+                    &req,
+                );
+                return;
+            }
+            match TaskService::close(ctx, *id, req).await {
+                Ok(task) => print_json(&task),
+                Err(e) => print_error(&e),
+            }
+        }
+        TaskAction::Estimate {
+            id,
+            dates,
+            work,
+            consumed,
+            left,
+        } => {
+            let dates_vec: Vec<String> = dates.split(',').map(|s| s.trim().to_string()).collect();
+            let work_vec: Vec<f64> = work
+                .split(',')
+                .map(|s| s.trim().parse().unwrap_or(0.0))
+                .collect();
+            let consumed_vec: Vec<f64> = consumed
+                .split(',')
+                .map(|s| s.trim().parse().unwrap_or(0.0))
+                .collect();
+            let left_vec: Vec<f64> = left
+                .split(',')
+                .map(|s| s.trim().parse().unwrap_or(0.0))
+                .collect();
+
+            if ctx.dry_run {
+                safe_println("[DRY-RUN] Would call TaskService::add_estimate()");
+                println!("  URL: {}/api.php/v1/tasks/{}/estimate", ctx.config.url, id);
+                println!("  dates: {:?}", dates_vec);
+                println!("  work: {:?}", work_vec);
+                println!("  consumed: {:?}", consumed_vec);
+                println!("  left: {:?}", left_vec);
+                return;
+            }
+            match TaskService::add_estimate(ctx, *id, dates_vec, work_vec, consumed_vec, left_vec).await {
                 Ok(estimate) => print_json(&estimate),
                 Err(e) => print_error(&e),
             }

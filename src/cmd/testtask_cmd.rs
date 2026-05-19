@@ -26,7 +26,7 @@ pub async fn run(cmd: &TesttaskSubcommand, ctx: &AppContext) {
             match if let Some(pid) = project {
                 TesttaskService::list_by_project(ctx, *pid, 1, 100).await
             } else {
-                TesttaskService::list(ctx, 1, 100).await
+                TesttaskService::list(ctx, 1, 100, None, None, None).await
             } {
                 Ok(testtasks) => print_testtask_list(&testtasks, ctx.format.clone()),
                 Err(e) => print_error(&e),

@@ -474,6 +474,40 @@ pub enum ReleaseSubcommand {
     /// 获取发布详情
     #[command(name = "get")]
     Get { id: u64 },
+    /// 创建发布
+    #[command(name = "create")]
+    Create {
+        #[arg(long)]
+        name: String,
+        #[arg(long)]
+        product: Option<u64>,
+        #[arg(long)]
+        project: Option<u64>,
+        #[arg(long)]
+        build: Option<u64>,
+        #[arg(long)]
+        date: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 更新发布
+    #[command(name = "update")]
+    Update {
+        id: u64,
+        #[arg(long)]
+        name: Option<String>,
+        #[arg(long)]
+        build: Option<u64>,
+        #[arg(long)]
+        date: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+        #[arg(long)]
+        status: Option<String>,
+    },
+    /// 删除发布
+    #[command(name = "delete")]
+    Delete { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -494,6 +528,36 @@ pub enum ProgramSubcommand {
     /// 获取项目集详情
     #[command(name = "get")]
     Get { id: u64 },
+    /// 创建项目集
+    #[command(name = "create")]
+    Create {
+        #[arg(long)]
+        name: String,
+        #[arg(long)]
+        code: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+        #[arg(long)]
+        begin: Option<String>,
+        #[arg(long)]
+        end: Option<String>,
+    },
+    /// 更新项目集
+    #[command(name = "update")]
+    Update {
+        id: u64,
+        #[arg(long)]
+        name: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+        #[arg(long)]
+        begin: Option<String>,
+        #[arg(long)]
+        end: Option<String>,
+    },
+    /// 删除项目集
+    #[command(name = "delete")]
+    Delete { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -508,6 +572,40 @@ pub enum ProductPlanSubcommand {
     /// 获取产品计划详情
     #[command(name = "get")]
     Get { id: u64 },
+    /// 创建产品计划
+    #[command(name = "create")]
+    Create {
+        #[arg(long)]
+        product: Option<u64>,
+        #[arg(long)]
+        title: String,
+        #[arg(long)]
+        code: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+        #[arg(long)]
+        begin: Option<String>,
+        #[arg(long)]
+        end: Option<String>,
+    },
+    /// 更新产品计划
+    #[command(name = "update")]
+    Update {
+        id: u64,
+        #[arg(long)]
+        name: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+        #[arg(long)]
+        begin: Option<String>,
+        #[arg(long)]
+        end: Option<String>,
+        #[arg(long)]
+        status: Option<String>,
+    },
+    /// 删除产品计划
+    #[command(name = "delete")]
+    Delete { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -532,6 +630,48 @@ pub enum FeedbackSubcommand {
     /// 获取反馈详情
     #[command(name = "get")]
     Get { id: u64 },
+    /// 创建反馈
+    #[command(name = "create")]
+    Create {
+        #[arg(long)]
+        product: Option<u64>,
+        #[arg(long)]
+        title: String,
+        #[arg(long)]
+        type_: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 指派反馈
+    #[command(name = "assign")]
+    Assign {
+        id: u64,
+        #[arg(long)]
+        assigned_to: String,
+        #[arg(long)]
+        comment: Option<String>,
+    },
+    /// 关闭反馈
+    #[command(name = "close")]
+    Close {
+        id: u64,
+        #[arg(long)]
+        closed_reason: Option<String>,
+        #[arg(long)]
+        comment: Option<String>,
+    },
+    /// 更新反馈
+    #[command(name = "update")]
+    Update {
+        id: u64,
+        #[arg(long)]
+        title: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 删除反馈
+    #[command(name = "delete")]
+    Delete { id: u64 },
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -542,6 +682,30 @@ pub enum TicketSubcommand {
     /// 获取工单详情
     #[command(name = "get")]
     Get { id: u64 },
+    /// 创建工单
+    #[command(name = "create")]
+    Create {
+        #[arg(long)]
+        product: Option<u64>,
+        #[arg(long)]
+        title: String,
+        #[arg(long)]
+        type_: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 更新工单
+    #[command(name = "update")]
+    Update {
+        id: u64,
+        #[arg(long)]
+        title: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
+    },
+    /// 删除工单
+    #[command(name = "delete")]
+    Delete { id: u64 },
 }
 
 pub fn run() -> Result<()> {

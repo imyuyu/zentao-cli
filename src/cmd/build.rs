@@ -54,6 +54,10 @@ pub enum BuildAction {
         file_path: Option<String>,
         #[arg(long)]
         builder: Option<String>,
+        #[arg(long)]
+        date: Option<String>,
+        #[arg(long)]
+        desc: Option<String>,
     },
     #[command(name = "delete")]
     Delete { id: u64 },
@@ -179,14 +183,16 @@ pub async fn run(cmd: &BuildAction, ctx: &AppContext) {
             scm_path,
             file_path,
             builder,
+            date,
+            desc,
         } => {
             let req = UpdateBuildRequest {
                 name: name.clone(),
                 scm_path: scm_path.clone(),
                 file_path: file_path.clone(),
-                date: None,
+                date: date.clone(),
                 builder: builder.clone(),
-                desc: None,
+                desc: desc.clone(),
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

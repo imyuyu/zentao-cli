@@ -23,6 +23,23 @@ pub enum ProductAction {
         code: Option<String>,
         #[arg(long)]
         desc: Option<String>,
+        /// 项目集ID（必填）
+        #[arg(long)]
+        program: u64,
+        #[arg(long)]
+        line: Option<u64>,
+        #[arg(long)]
+        PO: Option<String>,
+        #[arg(long)]
+        QD: Option<String>,
+        #[arg(long)]
+        RD: Option<String>,
+        #[arg(long)]
+        type_: Option<String>,
+        #[arg(long)]
+        acl: Option<String>,
+        #[arg(long)]
+        whitelist: Option<Vec<String>>,
     },
     #[command(name = "update")]
     Update {
@@ -67,19 +84,19 @@ pub async fn run(cmd: &ProductAction, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        ProductAction::Create { name, code, desc } => {
+        ProductAction::Create { name, code, desc, program, line, PO, QD, RD, type_, acl, whitelist } => {
             let req = CreateProductRequest {
                 name: name.clone(),
                 code: code.as_ref().unwrap_or(&String::new()).clone(),
-                program: 0, // Program is required in API but user provides via config
+                program: *program,
                 desc: desc.clone(),
-                line: None,
-                PO: None,
-                QD: None,
-                RD: None,
-                type_: None,
-                acl: None,
-                whitelist: None,
+                line: *line,
+                PO: PO.clone(),
+                QD: QD.clone(),
+                RD: RD.clone(),
+                type_: type_.clone(),
+                acl: acl.clone(),
+                whitelist: whitelist.clone(),
             };
             if ctx.dry_run {
                 print_dry_run_with_body(

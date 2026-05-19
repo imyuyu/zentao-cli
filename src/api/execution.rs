@@ -64,11 +64,17 @@ pub struct CreateExecutionRequest {
 
 /// 更新执行的请求体
 /// 所有字段可选，只更新传入的字段
+///
+/// 注意：官方文档列出 project, name, code, begin, end 为必填字段，
+/// 但 ZenTao API 实际支持部分更新，只传入需要修改的字段即可
 #[derive(Debug, Serialize)]
 pub struct UpdateExecutionRequest {
     /// 新名称
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    /// 新代号
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub code: Option<String>,
     /// 新状态：wait/doing/closed/suspended
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,

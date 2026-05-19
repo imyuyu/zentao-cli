@@ -1,4 +1,7 @@
-use crate::api::{CreateTaskRequest, Task, TaskApi, TaskEstimate, UpdateTaskRequest};
+use crate::api::{
+    BatchEstimateRequest, CloseTaskRequest, CreateTaskRequest, FinishTaskRequest, PauseTaskRequest,
+    RestartTaskRequest, StartTaskRequest, Task, TaskApi, TaskEstimate, UpdateTaskRequest,
+};
 use crate::core::logging::{log, LogLevel};
 use crate::core::AppContext;
 use anyhow::Result;
@@ -40,40 +43,47 @@ impl TaskService {
         TaskApi::delete(&client, id).await
     }
 
-    pub async fn start(ctx: &AppContext, id: u64) -> Result<Task> {
+    pub async fn start(ctx: &AppContext, id: u64, req: StartTaskRequest) -> Result<Task> {
         let client = ctx.client();
-        TaskApi::start(&client, id).await
+        TaskApi::start(&client, id, &req).await
     }
 
-    pub async fn pause(ctx: &AppContext, id: u64) -> Result<Task> {
+    pub async fn pause(ctx: &AppContext, id: u64, req: PauseTaskRequest) -> Result<Task> {
         let client = ctx.client();
-        TaskApi::pause(&client, id).await
+        TaskApi::pause(&client, id, &req).await
     }
 
-    pub async fn restart(ctx: &AppContext, id: u64) -> Result<Task> {
+    pub async fn restart(ctx: &AppContext, id: u64, req: RestartTaskRequest) -> Result<Task> {
         let client = ctx.client();
-        TaskApi::restart(&client, id).await
+        TaskApi::restart(&client, id, &req).await
     }
 
-    pub async fn finish(ctx: &AppContext, id: u64) -> Result<Task> {
+    pub async fn finish(ctx: &AppContext, id: u64, req: FinishTaskRequest) -> Result<Task> {
         let client = ctx.client();
-        TaskApi::finish(&client, id).await
+        TaskApi::finish(&client, id, &req).await
     }
 
-    pub async fn close(ctx: &AppContext, id: u64) -> Result<Task> {
+    pub async fn close(ctx: &AppContext, id: u64, req: CloseTaskRequest) -> Result<Task> {
         let client = ctx.client();
-        TaskApi::close(&client, id).await
+        TaskApi::close(&client, id, &req).await
     }
 
     pub async fn add_estimate(
         ctx: &AppContext,
         id: u64,
-        consumed: f64,
-        left: f64,
-        notes: Option<String>,
+        dates: Vec<String>,
+        work: Vec<f64>,
+        consumed: Vec<f64>,
+        left: Vec<f64>,
     ) -> Result<TaskEstimate> {
         let client = ctx.client();
-        TaskApi::add_estimate(&client, id, consumed, left, notes).await
+        let req = BatchEstimateRequest {
+            dates,
+            work,
+            consumed,
+            left,
+        };
+        TaskApi::add_estimate(&client, id, &req).await
     }
 
     pub async fn get_estimates(ctx: &AppContext, id: u64) -> Result<Vec<TaskEstimate>> {

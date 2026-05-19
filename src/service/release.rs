@@ -1,4 +1,5 @@
 use crate::api::{Release, ReleaseApi};
+use crate::api::release::{CreateReleaseRequest, UpdateReleaseRequest};
 use crate::core::logging::{log, LogLevel};
 use crate::core::AppContext;
 use anyhow::Result;
@@ -26,5 +27,23 @@ impl ReleaseService {
         log(LogLevel::Info, "ReleaseService", format!("get id={}", id));
         let client = ctx.client();
         ReleaseApi::get(&client, id).await
+    }
+
+    pub async fn create(ctx: &AppContext, req: CreateReleaseRequest) -> Result<Release> {
+        log(LogLevel::Info, "ReleaseService", "create");
+        let client = ctx.client();
+        ReleaseApi::create(&client, &req).await
+    }
+
+    pub async fn update(ctx: &AppContext, id: u64, req: UpdateReleaseRequest) -> Result<Release> {
+        log(LogLevel::Info, "ReleaseService", format!("update id={}", id));
+        let client = ctx.client();
+        ReleaseApi::update(&client, id, &req).await
+    }
+
+    pub async fn delete(ctx: &AppContext, id: u64) -> Result<()> {
+        log(LogLevel::Info, "ReleaseService", format!("delete id={}", id));
+        let client = ctx.client();
+        ReleaseApi::delete(&client, id).await
     }
 }

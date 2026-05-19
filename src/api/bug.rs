@@ -199,7 +199,7 @@ impl BugApi {
 
     /// 创建新 Bug
     ///
-    /// POST /api.php/v1/bugs
+    /// POST /api.php/v1/products/{productId}/bugs
     ///
     /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
     pub async fn create(client: &ApiClient, req: &CreateBugRequest) -> Result<Bug> {
@@ -208,8 +208,8 @@ impl BugApi {
             id: Option<u64>,
         }
 
-        let path = "/api.php/v1/bugs";
-        let resp: CreateResponse = client.post(path, req).await?;
+        let path = format!("/api.php/v1/products/{}/bugs", req.product);
+        let resp: CreateResponse = client.post(&path, req).await?;
 
         if let Some(id) = resp.id {
             Self::get(client, id).await
@@ -339,7 +339,7 @@ impl BugApi {
         opened_build: Option<Vec<String>>,
         comment: Option<&str>,
     ) -> Result<Bug> {
-        let path = format!("/api.php/v1/bugs/{}/activate", id);
+        let path = format!("/api.php/v1/bugs/{}/active", id);
         #[derive(Serialize)]
         struct ActivateRequest<'a> {
             #[serde(skip_serializing_if = "Option::is_none")]
