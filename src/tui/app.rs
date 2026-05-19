@@ -140,6 +140,48 @@ pub enum AppState {
         plan: ProductPlan,
         product_name: Option<String>,
     },
+    // Program 表单
+    ProgramCreate {
+        fields: crate::tui::forms::ProgramFormFields,
+    },
+    ProgramUpdate {
+        id: u64,
+        fields: crate::tui::forms::ProgramFormFields,
+    },
+    ProgramDelete {
+        id: u64,
+        name: String,
+    },
+    // ProductPlan 表单
+    ProductPlanCreate {
+        fields: crate::tui::forms::ProductPlanFormFields,
+        product_id: u64,
+    },
+    ProductPlanUpdate {
+        id: u64,
+        fields: crate::tui::forms::ProductPlanFormFields,
+    },
+    ProductPlanDelete {
+        id: u64,
+        name: String,
+    },
+    // Release 表单
+    ReleaseCreate {
+        fields: crate::tui::forms::ReleaseFormFields,
+        product_id: Option<u64>,
+    },
+    ReleaseUpdate {
+        id: u64,
+        fields: crate::tui::forms::ReleaseFormFields,
+    },
+    ReleaseDelete {
+        id: u64,
+        name: String,
+    },
+    // 表单提交中
+    FormSubmitting {
+        message: String,
+    },
     Error {
         message: String,
     },
@@ -498,6 +540,104 @@ impl App {
     pub fn set_productplan_detail(&mut self, plan: ProductPlan, product_name: Option<String>) {
         self.state = AppState::ProductPlanDetail { plan, product_name };
         self.selected_index = 0;
+    }
+
+    // Program 表单 setter
+    pub fn set_program_create(&mut self) {
+        self.state = AppState::ProgramCreate {
+            fields: crate::tui::forms::ProgramFormFields::new(),
+        };
+        self.selected_index = 0;
+    }
+
+    pub fn set_program_update(&mut self, id: u64, program: &Program) {
+        self.state = AppState::ProgramUpdate {
+            id,
+            fields: crate::tui::forms::ProgramFormFields::from_program(
+                &program.name,
+                &program.code,
+                program.desc.as_deref().unwrap_or(""),
+                program.begin.as_deref().unwrap_or(""),
+                program.end.as_deref().unwrap_or(""),
+            ),
+        };
+        self.selected_index = 0;
+    }
+
+    pub fn set_program_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::ProgramDelete {
+            id,
+            name: name.to_string(),
+        };
+    }
+
+    // ProductPlan 表单 setter
+    pub fn set_productplan_create(&mut self, product_id: u64) {
+        self.state = AppState::ProductPlanCreate {
+            fields: crate::tui::forms::ProductPlanFormFields::new(),
+            product_id,
+        };
+        self.selected_index = 0;
+    }
+
+    pub fn set_productplan_update(&mut self, id: u64, plan: &ProductPlan) {
+        self.state = AppState::ProductPlanUpdate {
+            id,
+            fields: crate::tui::forms::ProductPlanFormFields::from_plan(
+                plan.title.as_deref().unwrap_or(""),
+                plan.desc.as_deref().unwrap_or(""),
+                plan.begin.as_deref().unwrap_or(""),
+                plan.end.as_deref().unwrap_or(""),
+            ),
+        };
+        self.selected_index = 0;
+    }
+
+    pub fn set_productplan_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::ProductPlanDelete {
+            id,
+            name: name.to_string(),
+        };
+    }
+
+    // Release 表单 setter
+    pub fn set_release_create(&mut self, product_id: Option<u64>) {
+        self.state = AppState::ReleaseCreate {
+            fields: crate::tui::forms::ReleaseFormFields::new(),
+            product_id,
+        };
+        self.selected_index = 0;
+    }
+
+    pub fn set_release_update(&mut self, id: u64, release: &Release) {
+        self.state = AppState::ReleaseUpdate {
+            id,
+            fields: crate::tui::forms::ReleaseFormFields::from_release(
+                &release.name,
+                release
+                    .build
+                    .map(|b| b.to_string())
+                    .as_deref()
+                    .unwrap_or(""),
+                release.date.as_deref().unwrap_or(""),
+                &release.status,
+                release.desc.as_deref().unwrap_or(""),
+            ),
+        };
+        self.selected_index = 0;
+    }
+
+    pub fn set_release_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::ReleaseDelete {
+            id,
+            name: name.to_string(),
+        };
+    }
+
+    pub fn set_form_submitting(&mut self, message: &str) {
+        self.state = AppState::FormSubmitting {
+            message: message.to_string(),
+        };
     }
 
     pub fn get_main_menu_modules() -> Vec<&'static str> {

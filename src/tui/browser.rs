@@ -153,6 +153,9 @@ enum EnterAction {
     ProductPlanDetail {
         plan: ProductPlan,
     },
+    DeleteProgram(u64),
+    DeleteProductPlan(u64),
+    DeleteRelease(u64),
 }
 
 #[allow(clippy::type_complexity)]
@@ -160,9 +163,16 @@ pub struct Browser {
     terminal: Terminal<CrosstermBackend<Stdout>>,
     pending_products: Option<Vec<Product>>,
     pending_reload: Option<Box<dyn FnOnce(&mut App)>>,
+    pending_form_submit: Option<FormSubmitAction>,
     spinner_frame: usize,
     loading_cancelled: bool,
     loading_module: Option<String>,
+}
+
+pub enum FormSubmitAction {
+    DeleteProgram(u64),
+    DeleteProductPlan(u64),
+    DeleteRelease(u64),
 }
 
 impl Browser {
@@ -185,6 +195,7 @@ impl Browser {
             terminal,
             pending_products: None,
             pending_reload: None,
+            pending_form_submit: None,
             spinner_frame: 0,
             loading_cancelled: false,
             loading_module: None,
@@ -227,6 +238,47 @@ impl Browser {
             // Check for async loading results (skip if loading was cancelled or user already back to MainMenu)
             let is_main_menu = matches!(app.state, AppState::MainMenu { .. });
             if !self.loading_cancelled && !is_main_menu {
+                // Handle pending form submissions
+                if let Some(action) = self.pending_form_submit.take() {
+                    let config = app.config.clone();
+                    let tx = tx.clone();
+                    rt.spawn(async move {
+                        let ctx = AppContext::new(config.clone(), OutputFormat::Table, false);
+                        match action {
+                            FormSubmitAction::DeleteProgram(id) => {
+                                match ProgramService::delete(&ctx, id).await {
+                                    Ok(_) => {
+                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                    }
+                                    Err(e) => {
+                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                    }
+                                }
+                            }
+                            FormSubmitAction::DeleteProductPlan(id) => {
+                                match ProductPlanService::delete(&ctx, id).await {
+                                    Ok(_) => {
+                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                    }
+                                    Err(e) => {
+                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                    }
+                                }
+                            }
+                            FormSubmitAction::DeleteRelease(id) => {
+                                match ReleaseService::delete(&ctx, id).await {
+                                    Ok(_) => {
+                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                    }
+                                    Err(e) => {
+                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
                 if let Ok((new_state, product_name, project_name)) = rx.try_recv() {
                     // Only accept the result if we're still loading the same module
                     let state_module_name = match &new_state {
@@ -461,6 +513,36 @@ impl Browser {
                         }
                         AppState::ProductPlanDetail { plan, .. } => {
                             render_productplan_detail(f, area, plan);
+                        }
+                        AppState::ProgramCreate { .. } => {
+                            render_program_create(f, area, app);
+                        }
+                        AppState::ProgramUpdate { .. } => {
+                            render_program_update(f, area, app);
+                        }
+                        AppState::ProgramDelete { .. } => {
+                            render_delete_dialog(f, area, app);
+                        }
+                        AppState::ProductPlanCreate { .. } => {
+                            render_productplan_create(f, area, app);
+                        }
+                        AppState::ProductPlanUpdate { .. } => {
+                            render_productplan_update(f, area, app);
+                        }
+                        AppState::ProductPlanDelete { .. } => {
+                            render_delete_dialog(f, area, app);
+                        }
+                        AppState::ReleaseCreate { .. } => {
+                            render_release_create(f, area, app);
+                        }
+                        AppState::ReleaseUpdate { .. } => {
+                            render_release_update(f, area, app);
+                        }
+                        AppState::ReleaseDelete { .. } => {
+                            render_delete_dialog(f, area, app);
+                        }
+                        AppState::FormSubmitting { message } => {
+                            Self::render_loading(f, area, message, self.spinner_frame);
                         }
                         AppState::Error { message } => {
                             Self::render_error(f, area, message);
@@ -1253,6 +1335,78 @@ impl Browser {
             return;
         }
 
+        // Handle 'c' for create in list states
+        if key.code == KeyCode::Char('c') {
+            match &app.state {
+                AppState::ProgramList { .. } => {
+                    app.set_program_create();
+                    return;
+                }
+                AppState::ProductPlanList { plans, .. } if !plans.is_empty() => {
+                    // Create ProductPlan requires a product, get first product ID from plans
+                    if let Some(plan) = plans.first() {
+                        app.set_productplan_create(plan.product);
+                        return;
+                    }
+                }
+                AppState::ReleaseList { releases, .. } if !releases.is_empty() => {
+                    // Create Release requires a product, get from first release
+                    if let Some(release) = releases.first() {
+                        app.set_release_create(release.product);
+                        return;
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        // Handle 'e' for edit in detail states
+        if key.code == KeyCode::Char('e') {
+            match &app.state {
+                AppState::ProgramDetail { program } => {
+                    let program_clone = program.clone();
+                    app.set_program_update(program_clone.id, &program_clone);
+                    return;
+                }
+                AppState::ProductPlanDetail { plan, .. } => {
+                    let plan_clone = (*plan).clone();
+                    app.set_productplan_update(plan_clone.id, &plan_clone);
+                    return;
+                }
+                AppState::ReleaseDetail { release, .. } => {
+                    let release_clone = release.clone();
+                    app.set_release_update(release_clone.id, &release_clone);
+                    return;
+                }
+                _ => {}
+            }
+        }
+
+        // Handle 'd' for delete in detail states
+        if key.code == KeyCode::Char('d') {
+            match &app.state {
+                AppState::ProgramDetail { program } => {
+                    let id = program.id;
+                    let name = program.name.clone();
+                    app.set_program_delete(id, &name);
+                    return;
+                }
+                AppState::ProductPlanDetail { plan, .. } => {
+                    let id = plan.id;
+                    let name = plan.title.as_deref().unwrap_or("").to_string();
+                    app.set_productplan_delete(id, &name);
+                    return;
+                }
+                AppState::ReleaseDetail { release, .. } => {
+                    let id = release.id;
+                    let name = release.name.clone();
+                    app.set_release_delete(id, &name);
+                    return;
+                }
+                _ => {}
+            }
+        }
+
         // Handle 'p' for product select
         if key.code == KeyCode::Char('p') {
             let products = self.pending_products.take();
@@ -1416,6 +1570,19 @@ impl Browser {
                         app.quit();
                         None
                     }
+                    // Delete confirmations - Enter to delete
+                    AppState::ProgramDelete { id, .. } => {
+                        let id = *id;
+                        Some(EnterAction::DeleteProgram(id))
+                    }
+                    AppState::ProductPlanDelete { id, .. } => {
+                        let id = *id;
+                        Some(EnterAction::DeleteProductPlan(id))
+                    }
+                    AppState::ReleaseDelete { id, .. } => {
+                        let id = *id;
+                        Some(EnterAction::DeleteRelease(id))
+                    }
                     _ => None,
                 };
 
@@ -1451,7 +1618,36 @@ impl Browser {
                         EnterAction::ProductPlanDetail { plan } => {
                             app.set_productplan_detail(plan, None)
                         }
+                        EnterAction::DeleteProgram(id) => {
+                            app.set_form_submitting("正在删除项目集...");
+                            self.pending_form_submit = Some(FormSubmitAction::DeleteProgram(id));
+                        }
+                        EnterAction::DeleteProductPlan(id) => {
+                            app.set_form_submitting("正在删除产品计划...");
+                            self.pending_form_submit = Some(FormSubmitAction::DeleteProductPlan(id));
+                        }
+                        EnterAction::DeleteRelease(id) => {
+                            app.set_form_submitting("正在删除发布...");
+                            self.pending_form_submit = Some(FormSubmitAction::DeleteRelease(id));
+                        }
                     }
+                }
+            }
+            KeyCode::Tab | KeyCode::BackTab => {
+                // Tab navigation in forms
+                let max_field = match &app.state {
+                    AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } => 4,
+                    AppState::ProductPlanCreate { .. } | AppState::ProductPlanUpdate { .. } => 3,
+                    AppState::ReleaseCreate { .. } | AppState::ReleaseUpdate { .. } => 4,
+                    _ => return,
+                };
+
+                if key.code == KeyCode::BackTab || key.modifiers.contains(KeyModifiers::SHIFT) {
+                    if app.selected_index > 0 {
+                        app.selected_index -= 1;
+                    }
+                } else if app.selected_index < max_field {
+                    app.selected_index += 1;
                 }
             }
             KeyCode::Esc | KeyCode::Char('q') => match &app.state {
@@ -1516,6 +1712,29 @@ impl Browser {
                 }
                 AppState::ProductSelect { .. } | AppState::AccountSelect { .. } => {
                     app.state = AppState::Idle;
+                }
+                // Form states - cancel and go back
+                AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } => {
+                    app.restore_list();
+                }
+                AppState::ProductPlanCreate { .. } | AppState::ProductPlanUpdate { .. } => {
+                    app.restore_list();
+                }
+                AppState::ReleaseCreate { .. } | AppState::ReleaseUpdate { .. } => {
+                    app.restore_list();
+                }
+                AppState::ProgramDelete { .. } => {
+                    app.restore_list();
+                }
+                AppState::ProductPlanDelete { .. } => {
+                    app.restore_list();
+                }
+                AppState::ReleaseDelete { .. } => {
+                    app.restore_list();
+                }
+                AppState::FormSubmitting { .. } => {
+                    // Cancel submission
+                    app.restore_list();
                 }
                 _ => {}
             },
