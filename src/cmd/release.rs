@@ -1,7 +1,9 @@
 //! ZenTao Release(发布)命令模块
 
 use crate::api::release::{CreateReleaseRequest, UpdateReleaseRequest};
-use crate::cmd::common::{log_command, print_dry_run, print_dry_run_with_body, print_error, print_json};
+use crate::cmd::common::{
+    log_command, print_dry_run, print_dry_run_with_body, print_error, print_json,
+};
 use crate::cmd::root::ReleaseSubcommand;
 use crate::core::{AppContext, OutputFormat};
 use crate::service::release::ReleaseService;

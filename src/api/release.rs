@@ -153,7 +153,11 @@ impl ReleaseApi {
     /// 更新发布
     ///
     /// PUT /api.php/v1/releases/{id}
-    pub async fn update(client: &ApiClient, id: u64, req: &UpdateReleaseRequest) -> Result<Release> {
+    pub async fn update(
+        client: &ApiClient,
+        id: u64,
+        req: &UpdateReleaseRequest,
+    ) -> Result<Release> {
         let path = format!("/api.php/v1/releases/{}", id);
         let resp: Release = client.put(&path, req).await?;
         Ok(resp)

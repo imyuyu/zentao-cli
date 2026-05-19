@@ -299,11 +299,10 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        TaskAction::Pause {
-            id,
-            comment,
-        } => {
-            let req = PauseTaskRequest { comment: comment.clone() };
+        TaskAction::Pause { id, comment } => {
+            let req = PauseTaskRequest {
+                comment: comment.clone(),
+            };
             if ctx.dry_run {
                 print_dry_run_with_body(
                     "TaskService::pause()",
@@ -373,11 +372,10 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        TaskAction::Close {
-            id,
-            comment,
-        } => {
-            let req = CloseTaskRequest { comment: comment.clone() };
+        TaskAction::Close { id, comment } => {
+            let req = CloseTaskRequest {
+                comment: comment.clone(),
+            };
             if ctx.dry_run {
                 print_dry_run_with_body(
                     "TaskService::close()",
@@ -421,7 +419,9 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
                 println!("  left: {:?}", left_vec);
                 return;
             }
-            match TaskService::add_estimate(ctx, *id, dates_vec, work_vec, consumed_vec, left_vec).await {
+            match TaskService::add_estimate(ctx, *id, dates_vec, work_vec, consumed_vec, left_vec)
+                .await
+            {
                 Ok(estimate) => print_json(&estimate),
                 Err(e) => print_error(&e),
             }

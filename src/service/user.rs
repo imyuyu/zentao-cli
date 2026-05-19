@@ -1,4 +1,4 @@
-use crate::api::{User, UserApi, CreateUserRequest, UpdateUserRequest};
+use crate::api::{CreateUserRequest, UpdateUserRequest, User, UserApi};
 use crate::core::logging::{log, LogLevel};
 use crate::core::AppContext;
 use anyhow::Result;
@@ -35,13 +35,21 @@ impl UserService {
     }
 
     pub async fn update(ctx: &AppContext, user_id: u64, req: &UpdateUserRequest) -> Result<User> {
-        log(LogLevel::Info, "UserService", format!("update id={}", user_id));
+        log(
+            LogLevel::Info,
+            "UserService",
+            format!("update id={}", user_id),
+        );
         let client = ctx.client();
         UserApi::update(&client, user_id, req).await
     }
 
     pub async fn delete(ctx: &AppContext, user_id: u64) -> Result<()> {
-        log(LogLevel::Info, "UserService", format!("delete id={}", user_id));
+        log(
+            LogLevel::Info,
+            "UserService",
+            format!("delete id={}", user_id),
+        );
         let client = ctx.client();
         UserApi::delete(&client, user_id).await
     }

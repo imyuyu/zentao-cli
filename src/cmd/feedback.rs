@@ -1,7 +1,11 @@
 //! ZenTao Feedback(反馈)命令模块
 
-use crate::api::feedback::{AssignFeedbackRequest, CloseFeedbackRequest, CreateFeedbackRequest, UpdateFeedbackRequest};
-use crate::cmd::common::{log_command, print_dry_run, print_dry_run_with_body, print_error, print_json};
+use crate::api::feedback::{
+    AssignFeedbackRequest, CloseFeedbackRequest, CreateFeedbackRequest, UpdateFeedbackRequest,
+};
+use crate::cmd::common::{
+    log_command, print_dry_run, print_dry_run_with_body, print_error, print_json,
+};
 use crate::cmd::root::FeedbackSubcommand;
 use crate::core::{AppContext, OutputFormat};
 use crate::service::feedback::FeedbackService;
@@ -72,7 +76,11 @@ pub async fn run(cmd: &FeedbackSubcommand, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        FeedbackSubcommand::Assign { id, assigned_to, comment } => {
+        FeedbackSubcommand::Assign {
+            id,
+            assigned_to,
+            comment,
+        } => {
             let req = AssignFeedbackRequest {
                 assigned_to: Some(assigned_to.clone()),
                 comment: comment.clone(),
@@ -91,7 +99,11 @@ pub async fn run(cmd: &FeedbackSubcommand, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        FeedbackSubcommand::Close { id, closed_reason, comment } => {
+        FeedbackSubcommand::Close {
+            id,
+            closed_reason,
+            comment,
+        } => {
             let req = CloseFeedbackRequest {
                 closed_reason: closed_reason.clone(),
                 comment: comment.clone(),
@@ -109,11 +121,7 @@ pub async fn run(cmd: &FeedbackSubcommand, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        FeedbackSubcommand::Update {
-            id,
-            title,
-            desc,
-        } => {
+        FeedbackSubcommand::Update { id, title, desc } => {
             let req = UpdateFeedbackRequest {
                 product: None,
                 module: None,
@@ -161,10 +169,7 @@ fn print_feedback_list(feedbacks: &[crate::api::Feedback], format: OutputFormat)
         OutputFormat::Table => {
             println!("Feedbacks:");
             for item in feedbacks {
-                println!(
-                    "  [{}] {} - {}",
-                    item.id, item.title, item.status
-                );
+                println!("  [{}] {} - {}", item.id, item.title, item.status);
             }
         }
         _ => println!(

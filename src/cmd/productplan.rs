@@ -1,7 +1,9 @@
 //! ZenTao ProductPlan(产品计划)命令模块
 
 use crate::api::productplan::{CreateProductPlanRequest, UpdateProductPlanRequest};
-use crate::cmd::common::{log_command, print_dry_run, print_dry_run_with_body, print_error, print_json};
+use crate::cmd::common::{
+    log_command, print_dry_run, print_dry_run_with_body, print_error, print_json,
+};
 use crate::cmd::root::ProductPlanSubcommand;
 use crate::core::{AppContext, OutputFormat};
 use crate::service::productplan::ProductPlanService;
@@ -69,7 +71,10 @@ pub async fn run(cmd: &ProductPlanSubcommand, ctx: &AppContext) {
             if ctx.dry_run {
                 print_dry_run_with_body(
                     "ProductPlanService::create()",
-                    &format!("{}/api.php/v1/products/{}/plans", ctx.config.url, product_id),
+                    &format!(
+                        "{}/api.php/v1/products/{}/plans",
+                        ctx.config.url, product_id
+                    ),
                     &req,
                 );
                 return;

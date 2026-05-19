@@ -84,7 +84,19 @@ pub async fn run(cmd: &ProductAction, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        ProductAction::Create { name, code, desc, program, line, PO, QD, RD, type_, acl, whitelist } => {
+        ProductAction::Create {
+            name,
+            code,
+            desc,
+            program,
+            line,
+            PO,
+            QD,
+            RD,
+            type_,
+            acl,
+            whitelist,
+        } => {
             let req = CreateProductRequest {
                 name: name.clone(),
                 code: code.as_ref().unwrap_or(&String::new()).clone(),
@@ -132,7 +144,7 @@ pub async fn run(cmd: &ProductAction, ctx: &AppContext) {
             if ctx.dry_run {
                 print_dry_run_with_body(
                     "ProductService::update()",
-                    &format!("{}/api.php/v1/product/{}", ctx.config.url, id),
+                    &format!("{}/api.php/v1/products/{}", ctx.config.url, id),
                     &req,
                 );
                 return;

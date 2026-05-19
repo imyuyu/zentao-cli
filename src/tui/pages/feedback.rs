@@ -118,10 +118,7 @@ pub fn render_feedback_detail(f: &mut Frame, area: Rect, feedback: &Feedback) {
 
     let details = Paragraph::new(Text::from(vec![
         Line::from(vec![Span::raw("Status: "), Span::raw(&feedback.status)]),
-        Line::from(vec![
-            Span::raw("Type: "),
-            Span::raw(&feedback.type_),
-        ]),
+        Line::from(vec![Span::raw("Type: "), Span::raw(&feedback.type_)]),
         Line::from(vec![
             Span::raw("Product: "),
             Span::raw(feedback.product.to_string()),
@@ -132,7 +129,13 @@ pub fn render_feedback_detail(f: &mut Frame, area: Rect, feedback: &Feedback) {
         ]),
         Line::from(vec![
             Span::raw("Opened By: "),
-            Span::raw(feedback.opened_by.realname.as_deref().unwrap_or(feedback.opened_by.account.as_deref().unwrap_or("N/A"))),
+            Span::raw(
+                feedback
+                    .opened_by
+                    .realname
+                    .as_deref()
+                    .unwrap_or(feedback.opened_by.account.as_deref().unwrap_or("N/A")),
+            ),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

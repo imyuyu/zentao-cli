@@ -982,62 +982,74 @@ impl Browser {
                                 ),
                             }
                         }
-                        "Testtask List" => match TesttaskService::list(&ctx, 1, 100, None, None, None).await {
-                            Ok(testtasks) => {
-                                let project_name = if let Some(id) = config.project_id {
-                                    ProjectService::get_name(&ctx, id).await.ok()
-                                } else {
-                                    None
-                                };
-                                let pn = project_name.clone();
-                                (
-                                    AppState::TesttaskList {
-                                        testtasks,
-                                        project_name,
-                                    },
-                                    None,
-                                    pn,
-                                )
-                            }
-                            Err(e) => {
-                                eprintln!("Error loading testtasks (trying token refresh): {}", e);
-                                if ctx.refresh_token().await.is_ok() {
-                                    match TesttaskService::list(&ctx, 1, 100, None, None, None).await {
-                                        Ok(testtasks) => {
-                                            let project_name = if let Some(id) = config.project_id {
-                                                ProjectService::get_name(&ctx, id).await.ok()
-                                            } else {
-                                                None
-                                            };
-                                            let pn = project_name.clone();
-                                            (
-                                                AppState::TesttaskList {
-                                                    testtasks,
-                                                    project_name,
+                        "Testtask List" => {
+                            match TesttaskService::list(&ctx, 1, 100, None, None, None).await {
+                                Ok(testtasks) => {
+                                    let project_name = if let Some(id) = config.project_id {
+                                        ProjectService::get_name(&ctx, id).await.ok()
+                                    } else {
+                                        None
+                                    };
+                                    let pn = project_name.clone();
+                                    (
+                                        AppState::TesttaskList {
+                                            testtasks,
+                                            project_name,
+                                        },
+                                        None,
+                                        pn,
+                                    )
+                                }
+                                Err(e) => {
+                                    eprintln!(
+                                        "Error loading testtasks (trying token refresh): {}",
+                                        e
+                                    );
+                                    if ctx.refresh_token().await.is_ok() {
+                                        match TesttaskService::list(&ctx, 1, 100, None, None, None)
+                                            .await
+                                        {
+                                            Ok(testtasks) => {
+                                                let project_name = if let Some(id) =
+                                                    config.project_id
+                                                {
+                                                    ProjectService::get_name(&ctx, id).await.ok()
+                                                } else {
+                                                    None
+                                                };
+                                                let pn = project_name.clone();
+                                                (
+                                                    AppState::TesttaskList {
+                                                        testtasks,
+                                                        project_name,
+                                                    },
+                                                    None,
+                                                    pn,
+                                                )
+                                            }
+                                            Err(_) => (
+                                                AppState::Error {
+                                                    message: format!(
+                                                        "Failed to load testtasks: {}",
+                                                        e
+                                                    ),
                                                 },
                                                 None,
-                                                pn,
-                                            )
+                                                None,
+                                            ),
                                         }
-                                        Err(_) => (
+                                    } else {
+                                        (
                                             AppState::Error {
                                                 message: format!("Failed to load testtasks: {}", e),
                                             },
                                             None,
                                             None,
-                                        ),
+                                        )
                                     }
-                                } else {
-                                    (
-                                        AppState::Error {
-                                            message: format!("Failed to load testtasks: {}", e),
-                                        },
-                                        None,
-                                        None,
-                                    )
                                 }
                             }
-                        },
+                        }
                         "Feedback List" => match FeedbackService::list(&ctx, 1, 100).await {
                             Ok(feedbacks) => (AppState::FeedbackList { feedbacks }, None, None),
                             Err(e) => {
@@ -1066,34 +1078,42 @@ impl Browser {
                                 }
                             }
                         },
-                        "Ticket List" => match TicketService::list(&ctx, None, None, 1, 100).await {
-                            Ok(tickets) => (AppState::TicketList { tickets }, None, None),
-                            Err(e) => {
-                                eprintln!("Error loading tickets (trying token refresh): {}", e);
-                                if ctx.refresh_token().await.is_ok() {
-                                    match TicketService::list(&ctx, None, None, 1, 100).await {
-                                        Ok(tickets) => {
-                                            (AppState::TicketList { tickets }, None, None)
+                        "Ticket List" => {
+                            match TicketService::list(&ctx, None, None, 1, 100).await {
+                                Ok(tickets) => (AppState::TicketList { tickets }, None, None),
+                                Err(e) => {
+                                    eprintln!(
+                                        "Error loading tickets (trying token refresh): {}",
+                                        e
+                                    );
+                                    if ctx.refresh_token().await.is_ok() {
+                                        match TicketService::list(&ctx, None, None, 1, 100).await {
+                                            Ok(tickets) => {
+                                                (AppState::TicketList { tickets }, None, None)
+                                            }
+                                            Err(_) => (
+                                                AppState::Error {
+                                                    message: format!(
+                                                        "Failed to load tickets: {}",
+                                                        e
+                                                    ),
+                                                },
+                                                None,
+                                                None,
+                                            ),
                                         }
-                                        Err(_) => (
+                                    } else {
+                                        (
                                             AppState::Error {
                                                 message: format!("Failed to load tickets: {}", e),
                                             },
                                             None,
                                             None,
-                                        ),
+                                        )
                                     }
-                                } else {
-                                    (
-                                        AppState::Error {
-                                            message: format!("Failed to load tickets: {}", e),
-                                        },
-                                        None,
-                                        None,
-                                    )
                                 }
                             }
-                        },
+                        }
                         "Program List" => match ProgramService::list(&ctx).await {
                             Ok(programs) => (AppState::ProgramList { programs }, None, None),
                             Err(e) => {

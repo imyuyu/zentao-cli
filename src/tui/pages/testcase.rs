@@ -125,10 +125,7 @@ pub fn render_testcase_detail(f: &mut Frame, area: Rect, testcase: &Testcase) {
 
     let details = Paragraph::new(Text::from(vec![
         Line::from(vec![Span::raw("Status: "), Span::raw(&testcase.status)]),
-        Line::from(vec![
-            Span::raw("Type: "),
-            Span::raw(&testcase.type_),
-        ]),
+        Line::from(vec![Span::raw("Type: "), Span::raw(&testcase.type_)]),
         Line::from(vec![
             Span::raw("Priority: "),
             Span::raw(testcase.pri.to_string()),
@@ -150,7 +147,8 @@ pub fn render_testcase_detail(f: &mut Frame, area: Rect, testcase: &Testcase) {
     let steps_text = if testcase.steps.is_empty() {
         "No steps provided.".to_string()
     } else {
-        testcase.steps
+        testcase
+            .steps
             .iter()
             .enumerate()
             .map(|(i, step)| format!("{}. {}\n   Expect: {}", i + 1, step.desc, step.expect))

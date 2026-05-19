@@ -1,7 +1,9 @@
 //! ZenTao Ticket(工单)命令模块
 
 use crate::api::ticket::{CreateTicketRequest, UpdateTicketRequest};
-use crate::cmd::common::{log_command, print_dry_run, print_dry_run_with_body, print_error, print_json};
+use crate::cmd::common::{
+    log_command, print_dry_run, print_dry_run_with_body, print_error, print_json,
+};
 use crate::cmd::root::TicketSubcommand;
 use crate::core::{AppContext, OutputFormat};
 use crate::service::ticket::TicketService;
@@ -67,11 +69,7 @@ pub async fn run(cmd: &TicketSubcommand, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        TicketSubcommand::Update {
-            id,
-            title,
-            desc,
-        } => {
+        TicketSubcommand::Update { id, title, desc } => {
             let req = UpdateTicketRequest {
                 product: None,
                 module: None,

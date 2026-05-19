@@ -106,7 +106,16 @@ pub async fn run(cmd: &UserAction, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        UserAction::Create { account, password, realname, role, dept, mobile, email, phone } => {
+        UserAction::Create {
+            account,
+            password,
+            realname,
+            role,
+            dept,
+            mobile,
+            email,
+            phone,
+        } => {
             if ctx.dry_run {
                 print_dry_run(
                     "UserService::create()",
@@ -115,11 +124,21 @@ pub async fn run(cmd: &UserAction, ctx: &AppContext) {
                 println!("  Params:");
                 println!("    account: {}", account);
                 println!("    realname: {}", realname);
-                if let Some(r) = role { println!("    role: {}", r); }
-                if let Some(d) = dept { println!("    dept: {}", d); }
-                if let Some(m) = mobile { println!("    mobile: {}", m); }
-                if let Some(e) = email { println!("    email: {}", e); }
-                if let Some(p) = phone { println!("    phone: {}", p); }
+                if let Some(r) = role {
+                    println!("    role: {}", r);
+                }
+                if let Some(d) = dept {
+                    println!("    dept: {}", d);
+                }
+                if let Some(m) = mobile {
+                    println!("    mobile: {}", m);
+                }
+                if let Some(e) = email {
+                    println!("    email: {}", e);
+                }
+                if let Some(p) = phone {
+                    println!("    phone: {}", p);
+                }
                 return;
             }
             let req = crate::api::CreateUserRequest {
@@ -137,19 +156,39 @@ pub async fn run(cmd: &UserAction, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        UserAction::Update { id, dept, role, mobile, realname, email, phone } => {
+        UserAction::Update {
+            id,
+            dept,
+            role,
+            mobile,
+            realname,
+            email,
+            phone,
+        } => {
             if ctx.dry_run {
                 print_dry_run(
                     "UserService::update()",
                     &format!("{}/api.php/v1/users/{}", ctx.config.url, id),
                 );
                 println!("  Params:");
-                if let Some(d) = dept { println!("    dept: {}", d); }
-                if let Some(r) = role { println!("    role: {}", r); }
-                if let Some(m) = mobile { println!("    mobile: {}", m); }
-                if let Some(rn) = realname { println!("    realname: {}", rn); }
-                if let Some(e) = email { println!("    email: {}", e); }
-                if let Some(p) = phone { println!("    phone: {}", p); }
+                if let Some(d) = dept {
+                    println!("    dept: {}", d);
+                }
+                if let Some(r) = role {
+                    println!("    role: {}", r);
+                }
+                if let Some(m) = mobile {
+                    println!("    mobile: {}", m);
+                }
+                if let Some(rn) = realname {
+                    println!("    realname: {}", rn);
+                }
+                if let Some(e) = email {
+                    println!("    email: {}", e);
+                }
+                if let Some(p) = phone {
+                    println!("    phone: {}", p);
+                }
                 return;
             }
             let req = crate::api::UpdateUserRequest {

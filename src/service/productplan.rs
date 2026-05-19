@@ -37,22 +37,38 @@ impl ProductPlanService {
     }
 
     /// 创建产品计划
-    pub async fn create(ctx: &AppContext, product_id: u64, req: crate::api::productplan::CreateProductPlanRequest) -> Result<ProductPlan> {
+    pub async fn create(
+        ctx: &AppContext,
+        product_id: u64,
+        req: crate::api::productplan::CreateProductPlanRequest,
+    ) -> Result<ProductPlan> {
         log(LogLevel::Info, "ProductPlanService", "create");
         let client = ctx.client();
         ProductPlanApi::create(&client, product_id, &req).await
     }
 
     /// 更新产品计划
-    pub async fn update(ctx: &AppContext, id: u64, req: crate::api::productplan::UpdateProductPlanRequest) -> Result<ProductPlan> {
-        log(LogLevel::Info, "ProductPlanService", format!("update id={}", id));
+    pub async fn update(
+        ctx: &AppContext,
+        id: u64,
+        req: crate::api::productplan::UpdateProductPlanRequest,
+    ) -> Result<ProductPlan> {
+        log(
+            LogLevel::Info,
+            "ProductPlanService",
+            format!("update id={}", id),
+        );
         let client = ctx.client();
         ProductPlanApi::update(&client, id, &req).await
     }
 
     /// 删除产品计划
     pub async fn delete(ctx: &AppContext, id: u64) -> Result<()> {
-        log(LogLevel::Info, "ProductPlanService", format!("delete id={}", id));
+        log(
+            LogLevel::Info,
+            "ProductPlanService",
+            format!("delete id={}", id),
+        );
         let client = ctx.client();
         ProductPlanApi::delete(&client, id).await
     }

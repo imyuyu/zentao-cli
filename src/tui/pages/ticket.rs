@@ -111,10 +111,7 @@ pub fn render_ticket_detail(f: &mut Frame, area: Rect, ticket: &Ticket) {
 
     let details = Paragraph::new(Text::from(vec![
         Line::from(vec![Span::raw("Status: "), Span::raw(&ticket.status)]),
-        Line::from(vec![
-            Span::raw("Type: "),
-            Span::raw(&ticket.type_),
-        ]),
+        Line::from(vec![Span::raw("Type: "), Span::raw(&ticket.type_)]),
         Line::from(vec![
             Span::raw("Priority: "),
             Span::raw(ticket.pri.to_string()),
@@ -129,7 +126,13 @@ pub fn render_ticket_detail(f: &mut Frame, area: Rect, ticket: &Ticket) {
         ]),
         Line::from(vec![
             Span::raw("Opened By: "),
-            Span::raw(ticket.opened_by.realname.as_deref().unwrap_or(ticket.opened_by.account.as_deref().unwrap_or("N/A"))),
+            Span::raw(
+                ticket
+                    .opened_by
+                    .realname
+                    .as_deref()
+                    .unwrap_or(ticket.opened_by.account.as_deref().unwrap_or("N/A")),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Resolution: "),

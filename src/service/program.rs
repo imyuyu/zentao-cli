@@ -31,22 +31,37 @@ impl ProgramService {
     }
 
     /// 创建项目集
-    pub async fn create(ctx: &AppContext, req: crate::api::program::CreateProgramRequest) -> Result<Program> {
+    pub async fn create(
+        ctx: &AppContext,
+        req: crate::api::program::CreateProgramRequest,
+    ) -> Result<Program> {
         log(LogLevel::Info, "ProgramService", "create");
         let client = ctx.client();
         ProgramApi::create(&client, &req).await
     }
 
     /// 更新项目集
-    pub async fn update(ctx: &AppContext, id: u64, req: crate::api::program::UpdateProgramRequest) -> Result<Program> {
-        log(LogLevel::Info, "ProgramService", format!("update id={}", id));
+    pub async fn update(
+        ctx: &AppContext,
+        id: u64,
+        req: crate::api::program::UpdateProgramRequest,
+    ) -> Result<Program> {
+        log(
+            LogLevel::Info,
+            "ProgramService",
+            format!("update id={}", id),
+        );
         let client = ctx.client();
         ProgramApi::update(&client, id, &req).await
     }
 
     /// 删除项目集
     pub async fn delete(ctx: &AppContext, id: u64) -> Result<()> {
-        log(LogLevel::Info, "ProgramService", format!("delete id={}", id));
+        log(
+            LogLevel::Info,
+            "ProgramService",
+            format!("delete id={}", id),
+        );
         let client = ctx.client();
         ProgramApi::delete(&client, id).await
     }

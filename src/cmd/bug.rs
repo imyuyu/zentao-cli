@@ -288,7 +288,8 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                 opened_build.clone(),
                 comment.as_deref(),
             )
-            .await {
+            .await
+            {
                 Ok(bug) => print_json(&bug),
                 Err(e) => print_error(&e),
             }
