@@ -36,6 +36,10 @@ metadata:
 
 - [`user list`](./references/zentao-user-list.md) — List users with optional filters
 - [`user get`](./references/zentao-user-get.md) — Get user details by ID
+- [`user me`](./references/zentao-user-me.md) — Get current user info
+- [`user create`](./references/zentao-user-create.md) — Create a new user
+- [`user update`](./references/zentao-user-update.md) — Update user information
+- [`user delete`](./references/zentao-user-delete.md) — Delete a user
 
 ## Common Use Cases
 

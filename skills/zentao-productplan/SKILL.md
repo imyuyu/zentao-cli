@@ -16,6 +16,9 @@ metadata:
 
 - [`productplan list`](./references/zentao-productplan-list.md) — 列出产品计划
 - [`productplan get`](./references/zentao-productplan-get.md) — 获取产品计划详情
+- [`productplan create`](./references/zentao-productplan-create.md) — 创建产品计划
+- [`productplan update`](./references/zentao-productplan-update.md) — 修改产品计划
+- [`productplan delete`](./references/zentao-productplan-delete.md) — 删除产品计划
 
 ## Core Concepts
 

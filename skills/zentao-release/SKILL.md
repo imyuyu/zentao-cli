@@ -27,6 +27,9 @@ metadata:
 |----------|------|
 | `release list` | List all releases |
 | `release get` | Get release details |
+| `release create` | Create a release |
+| `release update` | Update a release |
+| `release delete` | Delete a release |
 
 ## Examples
 

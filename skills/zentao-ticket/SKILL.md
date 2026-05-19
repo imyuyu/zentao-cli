@@ -16,6 +16,9 @@ metadata:
 
 - [`ticket list`](./references/zentao-ticket-list.md) — 列出工单
 - [`ticket get`](./references/zentao-ticket-get.md) — 获取工单详情
+- [`ticket create`](./references/zentao-ticket-create.md) — 创建工单
+- [`ticket update`](./references/zentao-ticket-update.md) — 修改工单
+- [`ticket delete`](./references/zentao-ticket-delete.md) — 删除工单
 
 ## Core Concepts
 

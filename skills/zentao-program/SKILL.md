@@ -16,6 +16,9 @@ metadata:
 
 - [`program list`](./references/zentao-program-list.md) — 列出所有项目集
 - [`program get`](./references/zentao-program-get.md) — 获取项目集详情
+- [`program create`](./references/zentao-program-create.md) — 创建项目集
+- [`program update`](./references/zentao-program-update.md) — 修改项目集
+- [`program delete`](./references/zentao-program-delete.md) — 删除项目集
 
 ## Core Concepts
 

@@ -16,6 +16,11 @@ metadata:
 
 - [`feedback list`](./references/zentao-feedback-list.md) — 列出反馈
 - [`feedback get`](./references/zentao-feedback-get.md) — 获取反馈详情
+- [`feedback create`](./references/zentao-feedback-create.md) — 创建反馈
+- [`feedback assign`](./references/zentao-feedback-assign.md) — 指派反馈
+- [`feedback close`](./references/zentao-feedback-close.md) — 关闭反馈
+- [`feedback update`](./references/zentao-feedback-update.md) — 修改反馈
+- [`feedback delete`](./references/zentao-feedback-delete.md) — 删除反馈
 
 ## Core Concepts
 
