@@ -116,16 +116,22 @@ impl BugService {
         BugApi::confirm(&client, id, assigned_to, type_, pri, mailto, comment).await
     }
 
-    pub async fn close(ctx: &AppContext, id: u64) -> Result<Bug> {
+    pub async fn close(ctx: &AppContext, id: u64, comment: Option<&str>) -> Result<Bug> {
         log(LogLevel::Info, "BugService", format!("close id={}", id));
         let client = ctx.client();
-        BugApi::close(&client, id).await
+        BugApi::close(&client, id, comment).await
     }
 
-    pub async fn activate(ctx: &AppContext, id: u64) -> Result<Bug> {
+    pub async fn activate(
+        ctx: &AppContext,
+        id: u64,
+        assigned_to: Option<&str>,
+        opened_build: Option<Vec<String>>,
+        comment: Option<&str>,
+    ) -> Result<Bug> {
         log(LogLevel::Info, "BugService", format!("activate id={}", id));
         let client = ctx.client();
-        BugApi::activate(&client, id).await
+        BugApi::activate(&client, id, assigned_to, opened_build, comment).await
     }
 
     pub async fn delete(ctx: &AppContext, id: u64) -> Result<()> {

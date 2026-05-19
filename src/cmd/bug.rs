@@ -248,30 +248,47 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        BugSubcommand::Close { id } => {
+        BugSubcommand::Close { id, comment } => {
             if ctx.dry_run {
                 print_dry_run(
                     "BugService::close()",
                     &format!("{}/api.php/v1/bugs/{}/close", ctx.config.url, id),
                 );
+                println!("  Body: {{ comment: {:?} }}", comment);
                 return;
             }
 
-            match BugService::close(ctx, *id).await {
+            match BugService::close(ctx, *id, comment.as_deref()).await {
                 Ok(bug) => print_json(&bug),
                 Err(e) => print_error(&e),
             }
         }
-        BugSubcommand::Activate { id } => {
+        BugSubcommand::Activate {
+            id,
+            assigned_to,
+            opened_build,
+            comment,
+        } => {
             if ctx.dry_run {
                 print_dry_run(
                     "BugService::activate()",
                     &format!("{}/api.php/v1/bugs/{}/activate", ctx.config.url, id),
                 );
+                println!(
+                    "  Body: {{ assignedTo: {:?}, openedBuild: {:?}, comment: {:?} }}",
+                    assigned_to, opened_build, comment
+                );
                 return;
             }
 
-            match BugService::activate(ctx, *id).await {
+            match BugService::activate(
+                ctx,
+                *id,
+                assigned_to.as_deref(),
+                opened_build.clone(),
+                comment.as_deref(),
+            )
+            .await {
                 Ok(bug) => print_json(&bug),
                 Err(e) => print_error(&e),
             }

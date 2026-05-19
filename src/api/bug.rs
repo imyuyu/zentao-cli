@@ -315,18 +315,46 @@ impl BugApi {
     /// 关闭 Bug
     ///
     /// POST /api.php/v1/bugs/{bug_id}/close
-    pub async fn close(client: &ApiClient, id: u64) -> Result<Bug> {
+    /// API Doc: 支持 comment 参数
+    pub async fn close(client: &ApiClient, id: u64, comment: Option<&str>) -> Result<Bug> {
         let path = format!("/api.php/v1/bugs/{}/close", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        #[derive(Serialize)]
+        struct CloseRequest<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            comment: Option<&'a str>,
+        }
+        let req = CloseRequest { comment };
+        let _: serde_json::Value = client.post(&path, &req).await?;
         Self::get(client, id).await
     }
 
     /// 激活 Bug
     ///
     /// POST /api.php/v1/bugs/{bug_id}/activate
-    pub async fn activate(client: &ApiClient, id: u64) -> Result<Bug> {
+    /// API Doc: 支持 assignedTo, openedBuild, comment 参数
+    pub async fn activate(
+        client: &ApiClient,
+        id: u64,
+        assigned_to: Option<&str>,
+        opened_build: Option<Vec<String>>,
+        comment: Option<&str>,
+    ) -> Result<Bug> {
         let path = format!("/api.php/v1/bugs/{}/activate", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        #[derive(Serialize)]
+        struct ActivateRequest<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            assigned_to: Option<&'a str>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            opened_build: Option<Vec<String>>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            comment: Option<&'a str>,
+        }
+        let req = ActivateRequest {
+            assigned_to,
+            opened_build,
+            comment,
+        };
+        let _: serde_json::Value = client.post(&path, &req).await?;
         Self::get(client, id).await
     }
 

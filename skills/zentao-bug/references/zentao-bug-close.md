@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli bug close <id>
+zentao-cli bug close <id> [--comment <comment>]
 ```
 
 ## Options
@@ -12,12 +12,16 @@ zentao-cli bug close <id>
 | Option | Required | Description |
 |--------|----------|-------------|
 | `<id>` | Yes | Bug ID |
+| `--comment` | No | 关闭备注 |
 
 ## Examples
 
 ```bash
 # 关闭 Bug
 zentao-cli bug close 5703
+
+# 关闭 Bug 并添加备注
+zentao-cli bug close 5703 --comment "已修复并验证"
 ```
 
 ## API Endpoint
@@ -25,4 +29,3 @@ zentao-cli bug close 5703
 ```
 POST /api.php/v1/bugs/{bug_id}/close
 ```
-

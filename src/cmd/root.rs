@@ -331,10 +331,22 @@ pub enum BugSubcommand {
     },
     /// 关闭 Bug（API Commands）
     #[command(name = "close")]
-    Close { id: u64 },
+    Close {
+        id: u64,
+        #[arg(long)]
+        comment: Option<String>,
+    },
     /// 激活 Bug（API Commands）
     #[command(name = "activate")]
-    Activate { id: u64 },
+    Activate {
+        id: u64,
+        #[arg(long)]
+        assigned_to: Option<String>,
+        #[arg(long)]
+        opened_build: Option<Vec<String>>,
+        #[arg(long)]
+        comment: Option<String>,
+    },
     /// 删除 Bug（API Commands）
     #[command(name = "delete")]
     Delete { id: u64 },
