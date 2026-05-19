@@ -102,10 +102,10 @@ impl BugService {
         .await
     }
 
-    pub async fn confirm(ctx: &AppContext, id: u64) -> Result<Bug> {
+    pub async fn confirm(ctx: &AppContext, id: u64, assigned_to: Option<&str>) -> Result<Bug> {
         log(LogLevel::Info, "BugService", format!("confirm id={}", id));
         let client = ctx.client();
-        BugApi::confirm(&client, id).await
+        BugApi::confirm(&client, id, assigned_to).await
     }
 
     pub async fn close(ctx: &AppContext, id: u64) -> Result<Bug> {

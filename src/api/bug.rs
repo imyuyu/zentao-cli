@@ -274,12 +274,23 @@ impl BugApi {
         Self::get(client, id).await
     }
 
-    /// 确认 Bug
+    /// 确认 Bug（可同时指派）
     ///
     /// POST /api.php/v1/bugs/{bug_id}/confirm
-    pub async fn confirm(client: &ApiClient, id: u64) -> Result<Bug> {
+    /// API Doc: assignedTo 可选参数
+    pub async fn confirm(
+        client: &ApiClient,
+        id: u64,
+        assigned_to: Option<&str>,
+    ) -> Result<Bug> {
         let path = format!("/api.php/v1/bugs/{}/confirm", id);
-        let _: serde_json::Value = client.post(&path, &()).await?;
+        #[derive(Serialize)]
+        struct ConfirmRequest<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            assigned_to: Option<&'a str>,
+        }
+        let req = ConfirmRequest { assigned_to };
+        let _: serde_json::Value = client.post(&path, &req).await?;
         Self::get(client, id).await
     }
 
