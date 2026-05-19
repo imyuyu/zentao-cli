@@ -262,8 +262,7 @@ pub enum BugSubcommand {
         opened_build: Option<Vec<String>>,
     },
     /// 更新 Bug（API Commands）
-    /// 注意：status/resolution 不能通过此接口修改，需使用专用接口
-    /// 注意：assignedTo 通过 confirm 接口修改
+    /// 注意：status/resolution/assignedTo 不能通过此接口修改，需使用专用接口
     #[command(name = "update")]
     Update {
         id: u64,
@@ -297,8 +296,6 @@ pub enum BugSubcommand {
         module: Option<u64>,
         #[arg(long)]
         execution: Option<u64>,
-        #[arg(long)]
-        assigned_to: Option<String>,
     },
     /// 解决 Bug（API Commands）
     #[command(name = "resolve")]
@@ -319,7 +316,19 @@ pub enum BugSubcommand {
     },
     /// 确认 Bug（API Commands）
     #[command(name = "confirm")]
-    Confirm { id: u64 },
+    Confirm {
+        id: u64,
+        #[arg(long)]
+        assigned_to: Option<String>,
+        #[arg(long)]
+        type_: Option<String>,
+        #[arg(long)]
+        pri: Option<u8>,
+        #[arg(long)]
+        mailto: Option<Vec<String>>,
+        #[arg(long)]
+        comment: Option<String>,
+    },
     /// 关闭 Bug（API Commands）
     #[command(name = "close")]
     Close { id: u64 },

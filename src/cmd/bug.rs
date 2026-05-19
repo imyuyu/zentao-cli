@@ -147,25 +147,7 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
             branch,
             module,
             execution,
-            assigned_to,
         } => {
-            // 如果提供了 assigned_to，调用 confirm 接口（支持指派）
-            if let Some(at) = assigned_to {
-                if ctx.dry_run {
-                    print_dry_run(
-                        "BugService::confirm()",
-                        &format!("{}/api.php/v1/bugs/{}/confirm", ctx.config.url, id),
-                    );
-                    println!("  Body: {{ assignedTo: {} }}", at);
-                    return;
-                }
-                match BugService::confirm(ctx, *id, Some(at)).await {
-                    Ok(bug) => print_json(&bug),
-                    Err(e) => print_error(&e),
-                }
-                return;
-            }
-
             let req = UpdateBugRequest {
                 title: title.clone(),
                 keywords: keywords.clone(),
@@ -235,7 +217,14 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                 Err(e) => print_error(&e),
             }
         }
-        BugSubcommand::Confirm { id } => {
+        BugSubcommand::Confirm {
+            id,
+            assigned_to,
+            type_,
+            pri,
+            mailto,
+            comment,
+        } => {
             if ctx.dry_run {
                 print_dry_run(
                     "BugService::confirm()",
@@ -244,7 +233,17 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                 return;
             }
 
-            match BugService::confirm(ctx, *id, None).await {
+            match BugService::confirm(
+                ctx,
+                *id,
+                assigned_to.as_deref(),
+                type_.as_deref(),
+                *pri,
+                mailto.clone(),
+                comment.as_deref(),
+            )
+            .await
+            {
                 Ok(bug) => print_json(&bug),
                 Err(e) => print_error(&e),
             }

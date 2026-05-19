@@ -274,22 +274,40 @@ impl BugApi {
         Self::get(client, id).await
     }
 
-    /// 确认 Bug（可同时指派）
+    /// 确认 Bug（可同时指派、修改类型、优先级等）
     ///
     /// POST /api.php/v1/bugs/{bug_id}/confirm
-    /// API Doc: assignedTo 可选参数
+    /// API Doc: 支持 assignedTo, type, mailto, comment, pri
     pub async fn confirm(
         client: &ApiClient,
         id: u64,
         assigned_to: Option<&str>,
+        type_: Option<&str>,
+        pri: Option<u8>,
+        mailto: Option<Vec<String>>,
+        comment: Option<&str>,
     ) -> Result<Bug> {
         let path = format!("/api.php/v1/bugs/{}/confirm", id);
         #[derive(Serialize)]
         struct ConfirmRequest<'a> {
             #[serde(skip_serializing_if = "Option::is_none")]
             assigned_to: Option<&'a str>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            type_: Option<&'a str>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pri: Option<u8>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            mailto: Option<Vec<String>>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            comment: Option<&'a str>,
         }
-        let req = ConfirmRequest { assigned_to };
+        let req = ConfirmRequest {
+            assigned_to,
+            type_,
+            pri,
+            mailto,
+            comment,
+        };
         let _: serde_json::Value = client.post(&path, &req).await?;
         Self::get(client, id).await
     }

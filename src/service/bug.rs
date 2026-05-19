@@ -102,10 +102,18 @@ impl BugService {
         .await
     }
 
-    pub async fn confirm(ctx: &AppContext, id: u64, assigned_to: Option<&str>) -> Result<Bug> {
+    pub async fn confirm(
+        ctx: &AppContext,
+        id: u64,
+        assigned_to: Option<&str>,
+        type_: Option<&str>,
+        pri: Option<u8>,
+        mailto: Option<Vec<String>>,
+        comment: Option<&str>,
+    ) -> Result<Bug> {
         log(LogLevel::Info, "BugService", format!("confirm id={}", id));
         let client = ctx.client();
-        BugApi::confirm(&client, id, assigned_to).await
+        BugApi::confirm(&client, id, assigned_to, type_, pri, mailto, comment).await
     }
 
     pub async fn close(ctx: &AppContext, id: u64) -> Result<Bug> {
