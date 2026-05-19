@@ -1793,6 +1793,7 @@ impl Browser {
                     _ => return,
                 };
 
+                // Navigate form fields
                 if key.code == KeyCode::BackTab || key.modifiers.contains(KeyModifiers::SHIFT) {
                     if app.selected_index > 0 {
                         app.selected_index -= 1;
@@ -1801,8 +1802,116 @@ impl Browser {
                     app.selected_index += 1;
                 }
             }
+            KeyCode::Char(c) => {
+                // Handle character input in forms
+                let is_form_state = match &app.state {
+                    AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } |
+                    AppState::ProductPlanCreate { .. } | AppState::ProductPlanUpdate { .. } |
+                    AppState::ReleaseCreate { .. } | AppState::ReleaseUpdate { .. } => true,
+                    _ => false,
+                };
+
+                if is_form_state {
+                    match &mut app.state {
+                        AppState::ProgramCreate { fields } | AppState::ProgramUpdate { fields, .. } => {
+                            let idx = app.selected_index;
+                            let mut form_fields = fields.get_mut_fields();
+                            if idx < form_fields.len() {
+                                let field = &mut *form_fields[idx];
+                                if field.editable {
+                                    field.value.push(c);
+                                }
+                            }
+                        }
+                        AppState::ProductPlanCreate { fields, .. } | AppState::ProductPlanUpdate { fields, .. } => {
+                            let idx = app.selected_index;
+                            let mut form_fields = fields.get_mut_fields();
+                            if idx < form_fields.len() {
+                                let field = &mut *form_fields[idx];
+                                if field.editable {
+                                    field.value.push(c);
+                                }
+                            }
+                        }
+                        AppState::ReleaseCreate { fields, .. } | AppState::ReleaseUpdate { fields, .. } => {
+                            let idx = app.selected_index;
+                            let mut form_fields = fields.get_mut_fields();
+                            if idx < form_fields.len() {
+                                let field = &mut *form_fields[idx];
+                                if field.editable {
+                                    field.value.push(c);
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+            KeyCode::Backspace => {
+                // Handle backspace in forms
+                let is_form_state = match &app.state {
+                    AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } |
+                    AppState::ProductPlanCreate { .. } | AppState::ProductPlanUpdate { .. } |
+                    AppState::ReleaseCreate { .. } | AppState::ReleaseUpdate { .. } => true,
+                    _ => false,
+                };
+
+                if is_form_state {
+                    match &mut app.state {
+                        AppState::ProgramCreate { fields } | AppState::ProgramUpdate { fields, .. } => {
+                            let idx = app.selected_index;
+                            let mut form_fields = fields.get_mut_fields();
+                            if idx < form_fields.len() {
+                                let field = &mut *form_fields[idx];
+                                if field.editable {
+                                    field.value.pop();
+                                }
+                            }
+                        }
+                        AppState::ProductPlanCreate { fields, .. } | AppState::ProductPlanUpdate { fields, .. } => {
+                            let idx = app.selected_index;
+                            let mut form_fields = fields.get_mut_fields();
+                            if idx < form_fields.len() {
+                                let field = &mut *form_fields[idx];
+                                if field.editable {
+                                    field.value.pop();
+                                }
+                            }
+                        }
+                        AppState::ReleaseCreate { fields, .. } | AppState::ReleaseUpdate { fields, .. } => {
+                            let idx = app.selected_index;
+                            let mut form_fields = fields.get_mut_fields();
+                            if idx < form_fields.len() {
+                                let field = &mut *form_fields[idx];
+                                if field.editable {
+                                    field.value.pop();
+                                }
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
             KeyCode::Esc | KeyCode::Char('q') => match &app.state {
                 AppState::BugDetail { .. }
+                | AppState::StoryDetail { .. }
+                | AppState::ExecutionDetail { .. }
+                | AppState::BuildDetail { .. }
+                | AppState::ReleaseDetail { .. }
+                | AppState::UserDetail { .. }
+                | AppState::DepartmentDetail { .. }
+                | AppState::ProductDetail { .. }
+                | AppState::ProjectDetail { .. }
+                | AppState::TaskDetail { .. }
+                | AppState::TestcaseDetail { .. }
+                | AppState::TesttaskDetail { .. }
+                | AppState::FeedbackDetail { .. }
+                | AppState::TicketDetail { .. }
+                | AppState::ProgramDetail { .. }
+                | AppState::ProductPlanDetail { .. } => {
+                    app.restore_list();
+                }
+                // List states - return to MainMenu
                 | AppState::StoryDetail { .. }
                 | AppState::ExecutionDetail { .. }
                 | AppState::BuildDetail { .. }
