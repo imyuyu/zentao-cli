@@ -202,17 +202,17 @@ jobs:
             --output-dir dist/npm
 
       - name: Publish root npm package
-        run: npm publish dist/npm/zentao-cli-npm-${{ needs.create-release.outputs.version }}.tgz --access public
+        run: npm publish dist/npm/zentao-cli-npm-${{ needs.create-release.outputs.version }}.tgz --access public --tag latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish platform npm packages
         run: |
-          npm publish dist/npm/zentao-cli-npm-linux-x64-${{ needs.create-release.outputs.version }}.tgz --access public
-          npm publish dist/npm/zentao-cli-npm-linux-arm64-${{ needs.create-release.outputs.version }}.tgz --access public
-          npm publish dist/npm/zentao-cli-npm-darwin-x64-${{ needs.create-release.outputs.version }}.tgz --access public
-          npm publish dist/npm/zentao-cli-npm-darwin-arm64-${{ needs.create-release.outputs.version }}.tgz --access public
-          npm publish dist/npm/zentao-cli-npm-win32-x64-${{ needs.create-release.outputs.version }}.tgz --access public
-          npm publish dist/npm/zentao-cli-npm-win32-arm64-${{ needs.create-release.outputs.version }}.tgz --access public
+          npm publish dist/npm/zentao-cli-npm-linux-x64-${{ needs.create-release.outputs.version }}.tgz --access public --tag linux-x64
+          npm publish dist/npm/zentao-cli-npm-linux-arm64-${{ needs.create-release.outputs.version }}.tgz --access public --tag linux-arm64
+          npm publish dist/npm/zentao-cli-npm-darwin-x64-${{ needs.create-release.outputs.version }}.tgz --access public --tag darwin-x64
+          npm publish dist/npm/zentao-cli-npm-darwin-arm64-${{ needs.create-release.outputs.version }}.tgz --access public --tag darwin-arm64
+          npm publish dist/npm/zentao-cli-npm-win32-x64-${{ needs.create-release.outputs.version }}.tgz --access public --tag win32-x64
+          npm publish dist/npm/zentao-cli-npm-win32-arm64-${{ needs.create-release.outputs.version }}.tgz --access public --tag win32-arm64
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

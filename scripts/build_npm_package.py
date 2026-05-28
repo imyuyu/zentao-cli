@@ -181,20 +181,31 @@ def stage_sources(staging_dir: Path, version: str, package: str) -> None:
         platform_package = PLATFORM_PACKAGES[package]
         platform_version = compute_platform_package_version(version, platform_package["npm_tag"])
 
-        readme_src = REPO_ROOT / "README.md"
-        if readme_src.exists():
-            shutil.copy2(readme_src, staging_dir / "README.md")
+        # Stage platform variant as the SAME npm package (@imyuyu/zentao-cli)
+        # with a platform-suffixed version, published under a platform dist-tag.
+        # This mirrors the Codex approach: all platform binaries are additional
+        # versions of the main package, not separate npm packages.
 
-        package_json = {
-            "name": platform_package["npm_name"],
-            "version": platform_version,
-            "license": root_package_json.get("license", "MIT"),
-            "os": [platform_package["os"]],
-            "cpu": [platform_package["cpu"]],
-            "files": ["vendor"],
-            "repository": root_package_json.get("repository"),
-            "engines": root_package_json.get("engines", {}),
-        }
+        bin_dir = staging_dir / "bin"
+        bin_dir.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT_PACKAGE_DIR / "bin" / "zentao-cli.js", bin_dir / "zentao-cli.js")
+
+        for doc_name in ("README.md", "README.en.md"):
+            doc_path = REPO_ROOT / doc_name
+            if doc_path.exists():
+                shutil.copy2(doc_path, staging_dir / doc_name)
+
+        skills_dir = REPO_ROOT / "skills"
+        if skills_dir.exists():
+            shutil.copytree(skills_dir, staging_dir / "skills")
+
+        package_json = dict(root_package_json)
+        package_json["name"] = ROOT_NPM_NAME
+        package_json["version"] = platform_version
+        package_json["os"] = [platform_package["os"]]
+        package_json["cpu"] = [platform_package["cpu"]]
+        package_json["files"] = ["bin", "vendor", "skills", "README.md", "README.en.md"]
+        package_json.pop("optionalDependencies", None)
     else:
         raise RuntimeError(f"Unknown package '{package}'.")
 

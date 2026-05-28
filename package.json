@@ -40,11 +40,11 @@
     "README.en.md"
   ],
   "optionalDependencies": {
-    "@imyuyu/zentao-cli-linux-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.4-linux-x64",
-    "@imyuyu/zentao-cli-linux-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.4-linux-arm64",
-    "@imyuyu/zentao-cli-darwin-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.4-darwin-x64",
-    "@imyuyu/zentao-cli-darwin-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.4-darwin-arm64",
-    "@imyuyu/zentao-cli-win32-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.4-win32-x64",
-    "@imyuyu/zentao-cli-win32-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.4-win32-arm64"
+    "@imyuyu/zentao-cli-linux-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.10-linux-x64",
+    "@imyuyu/zentao-cli-linux-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.10-linux-arm64",
+    "@imyuyu/zentao-cli-darwin-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.10-darwin-x64",
+    "@imyuyu/zentao-cli-darwin-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.10-darwin-arm64",
+    "@imyuyu/zentao-cli-win32-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.10-win32-x64",
+    "@imyuyu/zentao-cli-win32-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.10-win32-arm64"
   }
 }
