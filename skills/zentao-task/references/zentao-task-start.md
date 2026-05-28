@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli task start <id> [--estimate <hours>]
+zentao-cli task start <id> --left <left> [--consumed <consumed>] [--assigned-to <assigned_to>] [--real-started <real_started>] [--comment <comment>]
 ```
 
 ## Options
@@ -12,19 +12,22 @@ zentao-cli task start <id> [--estimate <hours>]
 | Option | Required | Description |
 |--------|----------|-------------|
 | `<id>` | Yes | Task ID |
-| `--estimate` | No | Estimated hours to complete |
+| `--left` | Yes | 剩余工时 |
+| `--consumed` | No | 已消耗工时 |
+| `--assigned-to` | No | 指派人 |
+| `--real-started` | No | 实际开始时间 |
+| `--comment` | No | 备注 |
 
 ## Examples
 
 ```bash
-# Start a task
-zentao-cli task start 123
+# 开始任务
+zentao-cli task start 456 --left 8
 
-# Start with estimate
-zentao-cli task start 123 --estimate 4
+# 开始任务并记录已消耗工时
+zentao-cli task start 456 --left 6 --consumed 2 --comment "开始开发"
 ```
 
 ## Status Transition
 
 - Changes task status from `wait` to `doing`
-

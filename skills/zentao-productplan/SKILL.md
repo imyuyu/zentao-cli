@@ -5,7 +5,7 @@ description: "禅道(ZenTao) 产品计划（ProductPlan）管理 — 列出产�
 metadata:
   requires:
     bins: ["zentao-cli"]
-  cliHelp: "zentao-cli productplan --help"
+  cliHelp: "zentao-cli product-plan --help"
 ---
 
 # productplan (v1)
@@ -40,24 +40,24 @@ metadata:
 
 ```bash
 # 列出产品 1 下的所有计划
-zentao-cli productplan list --product 1
+zentao-cli product-plan list --product 1
 ```
 
 ### 2. 查看特定计划详情
 
 ```bash
 # 获取计划详情
-zentao-cli productplan get 1
+zentao-cli product-plan get 1
 ```
 
 ## Examples
 
 ```bash
 # 列出产品 1 下的所有计划
-zentao-cli productplan list --product 1
+zentao-cli product-plan list --product 1
 
 # 获取计划详情
-zentao-cli productplan get 1
+zentao-cli product-plan get 1
 ```
 
 ## Output Fields

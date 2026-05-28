@@ -27,6 +27,13 @@ metadata:
 - [`task create`](./references/zentao-task-create.md) — Create a task
 - [`task update`](./references/zentao-task-update.md) — Update a task
 - [`task delete`](./references/zentao-task-delete.md) — Delete a task
+- [`task start`](./references/zentao-task-start.md) — Start a task
+- [`task pause`](./references/zentao-task-pause.md) — Pause a task
+- [`task restart`](./references/zentao-task-restart.md) — Restart a paused task
+- [`task finish`](./references/zentao-task-finish.md) — Finish a task
+- [`task close`](./references/zentao-task-close.md) — Close a task
+- [`task estimate`](./references/zentao-task-estimate.md) — Add work estimate logs
+- [`task get-estimate`](./references/zentao-task-get-estimate.md) — Get estimate logs
 
 ## Common Use Cases
 

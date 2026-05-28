@@ -1,10 +1,10 @@
 # task estimate
 
-记录任务工时。
+批量添加任务工时日志。
 
 ## Command
 ```bash
-zentao-cli task estimate <id> --consumed <consumed> --left <left> [--notes <notes>]
+zentao-cli task estimate <id> --dates <dates> --work <work> --consumed <consumed> --left <left>
 ```
 
 ## Options
@@ -12,17 +12,17 @@ zentao-cli task estimate <id> --consumed <consumed> --left <left> [--notes <note
 | Option | Required | Description |
 |--------|----------|-------------|
 | `<id>` | Yes | Task ID |
-| `--consumed` | Yes | Consumed hours |
-| `--left` | Yes | Remaining hours |
-| `--notes` | No | Estimate notes |
+| `--dates` | Yes | 日期列表（多个用逗号分隔） |
+| `--work` | Yes | 工作内容列表（多个用逗号分隔） |
+| `--consumed` | Yes | 消耗工时列表（多个用逗号分隔） |
+| `--left` | Yes | 剩余工时列表（多个用逗号分隔） |
 
 ## Examples
 
 ```bash
-# Record estimate
-zentao-cli task estimate 123 --consumed 3 --left 5
+# 添加单条工时日志
+zentao-cli task estimate 456 --dates "2024-01-15" --work "编码" --consumed "4" --left "4"
 
-# Record estimate with notes
-zentao-cli task estimate 123 --consumed 8 --left 0 --notes "Finished implementation"
+# 批量添加工时日志
+zentao-cli task estimate 456 --dates "2024-01-15,2024-01-16" --work "编码,代码评审" --consumed "4,2" --left "4,2"
 ```
-
