@@ -141,3 +141,102 @@ impl BugService {
         BugApi::delete(&client, id).await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::{Config, OutputFormat};
+    use httpmock::prelude::*;
+
+    const BUG_JSON: &str =
+        r#"{"id":99,"title":"Crash on login","product":1,"status":"active","severity":2,"pri":1}"#;
+
+    fn setup(product_id: Option<u64>) -> (MockServer, AppContext) {
+        let server = MockServer::start();
+        let config = Config {
+            url: server.base_url(),
+            token: None,
+            product_id,
+            project_id: None,
+            api_version: Some("v1".into()),
+            account: None,
+        };
+        (server, AppContext::new(config, OutputFormat::Json, false))
+    }
+
+    #[tokio::test]
+    async fn list_fails_without_product() {
+        let (_server, ctx) = setup(None);
+        let result = BugService::list(&ctx, None, None, None).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn resolve_posts_then_gets_bug() {
+        let (server, ctx) = setup(None);
+
+        let post_mock = server.mock(|when, then| {
+            when.method(POST)
+                .path("/api.php/v1/bugs/1/resolve")
+                .body_contains(r#""resolution":"fixed""#);
+            then.status(200).json_body(serde_json::json!({}));
+        });
+        let get_mock = server.mock(|when, then| {
+            when.method(GET).path("/api.php/v1/bugs/1");
+            then.status(200)
+                .json_body(serde_json::from_str::<serde_json::Value>(BUG_JSON).unwrap());
+        });
+
+        let result = BugService::resolve(&ctx, 1, "fixed", "build-2", None, None, None, None)
+            .await
+            .unwrap();
+        assert_eq!(result.id, 99);
+        assert_eq!(result.title, "Crash on login");
+        post_mock.assert();
+        get_mock.assert();
+    }
+
+    #[tokio::test]
+    async fn confirm_posts_to_confirm_then_gets_bug() {
+        let (server, ctx) = setup(None);
+
+        let post_mock = server.mock(|when, then| {
+            when.method(POST).path("/api.php/v1/bugs/2/confirm");
+            then.status(200).json_body(serde_json::json!({}));
+        });
+        let get_mock = server.mock(|when, then| {
+            when.method(GET).path("/api.php/v1/bugs/2");
+            then.status(200)
+                .json_body(serde_json::from_str::<serde_json::Value>(BUG_JSON).unwrap());
+        });
+
+        let result = BugService::confirm(&ctx, 2, Some("dev1"), None, None, None, None)
+            .await
+            .unwrap();
+        assert_eq!(result.title, "Crash on login");
+        post_mock.assert();
+        get_mock.assert();
+    }
+
+    #[tokio::test]
+    async fn activate_posts_to_active_then_gets_bug() {
+        let (server, ctx) = setup(None);
+
+        let post_mock = server.mock(|when, then| {
+            when.method(POST).path("/api.php/v1/bugs/3/active");
+            then.status(200).json_body(serde_json::json!({}));
+        });
+        let get_mock = server.mock(|when, then| {
+            when.method(GET).path("/api.php/v1/bugs/3");
+            then.status(200)
+                .json_body(serde_json::from_str::<serde_json::Value>(BUG_JSON).unwrap());
+        });
+
+        let result = BugService::activate(&ctx, 3, None, None, None)
+            .await
+            .unwrap();
+        assert_eq!(result.id, 99);
+        post_mock.assert();
+        get_mock.assert();
+    }
+}

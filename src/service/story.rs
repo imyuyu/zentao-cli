@@ -81,3 +81,97 @@ impl StoryService {
         StoryApi::close(&client, id).await
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::{Config, OutputFormat};
+    use httpmock::prelude::*;
+
+    const STORY_JSON: &str =
+        r#"{"id":7,"title":"Feature X","status":"active","pri":3,"product":1}"#;
+
+    fn setup(product_id: Option<u64>) -> (MockServer, AppContext) {
+        let server = MockServer::start();
+        let config = Config {
+            url: server.base_url(),
+            token: None,
+            product_id,
+            project_id: None,
+            api_version: Some("v1".into()),
+            account: None,
+        };
+        (server, AppContext::new(config, OutputFormat::Json, false))
+    }
+
+    #[tokio::test]
+    async fn create_fails_without_product() {
+        let (_server, ctx) = setup(None);
+        let result = StoryService::create(&ctx, "Test".into(), None, 3, None, None, None).await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn update_puts_then_gets_story() {
+        let (server, ctx) = setup(None);
+
+        let put_mock = server.mock(|when, then| {
+            when.method(PUT).path("/api.php/v1/stories/1");
+            then.status(200).json_body(serde_json::json!({}));
+        });
+        let get_mock = server.mock(|when, then| {
+            when.method(GET).path("/api.php/v1/stories/1");
+            then.status(200)
+                .json_body(serde_json::from_str::<serde_json::Value>(STORY_JSON).unwrap());
+        });
+
+        let req = UpdateStoryRequest {
+            title: Some("Updated".into()),
+            module: None,
+            source: None,
+            sourceNote: None,
+            pri: None,
+            category: None,
+            estimate: None,
+            keywords: None,
+            assigned_to: None,
+            status: None,
+        };
+        let result = StoryService::update(&ctx, 1, req).await.unwrap();
+        assert_eq!(result.title, "Feature X");
+        put_mock.assert();
+        get_mock.assert();
+    }
+
+    #[tokio::test]
+    async fn change_posts_to_change_then_gets_story() {
+        let (server, ctx) = setup(None);
+
+        let post_mock = server.mock(|when, then| {
+            when.method(POST).path("/api.php/v1/stories/2/change");
+            then.status(200).json_body(serde_json::json!({}));
+        });
+        let get_mock = server.mock(|when, then| {
+            when.method(GET).path("/api.php/v1/stories/2");
+            then.status(200)
+                .json_body(serde_json::from_str::<serde_json::Value>(STORY_JSON).unwrap());
+        });
+
+        let req = UpdateStoryRequest {
+            title: Some("Changed".into()),
+            module: None,
+            source: None,
+            sourceNote: None,
+            pri: None,
+            category: None,
+            estimate: None,
+            keywords: None,
+            assigned_to: None,
+            status: None,
+        };
+        let result = StoryService::change(&ctx, 2, req).await.unwrap();
+        assert_eq!(result.title, "Feature X");
+        post_mock.assert();
+        get_mock.assert();
+    }
+}

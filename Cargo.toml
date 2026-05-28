@@ -37,6 +37,7 @@ keyring-core = "1.0"
 open = "5.0"
 
 [dev-dependencies]
+httpmock = "0.7"
 tokio-test = "0.4"
 
 [profile.release]
