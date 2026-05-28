@@ -239,11 +239,13 @@ def copy_native_binaries(vendor_src: Path, staging_dir: Path, package: str) -> N
         else:
             raise RuntimeError(f"Vendor binary not found: {binary_src}")
 
-    vendor_dir = staging_dir / "vendor"
-    vendor_dir.mkdir(parents=True, exist_ok=True)
+    # Preserve the target-triple directory structure so the wrapper script
+    # can locate the binary at vendor/<target>/zentao-cli/<binary>.
+    target_dir = staging_dir / "vendor" / target_triple / "zentao-cli"
+    target_dir.mkdir(parents=True, exist_ok=True)
     final_binary_name = binary_name if binary_name else binary_src.name
-    shutil.copy2(binary_src, vendor_dir / final_binary_name)
-    print(f"Copied {binary_src} -> {vendor_dir / final_binary_name}")
+    shutil.copy2(binary_src, target_dir / final_binary_name)
+    print(f"Copied {binary_src} -> {target_dir / final_binary_name}")
 
 
 def run_npm_pack(staging_dir: Path, output_path: Path) -> Path:
