@@ -15,28 +15,52 @@ use crate::tui::forms::FormField;
 /// 渲染 Program 创建表单
 pub fn render_program_create(f: &mut Frame, area: Rect, app: &crate::tui::app::App) {
     if let AppState::ProgramCreate { ref fields } = app.state {
-        render_form(f, area, "创建项目集", fields.get_fields(), app.selected_index);
+        render_form(
+            f,
+            area,
+            "创建项目集",
+            fields.get_fields(),
+            app.selected_index,
+        );
     }
 }
 
 /// 渲染 Program 更新表单
 pub fn render_program_update(f: &mut Frame, area: Rect, app: &crate::tui::app::App) {
     if let AppState::ProgramUpdate { ref fields, .. } = app.state {
-        render_form(f, area, "编辑项目集", fields.get_fields(), app.selected_index);
+        render_form(
+            f,
+            area,
+            "编辑项目集",
+            fields.get_fields(),
+            app.selected_index,
+        );
     }
 }
 
 /// 渲染 ProductPlan 创建表单
 pub fn render_productplan_create(f: &mut Frame, area: Rect, app: &crate::tui::app::App) {
     if let AppState::ProductPlanCreate { ref fields, .. } = app.state {
-        render_form(f, area, "创建产品计划", fields.get_fields(), app.selected_index);
+        render_form(
+            f,
+            area,
+            "创建产品计划",
+            fields.get_fields(),
+            app.selected_index,
+        );
     }
 }
 
 /// 渲染 ProductPlan 更新表单
 pub fn render_productplan_update(f: &mut Frame, area: Rect, app: &crate::tui::app::App) {
     if let AppState::ProductPlanUpdate { ref fields, .. } = app.state {
-        render_form(f, area, "编辑产品计划", fields.get_fields(), app.selected_index);
+        render_form(
+            f,
+            area,
+            "编辑产品计划",
+            fields.get_fields(),
+            app.selected_index,
+        );
     }
 }
 
@@ -66,17 +90,14 @@ fn render_form(
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3), // Header
-            Constraint::Min(0),   // Form fields
+            Constraint::Min(0),    // Form fields
             Constraint::Length(3), // Footer
         ])
         .split(area);
 
     // Header
-    let header = Paragraph::new(Line::from(vec![
-        Span::raw("  "),
-        Span::raw(title),
-    ]))
-    .block(Block::default().borders(Borders::ALL).title(""));
+    let header = Paragraph::new(Line::from(vec![Span::raw("  "), Span::raw(title)]))
+        .block(Block::default().borders(Borders::ALL).title(""));
 
     f.render_widget(header, chunks[0]);
 
@@ -132,8 +153,8 @@ fn render_form(
             Span::styled(display_value, value_style),
         ]);
 
-        let field_widget =
-            Paragraph::new(line).block(Block::default().borders(Borders::LEFT | Borders::RIGHT | Borders::BOTTOM));
+        let field_widget = Paragraph::new(line)
+            .block(Block::default().borders(Borders::LEFT | Borders::RIGHT | Borders::BOTTOM));
 
         f.render_widget(field_widget, row_area);
     }

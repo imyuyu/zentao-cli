@@ -2,8 +2,8 @@
 //!
 //! 提供表单字段数据结构和通用表单组件
 
-use crate::api::program::{CreateProgramRequest, UpdateProgramRequest};
 use crate::api::productplan::{CreateProductPlanRequest, UpdateProductPlanRequest};
+use crate::api::program::{CreateProgramRequest, UpdateProgramRequest};
 use crate::api::release::{CreateReleaseRequest, UpdateReleaseRequest};
 
 /// 表单字段
@@ -122,7 +122,13 @@ impl ProgramFormFields {
     }
 
     pub fn get_mut_fields(&mut self) -> Vec<&mut FormField> {
-        vec![&mut self.name, &mut self.code, &mut self.desc, &mut self.begin, &mut self.end]
+        vec![
+            &mut self.name,
+            &mut self.code,
+            &mut self.desc,
+            &mut self.begin,
+            &mut self.end,
+        ]
     }
 
     pub fn validate(&self) -> Option<String> {
@@ -210,7 +216,12 @@ impl ProductPlanFormFields {
     }
 
     pub fn get_mut_fields(&mut self) -> Vec<&mut FormField> {
-        vec![&mut self.title, &mut self.desc, &mut self.start, &mut self.end]
+        vec![
+            &mut self.title,
+            &mut self.desc,
+            &mut self.start,
+            &mut self.end,
+        ]
     }
 
     pub fn validate(&self) -> Option<String> {
@@ -298,7 +309,13 @@ impl ReleaseFormFields {
     }
 
     pub fn get_fields(&self) -> Vec<&FormField> {
-        vec![&self.name, &self.build, &self.date, &self.status, &self.remarks]
+        vec![
+            &self.name,
+            &self.build,
+            &self.date,
+            &self.status,
+            &self.remarks,
+        ]
     }
 
     pub fn get_mut_fields(&mut self) -> Vec<&mut FormField> {

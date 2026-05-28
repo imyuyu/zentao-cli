@@ -25,7 +25,7 @@ use crate::service::{
     release::ReleaseService, story::StoryService, task::TaskService, testcase::TestcaseService,
     testtask::TesttaskService, ticket::TicketService, user::UserService,
 };
-use crate::tui::forms::{ProgramFormFields, ProductPlanFormFields, ReleaseFormFields};
+use crate::tui::forms::{ProductPlanFormFields, ProgramFormFields, ReleaseFormFields};
 
 use super::pages::*;
 
@@ -295,90 +295,202 @@ impl Browser {
                             FormSubmitAction::DeleteProgram(id) => {
                                 match ProgramService::delete(&ctx, id).await {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::DeleteProductPlan(id) => {
                                 match ProductPlanService::delete(&ctx, id).await {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::DeleteRelease(id) => {
                                 match ReleaseService::delete(&ctx, id).await {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::CreateProgram(fields) => {
-                                match ProgramService::create(&ctx, fields.to_create_request()).await {
+                                match ProgramService::create(&ctx, fields.to_create_request()).await
+                                {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::UpdateProgram(id, fields) => {
-                                match ProgramService::update(&ctx, id, fields.to_update_request()).await {
+                                match ProgramService::update(&ctx, id, fields.to_update_request())
+                                    .await
+                                {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::CreateProductPlan(product_id, fields) => {
-                                match ProductPlanService::create(&ctx, product_id, fields.to_create_request(product_id)).await {
+                                match ProductPlanService::create(
+                                    &ctx,
+                                    product_id,
+                                    fields.to_create_request(product_id),
+                                )
+                                .await
+                                {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::UpdateProductPlan(id, fields) => {
-                                match ProductPlanService::update(&ctx, id, fields.to_update_request()).await {
+                                match ProductPlanService::update(
+                                    &ctx,
+                                    id,
+                                    fields.to_update_request(),
+                                )
+                                .await
+                                {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::CreateRelease(product_id, fields) => {
-                                match ReleaseService::create(&ctx, fields.to_create_request(product_id)).await {
+                                match ReleaseService::create(
+                                    &ctx,
+                                    fields.to_create_request(product_id),
+                                )
+                                .await
+                                {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
                             FormSubmitAction::UpdateRelease(id, fields) => {
-                                match ReleaseService::update(&ctx, id, fields.to_update_request()).await {
+                                match ReleaseService::update(&ctx, id, fields.to_update_request())
+                                    .await
+                                {
                                     Ok(_) => {
-                                        let _ = tx.send((AppState::MainMenu { selected: 0 }, None, None));
+                                        let _ = tx.send((
+                                            AppState::MainMenu { selected: 0 },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                     Err(e) => {
-                                        let _ = tx.send((AppState::Error { message: e.to_string() }, None, None));
+                                        let _ = tx.send((
+                                            AppState::Error {
+                                                message: e.to_string(),
+                                            },
+                                            None,
+                                            None,
+                                        ));
                                     }
                                 }
                             }
@@ -1763,16 +1875,16 @@ impl Browser {
                         id: *id,
                         name: name.clone(),
                     }),
-                    AppState::BugDelete { confirm: true, .. } => {
-                        None
-                    }
+                    AppState::BugDelete { confirm: true, .. } => None,
                     // Program/ProductPlan/Release CRUD
                     AppState::ProgramCreate { .. } => Some(EnterAction::CreateProgram),
                     AppState::ProgramUpdate { .. } => Some(EnterAction::UpdateProgram),
                     AppState::ProgramDelete { id, .. } => Some(EnterAction::DeleteProgram(*id)),
                     AppState::ProductPlanCreate { .. } => Some(EnterAction::CreateProductPlan),
                     AppState::ProductPlanUpdate { .. } => Some(EnterAction::UpdateProductPlan),
-                    AppState::ProductPlanDelete { id, .. } => Some(EnterAction::DeleteProductPlan(*id)),
+                    AppState::ProductPlanDelete { id, .. } => {
+                        Some(EnterAction::DeleteProductPlan(*id))
+                    }
                     AppState::ReleaseCreate { .. } => Some(EnterAction::CreateRelease),
                     AppState::ReleaseUpdate { .. } => Some(EnterAction::UpdateRelease),
                     AppState::ReleaseDelete { id, .. } => Some(EnterAction::DeleteRelease(*id)),
@@ -1943,7 +2055,8 @@ impl Browser {
                         }
                         EnterAction::DeleteProductPlan(id) => {
                             app.set_form_submitting("正在删除产品计划...");
-                            self.pending_form_submit = Some(FormSubmitAction::DeleteProductPlan(id));
+                            self.pending_form_submit =
+                                Some(FormSubmitAction::DeleteProductPlan(id));
                         }
                         EnterAction::DeleteRelease(id) => {
                             app.set_form_submitting("正在删除发布...");
@@ -1957,7 +2070,8 @@ impl Browser {
                                 }
                                 let fields_clone = fields.clone();
                                 app.set_form_submitting("正在创建项目集...");
-                                self.pending_form_submit = Some(FormSubmitAction::CreateProgram(fields_clone));
+                                self.pending_form_submit =
+                                    Some(FormSubmitAction::CreateProgram(fields_clone));
                             }
                         }
                         EnterAction::UpdateProgram => {
@@ -1969,7 +2083,8 @@ impl Browser {
                                 let id = *id;
                                 let fields_clone = fields.clone();
                                 app.set_form_submitting("正在更新项目集...");
-                                self.pending_form_submit = Some(FormSubmitAction::UpdateProgram(id, fields_clone));
+                                self.pending_form_submit =
+                                    Some(FormSubmitAction::UpdateProgram(id, fields_clone));
                             }
                         }
                         EnterAction::CreateProductPlan => {
@@ -1981,7 +2096,9 @@ impl Browser {
                                 let product_id = *product_id;
                                 let fields_clone = fields.clone();
                                 app.set_form_submitting("正在创建产品计划...");
-                                self.pending_form_submit = Some(FormSubmitAction::CreateProductPlan(product_id, fields_clone));
+                                self.pending_form_submit = Some(
+                                    FormSubmitAction::CreateProductPlan(product_id, fields_clone),
+                                );
                             }
                         }
                         EnterAction::UpdateProductPlan => {
@@ -1993,7 +2110,8 @@ impl Browser {
                                 let id = *id;
                                 let fields_clone = fields.clone();
                                 app.set_form_submitting("正在更新产品计划...");
-                                self.pending_form_submit = Some(FormSubmitAction::UpdateProductPlan(id, fields_clone));
+                                self.pending_form_submit =
+                                    Some(FormSubmitAction::UpdateProductPlan(id, fields_clone));
                             }
                         }
                         EnterAction::CreateRelease => {
@@ -2005,7 +2123,8 @@ impl Browser {
                                 let product_id = *product_id;
                                 let fields_clone = fields.clone();
                                 app.set_form_submitting("正在创建发布...");
-                                self.pending_form_submit = Some(FormSubmitAction::CreateRelease(product_id, fields_clone));
+                                self.pending_form_submit =
+                                    Some(FormSubmitAction::CreateRelease(product_id, fields_clone));
                             }
                         }
                         EnterAction::UpdateRelease => {
@@ -2017,7 +2136,8 @@ impl Browser {
                                 let id = *id;
                                 let fields_clone = fields.clone();
                                 app.set_form_submitting("正在更新发布...");
-                                self.pending_form_submit = Some(FormSubmitAction::UpdateRelease(id, fields_clone));
+                                self.pending_form_submit =
+                                    Some(FormSubmitAction::UpdateRelease(id, fields_clone));
                             }
                         }
                     }
@@ -2044,15 +2164,19 @@ impl Browser {
             KeyCode::Char(c) => {
                 // Handle character input in forms
                 let is_form_state = match &app.state {
-                    AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } |
-                    AppState::ProductPlanCreate { .. } | AppState::ProductPlanUpdate { .. } |
-                    AppState::ReleaseCreate { .. } | AppState::ReleaseUpdate { .. } => true,
+                    AppState::ProgramCreate { .. }
+                    | AppState::ProgramUpdate { .. }
+                    | AppState::ProductPlanCreate { .. }
+                    | AppState::ProductPlanUpdate { .. }
+                    | AppState::ReleaseCreate { .. }
+                    | AppState::ReleaseUpdate { .. } => true,
                     _ => false,
                 };
 
                 if is_form_state {
                     match &mut app.state {
-                        AppState::ProgramCreate { fields } | AppState::ProgramUpdate { fields, .. } => {
+                        AppState::ProgramCreate { fields }
+                        | AppState::ProgramUpdate { fields, .. } => {
                             let idx = app.selected_index;
                             let mut form_fields = fields.get_mut_fields();
                             if idx < form_fields.len() {
@@ -2062,7 +2186,8 @@ impl Browser {
                                 }
                             }
                         }
-                        AppState::ProductPlanCreate { fields, .. } | AppState::ProductPlanUpdate { fields, .. } => {
+                        AppState::ProductPlanCreate { fields, .. }
+                        | AppState::ProductPlanUpdate { fields, .. } => {
                             let idx = app.selected_index;
                             let mut form_fields = fields.get_mut_fields();
                             if idx < form_fields.len() {
@@ -2072,7 +2197,8 @@ impl Browser {
                                 }
                             }
                         }
-                        AppState::ReleaseCreate { fields, .. } | AppState::ReleaseUpdate { fields, .. } => {
+                        AppState::ReleaseCreate { fields, .. }
+                        | AppState::ReleaseUpdate { fields, .. } => {
                             let idx = app.selected_index;
                             let mut form_fields = fields.get_mut_fields();
                             if idx < form_fields.len() {
@@ -2089,15 +2215,19 @@ impl Browser {
             KeyCode::Backspace => {
                 // Handle backspace in forms
                 let is_form_state = match &app.state {
-                    AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } |
-                    AppState::ProductPlanCreate { .. } | AppState::ProductPlanUpdate { .. } |
-                    AppState::ReleaseCreate { .. } | AppState::ReleaseUpdate { .. } => true,
+                    AppState::ProgramCreate { .. }
+                    | AppState::ProgramUpdate { .. }
+                    | AppState::ProductPlanCreate { .. }
+                    | AppState::ProductPlanUpdate { .. }
+                    | AppState::ReleaseCreate { .. }
+                    | AppState::ReleaseUpdate { .. } => true,
                     _ => false,
                 };
 
                 if is_form_state {
                     match &mut app.state {
-                        AppState::ProgramCreate { fields } | AppState::ProgramUpdate { fields, .. } => {
+                        AppState::ProgramCreate { fields }
+                        | AppState::ProgramUpdate { fields, .. } => {
                             let idx = app.selected_index;
                             let mut form_fields = fields.get_mut_fields();
                             if idx < form_fields.len() {
@@ -2107,7 +2237,8 @@ impl Browser {
                                 }
                             }
                         }
-                        AppState::ProductPlanCreate { fields, .. } | AppState::ProductPlanUpdate { fields, .. } => {
+                        AppState::ProductPlanCreate { fields, .. }
+                        | AppState::ProductPlanUpdate { fields, .. } => {
                             let idx = app.selected_index;
                             let mut form_fields = fields.get_mut_fields();
                             if idx < form_fields.len() {
@@ -2117,7 +2248,8 @@ impl Browser {
                                 }
                             }
                         }
-                        AppState::ReleaseCreate { fields, .. } | AppState::ReleaseUpdate { fields, .. } => {
+                        AppState::ReleaseCreate { fields, .. }
+                        | AppState::ReleaseUpdate { fields, .. } => {
                             let idx = app.selected_index;
                             let mut form_fields = fields.get_mut_fields();
                             if idx < form_fields.len() {
@@ -2151,7 +2283,7 @@ impl Browser {
                     app.restore_list();
                 }
                 // List states - return to MainMenu
-                | AppState::StoryDetail { .. }
+                AppState::StoryDetail { .. }
                 | AppState::ExecutionDetail { .. }
                 | AppState::BuildDetail { .. }
                 | AppState::ReleaseDetail { .. }

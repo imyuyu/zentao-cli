@@ -1,6 +1,6 @@
 [package]
 name = "zentao-cli"
-version = "0.0.1-beta.10"
+version = "0.0.1-beta.11"
 edition = "2021"
 description = "ZenTao CLI - Command line tool for ZenTao project management"
 license = "MIT"
