@@ -272,7 +272,7 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
             if ctx.dry_run {
                 print_dry_run(
                     "BugService::activate()",
-                    &format!("{}/api.php/v1/bugs/{}/activate", ctx.config.url, id),
+                    &format!("{}/api.php/v1/bugs/{}/active", ctx.config.url, id),
                 );
                 println!(
                     "  Body: {{ assignedTo: {:?}, openedBuild: {:?}, comment: {:?} }}",

@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao Program(项目集) API 模块
 //!
 //! 提供项目集的查询操作

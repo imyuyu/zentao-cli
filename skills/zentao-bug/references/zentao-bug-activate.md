@@ -28,9 +28,3 @@ zentao-cli bug activate 5703 --assigned-to zhangsan
 # 激活 Bug 并指定影响版本
 zentao-cli bug activate 5703 --opened-build "trunk"
 ```
-
-## API Endpoint
-
-```
-POST /api.php/v1/bugs/{bug_id}/activate
-```

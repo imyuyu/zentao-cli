@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao Product(产品) API 模块
 //!
 //! 提供产品的查询操作（禅道产品）

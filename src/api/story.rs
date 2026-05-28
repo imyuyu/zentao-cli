@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao 需求(Story) API 模块
 //!
 //! 提供需求的增删改查操作
@@ -149,7 +150,7 @@ impl StoryApi {
 
         // 添加状态筛选参数
         if let Some(s) = status {
-            path.push_str(&format!("&browseType={}", s));
+            path.push_str(&format!("&status={}", s));
         }
         // 添加项目筛选参数
         if let Some(pid) = project {

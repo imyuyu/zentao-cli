@@ -148,10 +148,14 @@ impl TestcaseApi {
         let path = if let Some(pid) = product {
             let mut p = format!("/api.php/v1/products/{}/testcases", pid);
             if let Some(ref t) = type_ {
-                p.push_str(&format!("&type={}", t));
+                p.push_str(&format!("?type={}", t));
             }
             if let Some(ref s) = status {
-                p.push_str(&format!("&status={}", s));
+                if p.contains('?') {
+                    p.push_str(&format!("&status={}", s));
+                } else {
+                    p.push_str(&format!("?status={}", s));
+                }
             }
             p
         } else {

@@ -19,10 +19,3 @@ zentao-cli bug delete <id>
 # 删除 Bug
 zentao-cli bug delete 5703
 ```
-
-## API Endpoint
-
-```
-DELETE /api.php/v1/bugs/{bug_id}
-```
-

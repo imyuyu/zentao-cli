@@ -1,3 +1,5 @@
+#![allow(snake_case)]
+
 pub mod api;
 pub mod cmd;
 pub mod core;

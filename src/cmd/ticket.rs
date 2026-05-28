@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao Ticket(工单)命令模块
 
 use crate::api::ticket::{CreateTicketRequest, UpdateTicketRequest};

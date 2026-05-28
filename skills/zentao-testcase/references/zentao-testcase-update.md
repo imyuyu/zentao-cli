@@ -32,10 +32,3 @@ zentao-cli testcase update 123 --pri 3 --severity 2
 # Update testcase content
 zentao-cli testcase update 123 --steps "1. 新步骤" --expectation "新期望结果"
 ```
-
-## API Endpoint
-
-```
-PUT /api.php/v1/testcases/{id}
-```
-

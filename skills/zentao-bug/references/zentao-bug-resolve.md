@@ -44,10 +44,3 @@ zentao-cli bug resolve 5703 --resolution fixed --resolved-build trunk --assigned
 # 重复 Bug
 zentao-cli bug resolve 5703 --resolution duplicate --resolved-build trunk --duplicate-bug 1234
 ```
-
-## API Endpoint
-
-```
-POST /api.php/v1/bugs/{bug_id}/resolve
-```
-

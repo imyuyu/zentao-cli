@@ -19,10 +19,3 @@ zentao-cli testcase delete <id>
 # Delete testcase
 zentao-cli testcase delete 123
 ```
-
-## API Endpoint
-
-```
-DELETE /api.php/v1/testcases/{id}
-```
-

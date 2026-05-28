@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao 执行(Execution) API 模块
 //!
 //! 提供执行的增删改查操作

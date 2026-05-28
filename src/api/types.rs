@@ -187,57 +187,6 @@ pub struct BugListQuery {
 }
 
 // ============================================================
-// Product（产品）相关类型
-// ============================================================
-
-/// 产品数据结构
-///
-/// 对应 ZenTao 产品模块
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Product {
-    pub id: u64,
-    pub name: String,
-    /// 产品代号（英文标识）
-    pub code: String,
-    /// 产品状态：normal/closed
-    pub status: String,
-}
-
-// ============================================================
-// Release（发布）相关类型
-// ============================================================
-
-/// 发布数据结构
-///
-/// 对应 ZenTao 发布模块
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Release {
-    pub id: u64,
-    /// 发布名称
-    pub name: String,
-    /// 所属产品 ID
-    #[serde(deserialize_with = "deserialize_optional_id")]
-    pub product: Option<u64>,
-    /// 关联的 Build（版本）ID
-    #[serde(deserialize_with = "deserialize_optional_id")]
-    pub build: Option<u64>,
-    /// 发布状态：normal/closed
-    pub status: String,
-    /// 发布标记
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub marker: Option<String>,
-    /// 发布日期
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub date: Option<String>,
-}
-
-impl Release {
-    pub fn web_url(&self, base_url: &str) -> String {
-        format!("{}/release-view-{}.html", base_url, self.id)
-    }
-}
-
-// ============================================================
 // User（用户）相关类型
 // ============================================================
 
@@ -273,6 +222,21 @@ impl User {
 pub struct UserListQuery {
     pub dept: Option<u64>,
     pub role: Option<String>,
+}
+
+/// 用户简要信息（内嵌在 Feedback/Ticket 等实体中）
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserInfo {
+    pub id: Option<u64>,
+    pub account: Option<String>,
+    pub avatar: Option<String>,
+    pub realname: Option<String>,
+}
+
+impl UserInfo {
+    pub fn account_string(&self) -> String {
+        self.account.clone().unwrap_or_default()
+    }
 }
 
 // ============================================================

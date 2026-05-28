@@ -29,9 +29,3 @@ zentao-cli testcase result 123 --result fail --remark "实际结果与期望不�
 # Mark testcase as blocked
 zentao-cli testcase result 123 --result blocked --build 1
 ```
-
-## API Endpoint
-
-```
-POST /api.php/v1/testcases/{id}/results
-```

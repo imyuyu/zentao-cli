@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao Bug(缺陷) API 模块
 //!
 //! 提供 Bug 的增删改查操作
@@ -330,8 +331,8 @@ impl BugApi {
 
     /// 激活 Bug
     ///
-    /// POST /api.php/v1/bugs/{bug_id}/activate
-    /// API Doc: 支持 assignedTo, openedBuild, comment 参数
+    /// POST /api.php/v1/bugs/{bug_id}/active
+    /// openedBuild 为必填参数，默认 ["trunk"]
     pub async fn activate(
         client: &ApiClient,
         id: u64,
@@ -340,18 +341,19 @@ impl BugApi {
         comment: Option<&str>,
     ) -> Result<Bug> {
         let path = format!("/api.php/v1/bugs/{}/active", id);
+        let build = opened_build.unwrap_or_else(|| vec!["trunk".to_string()]);
         #[derive(Serialize)]
         struct ActivateRequest<'a> {
             #[serde(skip_serializing_if = "Option::is_none")]
             assigned_to: Option<&'a str>,
-            #[serde(skip_serializing_if = "Option::is_none")]
-            opened_build: Option<Vec<String>>,
+            #[serde(rename = "openedBuild")]
+            opened_build: Vec<String>,
             #[serde(skip_serializing_if = "Option::is_none")]
             comment: Option<&'a str>,
         }
         let req = ActivateRequest {
             assigned_to,
-            opened_build,
+            opened_build: build,
             comment,
         };
         let _: serde_json::Value = client.post(&path, &req).await?;

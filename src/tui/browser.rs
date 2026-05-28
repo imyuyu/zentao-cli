@@ -109,6 +109,15 @@ enum EnterAction {
         bug: Bug,
         product_name: Option<String>,
     },
+    BugCreate,
+    BugUpdate {
+        id: u64,
+    },
+    BugDelete {
+        id: u64,
+        #[allow(dead_code)]
+        name: String,
+    },
     StoryDetail {
         story: Story,
         product_name: Option<String>,
@@ -165,6 +174,15 @@ enum EnterAction {
     UpdateRelease,
 }
 
+enum FormSubmitResult {
+    BugCreateSuccess(Bug),
+    BugCreateError(String),
+    BugUpdateSuccess(Bug),
+    BugUpdateError(String),
+    BugDeleteSuccess(u64),
+    BugDeleteError(String),
+}
+
 #[allow(clippy::type_complexity)]
 pub struct Browser {
     terminal: Terminal<CrosstermBackend<Stdout>>,
@@ -174,6 +192,13 @@ pub struct Browser {
     spinner_frame: usize,
     loading_cancelled: bool,
     loading_module: Option<String>,
+    async_handle: Option<AsyncHandle>,
+}
+
+// Reusable runtime and form_tx for use in handle_key_event
+struct AsyncHandle {
+    rt: std::sync::Arc<tokio::runtime::Runtime>,
+    form_tx: std::sync::Arc<mpsc::Sender<FormSubmitResult>>,
 }
 
 pub enum FormSubmitAction {
@@ -212,12 +237,21 @@ impl Browser {
             spinner_frame: 0,
             loading_cancelled: false,
             loading_module: None,
+            async_handle: None,
         })
     }
 
     pub fn run(&mut self, app: &mut App) -> Result<()> {
         let rt = tokio::runtime::Runtime::new()?;
+        let rt_arc = std::sync::Arc::new(rt);
         let (tx, rx) = mpsc::channel::<(AppState, Option<String>, Option<String>)>();
+        let (form_tx, form_rx) = mpsc::channel::<FormSubmitResult>();
+        let async_handle = AsyncHandle {
+            rt: rt_arc.clone(),
+            form_tx: std::sync::Arc::new(form_tx.clone()),
+        };
+        self.async_handle = Some(async_handle);
+        let rt = rt_arc;
 
         // Drain ALL pending stdin events before entering main loop
         // This fixes PowerShell's ConPTY stdin buffering issue
@@ -453,6 +487,36 @@ impl Browser {
                 self.loading_cancelled = false;
             }
 
+            // Check for form submission results
+            if let Ok(result) = form_rx.try_recv() {
+                match result {
+                    FormSubmitResult::BugCreateSuccess(bug) => {
+                        app.set_bug_detail(bug, None);
+                    }
+                    FormSubmitResult::BugCreateError(msg) => {
+                        if let AppState::BugCreate { ref mut error, .. } = &mut app.state {
+                            *error = Some(msg);
+                        }
+                    }
+                    FormSubmitResult::BugUpdateSuccess(bug) => {
+                        app.set_bug_detail(bug, None);
+                    }
+                    FormSubmitResult::BugUpdateError(msg) => {
+                        if let AppState::BugUpdate { ref mut error, .. } = &mut app.state {
+                            *error = Some(msg);
+                        }
+                    }
+                    FormSubmitResult::BugDeleteSuccess(_id) => {
+                        // Reload the bug list
+                        app.restore_list();
+                        app.set_module_selected("Bug List".to_string());
+                    }
+                    FormSubmitResult::BugDeleteError(msg) => {
+                        app.set_error(format!("Delete failed: {}", msg));
+                    }
+                }
+            }
+
             let selected = app.selected_index;
             let current_module: Option<String> =
                 if matches!(app.state, AppState::ModuleSelected { .. }) {
@@ -496,6 +560,42 @@ impl Browser {
                         }
                         AppState::BugDetail { bug, .. } => {
                             render_bug_detail(f, area, bug);
+                        }
+                        AppState::BugCreate {
+                            fields,
+                            field_order,
+                            focused_field,
+                            error,
+                        } => {
+                            Self::render_bug_form(
+                                f,
+                                area,
+                                fields,
+                                field_order,
+                                *focused_field,
+                                error.as_deref(),
+                                true,
+                            );
+                        }
+                        AppState::BugUpdate {
+                            fields,
+                            field_order,
+                            focused_field,
+                            error,
+                            ..
+                        } => {
+                            Self::render_bug_form(
+                                f,
+                                area,
+                                fields,
+                                field_order,
+                                *focused_field,
+                                error.as_deref(),
+                                false,
+                            );
+                        }
+                        AppState::BugDelete { id, name, confirm } => {
+                            Self::render_delete_dialog(f, area, "Bug", *id, name.clone(), *confirm);
                         }
                         AppState::StoryList { stories, .. } => {
                             render_story_list(f, area, stories, selected, app);
@@ -1352,16 +1452,24 @@ impl Browser {
             }
 
             // Handle input
+            let async_rt = self.async_handle.as_ref().map(|h| h.rt.clone());
+            let async_form_tx = self.async_handle.as_ref().map(|h| h.form_tx.clone());
             if crossterm::event::poll(std::time::Duration::from_millis(100))? {
                 if let Ok(crossterm::event::Event::Key(key)) = crossterm::event::read() {
-                    self.handle_key_event(key, app);
+                    self.handle_key_event(key, app, &async_rt, &async_form_tx);
                 }
             }
         }
         Ok(())
     }
 
-    fn handle_key_event(&mut self, key: KeyEvent, app: &mut App) {
+    fn handle_key_event(
+        &mut self,
+        key: KeyEvent,
+        app: &mut App,
+        async_rt: &Option<std::sync::Arc<tokio::runtime::Runtime>>,
+        async_form_tx: &Option<std::sync::Arc<mpsc::Sender<FormSubmitResult>>>,
+    ) {
         // Only handle Press events - ignore Release and Repeat
         if !matches!(key.kind, KeyEventKind::Press) {
             return;
@@ -1643,26 +1751,31 @@ impl Browser {
                         app.quit();
                         None
                     }
-                    // Delete confirmations - Enter to delete
-                    AppState::ProgramDelete { id, .. } => {
-                        let id = *id;
-                        Some(EnterAction::DeleteProgram(id))
+                    // Bug CRUD
+                    AppState::BugCreate { .. } => Some(EnterAction::BugCreate),
+                    AppState::BugUpdate { id, .. } => Some(EnterAction::BugUpdate { id: *id }),
+                    AppState::BugDelete {
+                        id,
+                        name,
+                        confirm: false,
+                        ..
+                    } => Some(EnterAction::BugDelete {
+                        id: *id,
+                        name: name.clone(),
+                    }),
+                    AppState::BugDelete { confirm: true, .. } => {
+                        None
                     }
-                    AppState::ProductPlanDelete { id, .. } => {
-                        let id = *id;
-                        Some(EnterAction::DeleteProductPlan(id))
-                    }
-                    AppState::ReleaseDelete { id, .. } => {
-                        let id = *id;
-                        Some(EnterAction::DeleteRelease(id))
-                    }
-                    // Form submission - Enter to submit
+                    // Program/ProductPlan/Release CRUD
                     AppState::ProgramCreate { .. } => Some(EnterAction::CreateProgram),
                     AppState::ProgramUpdate { .. } => Some(EnterAction::UpdateProgram),
+                    AppState::ProgramDelete { id, .. } => Some(EnterAction::DeleteProgram(*id)),
                     AppState::ProductPlanCreate { .. } => Some(EnterAction::CreateProductPlan),
                     AppState::ProductPlanUpdate { .. } => Some(EnterAction::UpdateProductPlan),
+                    AppState::ProductPlanDelete { id, .. } => Some(EnterAction::DeleteProductPlan(*id)),
                     AppState::ReleaseCreate { .. } => Some(EnterAction::CreateRelease),
                     AppState::ReleaseUpdate { .. } => Some(EnterAction::UpdateRelease),
+                    AppState::ReleaseDelete { id, .. } => Some(EnterAction::DeleteRelease(*id)),
                     _ => None,
                 };
 
@@ -1672,6 +1785,132 @@ impl Browser {
                     match act {
                         EnterAction::BugDetail { bug, product_name } => {
                             app.set_bug_detail(bug, product_name)
+                        }
+                        EnterAction::BugCreate => {
+                            if let (Some(rt), Some(form_tx)) = (async_rt, async_form_tx) {
+                                if let AppState::BugCreate { fields, .. } = &app.state {
+                                    let fields = fields.clone();
+                                    let config = app.config.clone();
+                                    let form_tx = (**form_tx).clone();
+                                    let rt = rt.clone();
+                                    rt.block_on(async move {
+                                        let ctx = AppContext::new(
+                                            config.clone(),
+                                            OutputFormat::Table,
+                                            false,
+                                        );
+                                        let result = BugService::create(
+                                            &ctx,
+                                            fields.get("title").cloned().unwrap_or_default(),
+                                            config.product_id,
+                                            fields
+                                                .get("severity")
+                                                .and_then(|s| s.parse().ok())
+                                                .unwrap_or(3),
+                                            fields.get("pri").and_then(|s| s.parse().ok()),
+                                            fields.get("type").cloned(),
+                                            fields.get("steps").cloned(),
+                                            fields.get("story").and_then(|s| s.parse().ok()),
+                                            fields.get("branch").and_then(|s| s.parse().ok()),
+                                            fields.get("module").and_then(|s| s.parse().ok()),
+                                            fields.get("execution").and_then(|s| s.parse().ok()),
+                                            fields.get("keywords").cloned(),
+                                            fields.get("os").cloned(),
+                                            fields.get("browser").cloned(),
+                                            fields.get("deadline").cloned(),
+                                            None,
+                                        )
+                                        .await;
+                                        match result {
+                                            Ok(bug) => {
+                                                let _ = form_tx
+                                                    .send(FormSubmitResult::BugCreateSuccess(bug));
+                                            }
+                                            Err(e) => {
+                                                let _ = form_tx.send(
+                                                    FormSubmitResult::BugCreateError(e.to_string()),
+                                                );
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        EnterAction::BugUpdate { id } => {
+                            if let (Some(rt), Some(form_tx)) = (async_rt, async_form_tx) {
+                                if let AppState::BugUpdate { fields, .. } = &app.state {
+                                    let fields = fields.clone();
+                                    let config = app.config.clone();
+                                    let form_tx = (**form_tx).clone();
+                                    let rt = rt.clone();
+                                    rt.block_on(async move {
+                                        let ctx = AppContext::new(
+                                            config.clone(),
+                                            OutputFormat::Table,
+                                            false,
+                                        );
+                                        let req = crate::api::UpdateBugRequest {
+                                            title: fields.get("title").cloned(),
+                                            keywords: fields.get("keywords").cloned(),
+                                            severity: fields
+                                                .get("severity")
+                                                .and_then(|s| s.parse().ok()),
+                                            pri: fields.get("pri").and_then(|s| s.parse().ok()),
+                                            type_: fields.get("type").cloned(),
+                                            os: fields.get("os").cloned(),
+                                            browser: fields.get("browser").cloned(),
+                                            steps: fields.get("steps").cloned(),
+                                            task: fields.get("task").and_then(|s| s.parse().ok()),
+                                            story: fields.get("story").and_then(|s| s.parse().ok()),
+                                            deadline: fields.get("deadline").cloned(),
+                                            opened_build: None,
+                                            branch: fields
+                                                .get("branch")
+                                                .and_then(|s| s.parse().ok()),
+                                            module: fields
+                                                .get("module")
+                                                .and_then(|s| s.parse().ok()),
+                                            execution: fields
+                                                .get("execution")
+                                                .and_then(|s| s.parse().ok()),
+                                        };
+                                        let result = BugService::update(&ctx, id, req).await;
+                                        match result {
+                                            Ok(bug) => {
+                                                let _ = form_tx
+                                                    .send(FormSubmitResult::BugUpdateSuccess(bug));
+                                            }
+                                            Err(e) => {
+                                                let _ = form_tx.send(
+                                                    FormSubmitResult::BugUpdateError(e.to_string()),
+                                                );
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        }
+                        EnterAction::BugDelete { id, name: _ } => {
+                            if let (Some(rt), Some(form_tx)) = (async_rt, async_form_tx) {
+                                let config = app.config.clone();
+                                let form_tx = (**form_tx).clone();
+                                let rt = rt.clone();
+                                rt.block_on(async move {
+                                    let ctx = AppContext::new(config, OutputFormat::Table, false);
+                                    let result = BugService::delete(&ctx, id).await;
+                                    match result {
+                                        Ok(()) => {
+                                            let _ = form_tx
+                                                .send(FormSubmitResult::BugDeleteSuccess(id));
+                                        }
+                                        Err(e) => {
+                                            let _ = form_tx.send(FormSubmitResult::BugDeleteError(
+                                                e.to_string(),
+                                            ));
+                                        }
+                                    }
+                                });
+                            }
                         }
                         EnterAction::StoryDetail {
                             story,
@@ -1973,7 +2212,7 @@ impl Browser {
                 AppState::ProductSelect { .. } | AppState::AccountSelect { .. } => {
                     app.state = AppState::Idle;
                 }
-                // Form states - cancel and go back
+                // CRUD form states - cancel and go back
                 AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } => {
                     app.restore_list();
                 }
@@ -1993,7 +2232,13 @@ impl Browser {
                     app.restore_list();
                 }
                 AppState::FormSubmitting { .. } => {
-                    // Cancel submission
+                    app.restore_list();
+                }
+                // Bug CRUD states - cancel and go back
+                AppState::BugCreate { .. } | AppState::BugUpdate { .. } => {
+                    app.restore_list();
+                }
+                AppState::BugDelete { .. } => {
                     app.restore_list();
                 }
                 _ => {}
@@ -2013,9 +2258,122 @@ impl Browser {
                     let _ = open::that(&url);
                 }
             }
-            KeyCode::Char('y') | KeyCode::Char('Y') => {
-                if matches!(app.state, AppState::ConfirmQuit) {
-                    app.quit();
+            // Bug CRUD shortcuts
+            KeyCode::Char('c') => {
+                if matches!(app.state, AppState::BugList { .. }) {
+                    app.set_bug_create();
+                }
+            }
+            KeyCode::Char('e') => {
+                if let AppState::BugDetail { bug, .. } = &app.state {
+                    app.set_bug_update(&bug.clone());
+                }
+            }
+            KeyCode::Char('d') => {
+                if let AppState::BugDetail { bug, .. } = &app.state {
+                    app.set_bug_delete(bug.id, bug.title.clone());
+                }
+            }
+            KeyCode::Tab => {
+                // Navigate to next field in forms
+                if let AppState::BugCreate {
+                    ref mut focused_field,
+                    ..
+                } = &mut app.state
+                {
+                    let max = 4; // field_order.len() - 1
+                    if *focused_field < max {
+                        *focused_field += 1;
+                    }
+                } else if let AppState::BugUpdate {
+                    ref mut focused_field,
+                    ..
+                } = &mut app.state
+                {
+                    let max = 4;
+                    if *focused_field < max {
+                        *focused_field += 1;
+                    }
+                }
+            }
+            KeyCode::BackTab => {
+                // Navigate to previous field in forms
+                if let AppState::BugCreate {
+                    ref mut focused_field,
+                    ..
+                } = &mut app.state
+                {
+                    if *focused_field > 0 {
+                        *focused_field -= 1;
+                    }
+                } else if let AppState::BugUpdate {
+                    ref mut focused_field,
+                    ..
+                } = &mut app.state
+                {
+                    if *focused_field > 0 {
+                        *focused_field -= 1;
+                    }
+                }
+            }
+            KeyCode::Char(c) => {
+                match c {
+                    // Handle quit confirmation
+                    'y' | 'Y' if matches!(app.state, AppState::ConfirmQuit) => {
+                        app.quit();
+                    }
+                    // Type in focused field for BugCreate/BugUpdate
+                    _ => {
+                        if let AppState::BugCreate {
+                            ref mut fields,
+                            ref field_order,
+                            focused_field,
+                            ..
+                        } = &mut app.state
+                        {
+                            if let Some(key) = field_order.get(*focused_field) {
+                                fields.get_mut(key).map(|v| v.push(c));
+                            }
+                        } else if let AppState::BugUpdate {
+                            ref mut fields,
+                            ref field_order,
+                            focused_field,
+                            ..
+                        } = &mut app.state
+                        {
+                            if let Some(key) = field_order.get(*focused_field) {
+                                fields.get_mut(key).map(|v| v.push(c));
+                            }
+                        }
+                    }
+                }
+            }
+            KeyCode::Backspace => {
+                // Delete character in focused field
+                if let AppState::BugCreate {
+                    ref mut fields,
+                    ref field_order,
+                    focused_field,
+                    ..
+                } = &mut app.state
+                {
+                    if let Some(key) = field_order.get(*focused_field) {
+                        fields.get_mut(key).map(|v| {
+                            v.pop();
+                        });
+                    }
+                } else if let AppState::BugUpdate {
+                    ref mut fields,
+                    ref field_order,
+                    focused_field,
+                    ..
+                } = &mut app.state
+                {
+                    if let Some(key) = field_order.get(*focused_field) {
+                        fields.get_mut(key).map(|v| {
+                            v.pop();
+                        });
+                    }
                 }
             }
             _ => {}
@@ -2564,6 +2922,157 @@ impl Browser {
             Span::raw("/"),
             Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
             Span::raw(" cancel"),
+        ])]))
+        .alignment(ratatui::layout::Alignment::Center);
+
+        f.render_widget(choices, chunks[1]);
+    }
+
+    fn render_bug_form(
+        f: &mut ratatui::Frame,
+        area: Rect,
+        fields: &std::collections::HashMap<String, String>,
+        field_order: &[String],
+        focused_field: usize,
+        error: Option<&str>,
+        is_create: bool,
+    ) {
+        use ratatui::{
+            layout::{Constraint, Direction, Layout},
+            style::{Color, Modifier, Style},
+            text::{Line, Span, Text},
+            widgets::{Block, Borders, Paragraph, Wrap},
+        };
+
+        let title = if is_create { "Create Bug" } else { "Edit Bug" };
+
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(3),
+                Constraint::Min(0),
+                Constraint::Length(1),
+                Constraint::Length(3),
+            ])
+            .split(area);
+
+        let header = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::styled(title, Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw(" - Tab:next field, Enter:submit, Esc:cancel"),
+        ])]))
+        .block(Block::default().borders(Borders::ALL).title("Bug Form"));
+
+        f.render_widget(header, chunks[0]);
+
+        // Render form fields
+        let field_lines: Vec<Line> = field_order
+            .iter()
+            .enumerate()
+            .map(|(i, key)| {
+                let is_focused = i == focused_field;
+                let prefix = if is_focused { "> " } else { "  " };
+                let style = if is_focused {
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+                let display_value = fields.get(key).map(|s| s.as_str()).unwrap_or("");
+                Line::from(vec![
+                    Span::styled(prefix, Style::default().fg(Color::Yellow)),
+                    Span::styled(format!("{}: ", key), style),
+                    Span::raw(display_value),
+                ])
+            })
+            .collect();
+
+        let form = Paragraph::new(Text::from(field_lines))
+            .block(Block::default().borders(Borders::ALL))
+            .wrap(Wrap { trim: false });
+
+        f.render_widget(form, chunks[1]);
+
+        // Error message
+        if let Some(err) = error {
+            let error_line = Paragraph::new(Text::from(vec![Line::from(vec![
+                Span::styled("Error: ", Style::default().fg(Color::Red)),
+                Span::raw(err),
+            ])]));
+            f.render_widget(error_line, chunks[2]);
+        }
+
+        // Footer
+        let footer = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::styled("Tab", Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw(": next  "),
+            Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw(": submit  "),
+            Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw(": cancel"),
+        ])]));
+        f.render_widget(footer, chunks[3]);
+    }
+
+    fn render_delete_dialog(
+        f: &mut ratatui::Frame,
+        area: Rect,
+        entity_type: &str,
+        id: u64,
+        name: String,
+        _confirm: bool,
+    ) {
+        use ratatui::{
+            layout::{Constraint, Direction, Layout},
+            style::{Color, Modifier, Style},
+            text::{Line, Span, Text},
+            widgets::{Block, Borders, Paragraph},
+        };
+
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints([
+                Constraint::Length(5),
+                Constraint::Length(3),
+                Constraint::Min(0),
+            ])
+            .split(area);
+
+        let dialog = Paragraph::new(Text::from(vec![
+            Line::from(Span::raw("")),
+            Line::from(Span::styled(
+                format!("  Delete {}  ", entity_type),
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+            )),
+            Line::from(Span::raw("")),
+            Line::from(Span::raw(format!("  ID: {}", id))),
+            Line::from(Span::raw(format!("  Name: {}", name))),
+            Line::from(Span::raw("")),
+            Line::from(Span::styled(
+                "  Are you sure?  ",
+                Style::default().fg(Color::Yellow),
+            )),
+            Line::from(Span::raw("")),
+        ]))
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title("Confirm Delete")
+                .title_style(Style::default().fg(Color::Cyan)),
+        )
+        .alignment(ratatui::layout::Alignment::Center);
+
+        f.render_widget(dialog, chunks[0]);
+
+        let choices = Paragraph::new(Text::from(vec![Line::from(vec![
+            Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw("/"),
+            Span::styled("Y", Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw(": delete  "),
+            Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw("/"),
+            Span::styled("n", Style::default().add_modifier(Modifier::BOLD)),
+            Span::raw(": cancel"),
         ])]))
         .alignment(ratatui::layout::Alignment::Center);
 

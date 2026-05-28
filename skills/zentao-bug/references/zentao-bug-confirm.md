@@ -29,10 +29,3 @@ zentao-cli bug confirm 5703 --assigned-to developer-name
 # 确认并修改优先级
 zentao-cli bug confirm 5703 --pri 1 --comment "确认高优先级"
 ```
-
-## API Endpoint
-
-```
-POST /api.php/v1/bugs/{bug_id}/confirm
-```
-

@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao Testtask(测试单) API 模块
 //!
 //! 提供测试单的查询操作

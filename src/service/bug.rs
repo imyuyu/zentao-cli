@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 use crate::api::{Bug, BugApi, CreateBugRequest, UpdateBugRequest};
 use crate::core::logging::{log, LogLevel};
 use crate::core::AppContext;

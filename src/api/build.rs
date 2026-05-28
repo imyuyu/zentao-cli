@@ -5,7 +5,7 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use super::{ApiClient, ApiResponse};
+use super::ApiClient;
 use crate::api::types::{Build, BuildListResponse};
 use crate::core::ZentaoError;
 
@@ -115,8 +115,8 @@ impl BuildApi {
         // 否则调用 /api.php/v1/builds
         let path = String::from("/api.php/v1/builds");
 
-        let resp: ApiResponse<Vec<Build>> = client.get(&path).await?;
-        Ok(resp.data.unwrap_or_default())
+        let resp: BuildListResponse = client.get(&path).await?;
+        Ok(resp.builds)
     }
 
     /// 查询执行版本列表

@@ -18,6 +18,25 @@ pub enum AppState {
         bug: Bug,
         product_name: Option<String>,
     },
+    // Bug CRUD
+    BugCreate {
+        fields: std::collections::HashMap<String, String>,
+        field_order: Vec<String>,
+        focused_field: usize,
+        error: Option<String>,
+    },
+    BugUpdate {
+        id: u64,
+        fields: std::collections::HashMap<String, String>,
+        field_order: Vec<String>,
+        focused_field: usize,
+        error: Option<String>,
+    },
+    BugDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
     StoryList {
         stories: Vec<Story>,
         product_name: Option<String>,
@@ -313,6 +332,65 @@ impl App {
     pub fn set_bug_detail(&mut self, bug: Bug, product_name: Option<String>) {
         self.state = AppState::BugDetail { bug, product_name };
         self.selected_index = 0;
+    }
+
+    pub fn set_bug_create(&mut self) {
+        let mut fields = std::collections::HashMap::new();
+        fields.insert("title".to_string(), "".to_string());
+        fields.insert("severity".to_string(), "3".to_string());
+        fields.insert("pri".to_string(), "3".to_string());
+        fields.insert("type".to_string(), "codeerror".to_string());
+        fields.insert("steps".to_string(), "".to_string());
+        let field_order = vec![
+            "title".to_string(),
+            "severity".to_string(),
+            "pri".to_string(),
+            "type".to_string(),
+            "steps".to_string(),
+        ];
+        self.state = AppState::BugCreate {
+            fields,
+            field_order,
+            focused_field: 0,
+            error: None,
+        };
+    }
+
+    pub fn set_bug_update(&mut self, bug: &Bug) {
+        let mut fields = std::collections::HashMap::new();
+        fields.insert("title".to_string(), bug.title.clone());
+        fields.insert("severity".to_string(), bug.severity.to_string());
+        fields.insert("pri".to_string(), bug.pri.to_string());
+        fields.insert(
+            "type".to_string(),
+            bug.type_.as_deref().unwrap_or("codeerror").to_string(),
+        );
+        fields.insert(
+            "steps".to_string(),
+            bug.steps.as_deref().unwrap_or("").to_string(),
+        );
+        let field_order = vec![
+            "title".to_string(),
+            "severity".to_string(),
+            "pri".to_string(),
+            "type".to_string(),
+            "steps".to_string(),
+        ];
+        self.state = AppState::BugUpdate {
+            id: bug.id,
+            fields,
+            field_order,
+            focused_field: 0,
+            error: None,
+        };
+    }
+
+    pub fn set_bug_delete(&mut self, id: u64, name: String) {
+        self.state = AppState::BugDelete {
+            id,
+            name,
+            confirm: false,
+        };
     }
 
     pub fn set_story_list(&mut self, stories: Vec<Story>, product_name: Option<String>) {

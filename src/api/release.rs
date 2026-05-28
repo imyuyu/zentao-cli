@@ -6,6 +6,7 @@ use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
 use super::{ApiClient, ApiResponse};
+use crate::core::ZentaoError;
 
 // ============================================================
 // 数据结构体
@@ -144,23 +145,37 @@ impl ReleaseApi {
     /// 创建发布
     ///
     /// POST /api.php/v1/releases
+    ///
+    /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
     pub async fn create(client: &ApiClient, req: &CreateReleaseRequest) -> Result<Release> {
+        #[derive(Deserialize)]
+        struct CreateResponse {
+            id: Option<u64>,
+        }
+
         let path = "/api.php/v1/releases";
-        let resp: Release = client.post(path, req).await?;
-        Ok(resp)
+        let resp: CreateResponse = client.post(path, req).await?;
+
+        if let Some(id) = resp.id {
+            Self::get(client, id).await
+        } else {
+            Err(ZentaoError::Api("Failed to create release".to_string()).into())
+        }
     }
 
     /// 更新发布
     ///
     /// PUT /api.php/v1/releases/{id}
+    ///
+    /// ZenTao PUT 接口返回空 JSON {}，需要再调用 get 获取更新后的信息
     pub async fn update(
         client: &ApiClient,
         id: u64,
         req: &UpdateReleaseRequest,
     ) -> Result<Release> {
         let path = format!("/api.php/v1/releases/{}", id);
-        let resp: Release = client.put(&path, req).await?;
-        Ok(resp)
+        let _: serde_json::Value = client.put(&path, req).await?;
+        Self::get(client, id).await
     }
 
     /// 删除发布

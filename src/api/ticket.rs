@@ -5,7 +5,7 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 
-use super::ApiClient;
+use super::{ApiClient, UserInfo};
 
 // ============================================================
 // 类型定义
@@ -114,15 +114,6 @@ pub struct Ticket {
     /// 分类名称
     #[serde(skip_serializing_if = "Option::is_none")]
     pub module_name: Option<String>,
-}
-
-/// 用户信息
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct UserInfo {
-    pub id: Option<u64>,
-    pub account: Option<String>,
-    pub avatar: Option<String>,
-    pub realname: Option<String>,
 }
 
 impl Ticket {

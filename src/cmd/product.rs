@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao Product(产品)命令模块
 
 use clap::Subcommand;

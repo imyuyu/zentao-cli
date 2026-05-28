@@ -1,3 +1,4 @@
+#![allow(snake_case)]
 //! ZenTao Project(项目) API 模块
 //!
 //! 提供项目实体的查询操作

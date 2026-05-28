@@ -37,10 +37,3 @@ zentao-cli testcase create \
   --steps "1. 输入正确账号密码\n2. 点击登录" \
   --expectation "登录成功，跳转首页"
 ```
-
-## API Endpoint
-
-```
-POST /api.php/v1/products/{productId}/testcases
-```
-

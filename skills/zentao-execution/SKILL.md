@@ -76,13 +76,3 @@ zentao-cli execution update 100 --status closed
 ```bash
 zentao-cli execution delete 100
 ```
-
-## API Endpoint
-
-| 操作 | URL 模式 |
-|------|----------|
-| 列表 | `GET /api.php/v1/projects/{projectId}/executions` |
-| 详情 | `GET /api.php/v1/executions/{id}` |
-
-详细命令参考见 references/ 目录。
-
