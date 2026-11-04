@@ -54,11 +54,14 @@ pub struct Task {
 ///
 /// 所有字段对应 ZenTao 任务创建接口
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateTaskRequest {
     /// 任务名称（必填）
     pub name: String,
     /// 指派给（必填）
-    pub assigned_to: String,
+    ///
+    /// 禅道文档要求数组形式 `["admin"]`，传字符串会返回 200 但不落库。
+    pub assigned_to: Vec<String>,
     /// 任务类型（必填）：development（开发）/design（设计）/test（测试）/study（研究）/discuss（讨论）/ui（界面）/other（其他）
     #[serde(rename = "type")]
     pub type_: String,
@@ -72,6 +75,11 @@ pub struct CreateTaskRequest {
     /// 所属执行 ID
     #[serde(skip_serializing_if = "Option::is_none")]
     pub execution: Option<u64>,
+    /// 任务描述（必填）
+    ///
+    /// 禅道创建任务表单上标必填，缺失会返回 200 但不落库。
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub desc: Option<String>,
     /// 优先级：1-5
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pri: Option<u8>,
@@ -93,6 +101,7 @@ pub struct CreateTaskRequest {
 ///
 /// 所有字段可选，只更新传入的字段
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateTaskRequest {
     /// 新任务名称
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -325,20 +334,34 @@ impl TaskApi {
     ///
     /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
     pub async fn create(client: &ApiClient, req: &CreateTaskRequest) -> Result<Task> {
+        // 禅道创建失败时返回 200 + {"result":"fail","message":{字段:["原因"]}}，
+        // 只看 id 会把真实原因吞掉，必须把 message 原样透出来。
         #[derive(Deserialize)]
         struct CreateResponse {
             id: Option<u64>,
+            result: Option<String>,
+            message: Option<serde_json::Value>,
         }
 
-        let resp: CreateResponse = client.post("/api.php/v1/tasks", req).await?;
+        // 禅道文档：POST /executions/:id/tasks。打到 /tasks 会返回 200 空 body 且不落库。
+        let execution = req.execution.ok_or_else(|| {
+            crate::core::ZentaoError::Config(
+                "execution (所属执行) 是必需的，用 --execution 指定".to_string(),
+            )
+        })?;
+        let path = format!("/api.php/v1/executions/{}/tasks", execution);
+        let resp: CreateResponse = client.post(&path, req).await?;
 
         if let Some(id) = resp.id {
             // 创建成功后，调用 get 获取完整的任务信息
             Self::get(client, id).await
         } else {
-            // 创建失败，返回错误
-            // 使用 anyhow::bail! 而不是返回 Err，因为这是业务逻辑错误
-            anyhow::bail!("Failed to create task")
+            let detail = match (&resp.result, &resp.message) {
+                (_, Some(msg)) => msg.to_string(),
+                (Some(r), None) => r.clone(),
+                _ => "服务端未返回 id".to_string(),
+            };
+            anyhow::bail!("创建任务失败: {}", detail)
         }
     }
 
@@ -485,12 +508,13 @@ mod tests {
     fn test_create_task_request_serialization() {
         let req = CreateTaskRequest {
             name: "Test Task".to_string(),
-            assigned_to: "dev".to_string(),
+            assigned_to: vec!["dev".to_string()],
             type_: "development".to_string(),
             est_started: "2024-01-01".to_string(),
             deadline: "2024-01-15".to_string(),
             project: Some(1),
             execution: Some(1),
+            desc: Some("测试".to_string()),
             pri: Some(3),
             module: None,
             story: None,
@@ -499,7 +523,8 @@ mod tests {
         };
         let json = serde_json::to_string(&req).unwrap();
         assert!(json.contains("Test Task"));
-        assert!(json.contains("\"assigned_to\":\"dev\""));
+        // 禅道要求 camelCase 键 + 数组形式的 assignedTo
+        assert!(json.contains("\"assignedTo\":[\"dev\"]"));
         assert!(json.contains("\"type\":\"development\""));
         assert!(json.contains("\"pri\":3"));
     }
@@ -509,12 +534,13 @@ mod tests {
     fn test_create_task_request_skips_optional_fields() {
         let req = CreateTaskRequest {
             name: "Minimal Task".to_string(),
-            assigned_to: "admin".to_string(),
+            assigned_to: vec!["admin".to_string()],
             type_: "development".to_string(),
             est_started: "2024-01-01".to_string(),
             deadline: "2024-01-15".to_string(),
             project: None,
             execution: None,
+            desc: None,
             pri: None,
             module: None,
             story: None,

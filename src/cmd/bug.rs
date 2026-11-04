@@ -58,6 +58,7 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
         BugSubcommand::Create {
             title,
             product,
+            project,
             severity,
             pri,
             type_,
@@ -71,6 +72,7 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
             browser,
             deadline,
             opened_build,
+            attachments,
         } => {
             let product_id = match ctx.require_product_id(*product) {
                 Ok(id) => id,
@@ -110,6 +112,7 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
                 ctx,
                 title.clone(),
                 *product,
+                *project,
                 *severity,
                 *pri,
                 type_.clone(),
@@ -126,7 +129,18 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
             )
             .await
             {
-                Ok(bug) => print_json(&bug),
+                Ok(bug) => {
+                    // 附件必须在 bug 创建后上传——上传接口要求关联对象已存在
+                    if let Some(files) = attachments {
+                        if !files.is_empty() {
+                            if let Err(e) = upload_attachments(ctx, bug.id, files).await {
+                                // bug 已创建成功，附件失败不能当成整体失败
+                                eprintln!("warning: bug {} 已创建，但附件上传失败: {}", bug.id, e);
+                            }
+                        }
+                    }
+                    print_json(&bug)
+                }
                 Err(e) => print_error(&e),
             }
         }
@@ -311,8 +325,42 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
     }
 }
 
-fn print_bug_list(bugs: &[crate::api::Bug], format: OutputFormat) {
-    match format {
+/// 上传附件到指定 bug
+///
+/// 禅道的附件上传只存在于 v2 API（ZenTao ≥ v22.0）。老版本没有该路由，
+/// 请求会被兜底路由吃掉并返回 200 空 body——所以先探测，再决定是否上传。
+async fn upload_attachments(
+    ctx: &AppContext,
+    bug_id: u64,
+    files: &[String],
+) -> anyhow::Result<()> {
+    if !ctx.supports_file_upload().await {
+        anyhow::bail!(
+            "当前 ZenTao 版本不支持 API 上传附件（需 v22.0+ 的 v2 文件接口）。\
+             bug 已创建，附件请到网页端补传。"
+        );
+    }
+
+    let client = ctx.client();
+    for path in files {
+        let content = tokio::fs::read(path)
+            .await
+            .map_err(|e| anyhow::anyhow!("读取附件失败 {}: {}", path, e))?;
+        let filename = std::path::Path::new(path)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("attachment");
+
+        let file_id = client
+            .upload_file("bug", bug_id, filename, content)
+            .await
+            .map_err(|e| anyhow::anyhow!("上传附件失败 {}: {}", path, e))?;
+        eprintln!("上传成功: {} (file id: {})", path, file_id);
+    }
+    Ok(())
+}
+
+fn print_bug_list(bugs: &[crate::api::Bug], format: OutputFormat) {    match format {
         OutputFormat::Table => {
             println!("Bugs:");
             for bug in bugs {

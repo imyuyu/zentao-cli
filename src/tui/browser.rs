@@ -1915,6 +1915,7 @@ impl Browser {
                                             &ctx,
                                             fields.get("title").cloned().unwrap_or_default(),
                                             config.product_id,
+                                            config.project_id,
                                             fields
                                                 .get("severity")
                                                 .and_then(|s| s.parse().ok())

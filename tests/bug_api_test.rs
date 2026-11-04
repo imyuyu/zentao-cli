@@ -11,6 +11,7 @@ fn test_create_bug_request_builder() {
     let req = CreateBugRequest {
         title: "Critical Bug Found".to_string(),
         product: 1,
+            project: Some(3),
         severity: 4,
         pri: Some(1),
         type_: Some("code".to_string()),
@@ -38,6 +39,7 @@ fn test_create_bug_request_minimal() {
     let req = CreateBugRequest {
         title: "Minimal Bug".to_string(),
         product: 2,
+            project: Some(3),
         severity: 3,
         pri: None,
         type_: None,

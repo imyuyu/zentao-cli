@@ -277,11 +277,11 @@ mod tests {
             "branch": 0,
             "module": 0,
             "story": 0,
-            "story_version": 1,
+            "storyVersion": 1,
             "precondition": "Precondition text",
             "stage": "unitest",
-            "opened_by": "admin",
-            "opened_date": "2024-01-01",
+            "openedBy": {"id": 1, "account": "admin", "realname": "Admin"},
+            "openedDate": "2024-01-01",
             "version": 2,
             "steps": [
                 {"id": 1, "desc": "Step 1: Do something", "expect": "Expected result"}
@@ -294,7 +294,7 @@ mod tests {
         assert_eq!(testcase.pri, 2);
         assert_eq!(testcase.status, "normal");
         assert_eq!(testcase.product, 1);
-        assert_eq!(testcase.opened_by, "admin");
+        assert_eq!(testcase.opened_by.as_ref().map(|u| u.account.as_deref().unwrap_or("")), Some("admin"));
         assert_eq!(testcase.version, 2);
         assert_eq!(testcase.steps.len(), 1);
         assert_eq!(testcase.steps[0].desc, "Step 1: Do something");
@@ -315,11 +315,11 @@ mod tests {
             "branch": 0,
             "module": 0,
             "story": 0,
-            "story_version": 1,
+            "storyVersion": 1,
             "precondition": "",
             "stage": "unitest",
-            "opened_by": "admin",
-            "opened_date": "2024-01-01",
+            "openedBy": {"id": 1, "account": "admin", "realname": "Admin"},
+            "openedDate": "2024-01-01",
             "version": 1,
             "steps": []
         }"#;
@@ -346,11 +346,11 @@ mod tests {
             "branch": 0,
             "module": 0,
             "story": 0,
-            "story_version": 1,
+            "storyVersion": 1,
             "precondition": "",
             "stage": "unitest",
-            "opened_by": "admin",
-            "opened_date": "2024-01-01",
+            "openedBy": {"id": 1, "account": "admin", "realname": "Admin"},
+            "openedDate": "2024-01-01",
             "version": 1,
             "steps": []
         }"#;
@@ -368,11 +368,11 @@ mod tests {
             "branch": 0,
             "module": 0,
             "story": 0,
-            "story_version": 1,
+            "storyVersion": 1,
             "precondition": "",
             "stage": "unitest",
-            "opened_by": "admin",
-            "opened_date": "2024-01-01",
+            "openedBy": {"id": 1, "account": "admin", "realname": "Admin"},
+            "openedDate": "2024-01-01",
             "version": 1,
             "steps": []
         }"#;

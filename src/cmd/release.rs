@@ -64,6 +64,8 @@ pub async fn run(cmd: &ReleaseSubcommand, ctx: &AppContext) {
                 product: ctx.product_id(*product),
                 project: ctx.project_id(*project),
                 build: *build,
+                // 表单要求 date 和 releasedDate 都填，CLI 只暴露一个 --date，另一个兜底
+                released_date: date.clone(),
                 date: date.clone(),
                 desc: desc.clone(),
             };

@@ -37,6 +37,12 @@ pub enum TaskAction {
         est_started: String,
         #[arg(long)]
         deadline: String,
+        /// 所属执行 ID（禅道表单必填，缺失会静默失败）
+        #[arg(long)]
+        execution: Option<u64>,
+        /// 任务描述（禅道表单必填）
+        #[arg(long)]
+        desc: Option<String>,
         #[arg(long)]
         project: Option<u64>,
         #[arg(long)]
@@ -194,6 +200,8 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
             type_,
             est_started,
             deadline,
+            execution,
+            desc,
             project,
             pri,
             estimate,
@@ -203,12 +211,13 @@ pub async fn run(cmd: &TaskAction, ctx: &AppContext) {
             let project_id = ctx.project_id(*project);
             let req = CreateTaskRequest {
                 name: name.clone(),
-                assigned_to: assigned_to.clone(),
+                assigned_to: vec![assigned_to.clone()],
                 type_: type_.clone(),
                 est_started: est_started.clone(),
                 deadline: deadline.clone(),
                 project: project_id,
-                execution: None,
+                execution: *execution,
+                desc: desc.clone(),
                 pri: *pri,
                 module: *module,
                 story: *story,

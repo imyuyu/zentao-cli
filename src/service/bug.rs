@@ -2,6 +2,7 @@
 use crate::api::{Bug, BugApi, CreateBugRequest, UpdateBugRequest};
 use crate::core::logging::{log, LogLevel};
 use crate::core::AppContext;
+use crate::core::ZentaoError;
 use anyhow::Result;
 
 pub struct BugService;
@@ -35,6 +36,7 @@ impl BugService {
         ctx: &AppContext,
         title: String,
         product: Option<u64>,
+        project: Option<u64>,
         severity: u8,
         pri: Option<u8>,
         type_: Option<String>,
@@ -51,22 +53,36 @@ impl BugService {
     ) -> Result<Bug> {
         log(LogLevel::Info, "BugService", "create");
         let client = ctx.client();
+        // 提 Bug 表单上的必填项：所属产品/项目/执行/模块/影响版本/标题/类型/严重程度/优先级/重现步骤。
+        // 禅道对缺失的**非文档标注必填**字段（project/execution/module）不报错，
+        // 而是返回 201 + 空 body 且不落库——静默丢弃，必须自己挡。
+        let execution = execution.ok_or_else(|| {
+            ZentaoError::Config(
+                "execution (所属执行) 是必需的，用 --execution 指定（如 6）".to_string(),
+            )
+        })?;
+        let project = ctx.require_project_id(project)?;
+        let module = module.ok_or_else(|| {
+            ZentaoError::Config("module (所属模块) 是必需的，用 --module 指定（如 293）".to_string())
+        })?;
         let req = CreateBugRequest {
             title,
             product: ctx.require_product_id(product)?,
+            project: Some(project),
             severity,
             pri,
             type_,
             steps,
             story,
             branch,
-            module,
-            execution,
+            module: Some(module),
+            execution: Some(execution),
             keywords,
             os,
             browser,
             deadline,
-            opened_build,
+            // openedBuild 是禅道的必填项，不传会报「影响版本不能为空」
+            opened_build: Some(opened_build.unwrap_or_else(|| vec!["trunk".to_string()])),
         };
 
         BugApi::create(&client, &req).await

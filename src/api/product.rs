@@ -217,7 +217,17 @@ impl ProductApi {
         let resp: CreateResponse = client.post(path, req).await?;
 
         if let Some(id) = resp.id {
-            Self::get(client, id).await
+            // 创建成功后回查详情；新建产品默认 acl=private，回查可能 404。
+            // 此时产品其实已建好，不能用 404 判失败，但要如实告知。
+            match Self::get(client, id).await {
+                Ok(p) => Ok(p),
+                Err(_) => Err(ZentaoError::Api(format!(
+                    "产品已创建（id={}），但回查详情失败——通常是新建产品默认 private、\
+                     当前账号无读权限。请到网页端确认。",
+                    id
+                ))
+                .into()),
+            }
         } else {
             Err(ZentaoError::Api("Failed to create product".to_string()).into())
         }

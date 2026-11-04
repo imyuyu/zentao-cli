@@ -45,10 +45,13 @@ pub fn render_build_list(
                 Span::raw(" | "),
                 Span::raw(format!(
                     "Stories: {}",
-                    build.stories.as_deref().unwrap_or("0")
+                    build.stories.as_ref().map(|v| v.len()).unwrap_or(0)
                 )),
                 Span::raw(" | "),
-                Span::raw(format!("Bugs: {}", build.bugs.as_deref().unwrap_or("0"))),
+                Span::raw(format!(
+                    "Bugs: {}",
+                    build.bugs.as_ref().map(|v| v.len()).unwrap_or(0)
+                )),
             ]))
         })
         .collect();
@@ -142,11 +145,11 @@ pub fn render_build_detail(f: &mut Frame, area: Rect, build: &Build) {
         ]),
         Line::from(vec![
             Span::raw("Stories: "),
-            Span::raw(build.stories.as_deref().unwrap_or("0")),
+            Span::raw(build.stories.as_ref().map(|v| v.len()).unwrap_or(0).to_string()),
         ]),
         Line::from(vec![
             Span::raw("Bugs: "),
-            Span::raw(build.bugs.as_deref().unwrap_or("0")),
+            Span::raw(build.bugs.as_ref().map(|v| v.len()).unwrap_or(0).to_string()),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

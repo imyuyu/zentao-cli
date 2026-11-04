@@ -4,6 +4,27 @@
 
 use serde::{Deserialize, Serialize};
 
+/// 可选数字字段：禅道有时返回数字、有时返回字符串（如 `branch: "0"`），
+/// 也有时返回空串或 null。统一容错，避免一个字段的类型差异让整条记录解析失败。
+fn de_opt_u64_from_any<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Any {
+        Num(u64),
+        Str(String),
+        Null,
+    }
+
+    Ok(match Any::deserialize(deserializer)? {
+        Any::Num(n) => Some(n),
+        Any::Str(s) => s.trim().parse::<u64>().ok(),
+        Any::Null => None,
+    })
+}
+
 /// 从字符串或数字反序列化ID
 fn deserialize_id<'de, D>(deserializer: D) -> Result<u64, D::Error>
 where
@@ -39,22 +60,38 @@ where
     enum OptIdOrString {
         Null,
         Id(u64),
+        /// 禅道对关联对象有时返回完整对象，如 release.build = {id: 8, name: "..."}
+        Obj {
+            #[serde(default)]
+            id: Option<u64>,
+        },
         Str(String),
     }
 
     match OptIdOrString::deserialize(deserializer)? {
         OptIdOrString::Null => Ok(None),
         OptIdOrString::Id(n) => Ok(Some(n)),
+        OptIdOrString::Obj { id } => Ok(id),
         OptIdOrString::Str(s) => {
-            if s.is_empty() {
-                Ok(None)
-            } else if let Some(num_str) = s.split('_').next_back() {
+            // 可能是 ",3," 这类逗号包裹的串，取第一个数字段
+            let cleaned = s.trim_matches(',').trim();
+            if cleaned.is_empty() {
+                return Ok(None);
+            }
+            let first = cleaned.split(',').next().unwrap_or("").trim();
+            if first.is_empty() {
+                return Ok(None);
+            }
+            if let Some(num_str) = first.split('_').next_back() {
                 num_str
                     .parse::<u64>()
                     .map_err(serde::de::Error::custom)
                     .map(Some)
             } else {
-                s.parse::<u64>().map_err(serde::de::Error::custom).map(Some)
+                first
+                    .parse::<u64>()
+                    .map_err(serde::de::Error::custom)
+                    .map(Some)
             }
         }
     }
@@ -304,7 +341,11 @@ impl Department {
 /// 测试用例数据结构
 ///
 /// 对应 ZenTao 测试用例模块的字段
+///
+/// 禅道 JSON 键是 camelCase（`storyVersion`/`openedBy`），字段是 snake_case，
+/// 必须靠 `rename_all` 桥接，否则多词字段全部匹配不上。
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Testcase {
     /// 用例 ID - ZenTao有时返回字符串如"case_1"
     #[serde(deserialize_with = "deserialize_id")]
@@ -332,7 +373,8 @@ pub struct Testcase {
     pub stage: String,
     /// 用例状态：wait/normal/blocked/investigate
     pub status: String,
-    /// 测试步骤列表
+    /// 测试步骤列表（禅道列表接口不一定返回）
+    #[serde(default)]
     pub steps: Vec<TestcaseStep>,
     /// 来自于Bug
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -341,7 +383,10 @@ pub struct Testcase {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub from_case_id: Option<u64>,
     /// 创建人
-    pub opened_by: String,
+    ///
+    /// 禅道返回用户对象 `{"id":3,"account":"huzhengyu",...}`，不是字符串
+    #[serde(default)]
+    pub opened_by: Option<BugUser>,
     /// 创建时间
     pub opened_date: String,
     /// 版本号
@@ -436,7 +481,9 @@ pub struct Build {
     /// 所属项目 ID
     pub project: u64,
     /// 所属分支/平台
-    #[serde(skip_serializing_if = "Option::is_none")]
+    ///
+    /// 禅道返回的是字符串（如 `"0"`），不是数字——直接用 Option<u64> 会整条解析失败。
+    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "de_opt_u64_from_any")]
     pub branch: Option<u64>,
     /// SCM 路径
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -454,8 +501,10 @@ pub struct Build {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub generated_at: Option<String>,
     /// 是否已删除
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub deleted: Option<String>,
+    ///
+    /// 禅道返回 bool，原声明为 Option<String> 会让整条记录解析失败。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub deleted: Option<bool>,
     /// 编辑者
     #[serde(skip_serializing_if = "Option::is_none")]
     pub editor: Option<String>,
@@ -474,12 +523,12 @@ pub struct Build {
     /// 关联的用例数
     #[serde(skip_serializing_if = "Option::is_none")]
     pub consumed_cards: Option<String>,
-    /// 关联的需求数
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub stories: Option<String>,
-    /// 关联的 Bug 数
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub bugs: Option<String>,
+    /// 关联的需求 ID 列表
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stories: Option<Vec<u64>>,
+    /// 关联的 Bug ID 列表
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bugs: Option<Vec<u64>>,
 }
 
 /// 版本列表响应格式（用于 /projects/{id}/builds 接口）

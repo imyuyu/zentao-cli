@@ -5,7 +5,7 @@
 
 use crate::api::Auth;
 use crate::cmd::common::log_command;
-use crate::core::{load_config, update_config, Credentials};
+use crate::core::{load_config, update_config, AppContext, Credentials, OutputFormat};
 use crate::safe_println;
 use anyhow::Result; // anyhow: 错误处理库，类似 Go 的 error 但更灵活
 use clap::Subcommand; // clap: 命令行参数解析库，类似 Java 的 JCommander 或 Python 的 argparse // 导入 API 认证客户端
@@ -232,14 +232,25 @@ pub async fn run(
 
         // -------------------- whoami --------------------
         AuthSubcommand::Whoami => {
-            let config = load_config()?;
-            if let Some(account) = &config.account {
-                println!("{}", account);
-            } else {
-                safe_println("Not logged in");
-                safe_println("  Run 'zentao auth login' to login");
+            // 优先问服务端「当前 token 是谁的」——只读本地 config.account 会漏掉
+            // 直接用 ZENTAO_TOKEN 环境变量登录的场景（那时 account 没落盘）。
+            let ctx = AppContext::new(load_config()?, OutputFormat::Json, false);
+            match ctx.client().whoami().await {
+                Ok(profile) => {
+                    println!("{}", profile.account);
+                    if let Some(name) = profile.realname.as_deref() {
+                        if !name.is_empty() {
+                            println!("  {}", name);
+                        }
+                    }
+                    Ok(())
+                }
+                Err(e) => {
+                    safe_println("Not logged in");
+                    safe_println(&format!("  {}", e));
+                    Ok(())
+                }
             }
-            Ok(())
         }
 
         // -------------------- refresh --------------------

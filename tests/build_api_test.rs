@@ -19,15 +19,15 @@ fn test_build_serialization() {
         pkg: Some("/path/to/package.tar.gz".to_string()),
         file_size: Some("1048576".to_string()),
         generated_at: Some("2024-01-15 10:00:00".to_string()),
-        deleted: Some("0".to_string()),
+        deleted: Some(false),
         editor: Some("admin".to_string()),
         created_by: Some("admin".to_string()),
         created_date: Some("2024-01-15 10:00:00".to_string()),
         last_edited_by: Some("admin".to_string()),
         last_edited_date: Some("2024-01-15 10:00:00".to_string()),
         consumed_cards: Some("10".to_string()),
-        stories: Some("5".to_string()),
-        bugs: Some("2".to_string()),
+        stories: Some(vec![1,2,3,4,5]),
+        bugs: Some(vec![1,2]),
     };
 
     let json = serde_json::to_string(&build).unwrap();
@@ -86,15 +86,15 @@ fn test_build_deserialization() {
         "pkg": "/artifacts/app.tar.gz",
         "file_size": "2097152",
         "generated_at": "2024-01-15 14:30:00",
-        "deleted": "0",
+        "deleted": false,
         "editor": "developer",
         "created_by": "developer",
         "created_date": "2024-01-15 14:30:00",
         "last_edited_by": "developer",
         "last_edited_date": "2024-01-15 14:30:00",
         "consumed_cards": "15",
-        "stories": "8",
-        "bugs": "3"
+        "stories": [1,2,3,4,5,6,7,8],
+        "bugs": [1,2,3]
     }"#;
 
     let build: Build = serde_json::from_str(json).unwrap();
@@ -103,8 +103,8 @@ fn test_build_deserialization() {
     assert_eq!(build.product, 2);
     assert_eq!(build.project, 3);
     assert_eq!(build.branch, Some(1));
-    assert_eq!(build.stories, Some("8".to_string()));
-    assert_eq!(build.bugs, Some("3".to_string()));
+    assert_eq!(build.stories, Some(vec![1,2,3,4,5,6,7,8]));
+    assert_eq!(build.bugs, Some(vec![1,2,3]));
 }
 
 #[test]

@@ -64,6 +64,7 @@ pub async fn run(cmd: &StorySubcommand, ctx: &AppContext) {
             category,
             spec,
             estimate,
+            module,
         } => {
             let product_id = match ctx.require_product_id(*product) {
                 Ok(id) => id,
@@ -81,6 +82,7 @@ pub async fn run(cmd: &StorySubcommand, ctx: &AppContext) {
                 "spec": spec,
                 "verify": serde_json::Value::Null,
                 "estimate": estimate,
+                "module": module,
             });
 
             if ctx.dry_run {
@@ -100,6 +102,7 @@ pub async fn run(cmd: &StorySubcommand, ctx: &AppContext) {
                 category.clone(),
                 spec.clone(),
                 *estimate,
+                *module,
             )
             .await
             {

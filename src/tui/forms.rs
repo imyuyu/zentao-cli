@@ -272,6 +272,11 @@ impl ReleaseFormFields {
             } else {
                 self.build.value.parse().ok()
             },
+            released_date: if self.date.value.is_empty() {
+                None
+            } else {
+                Some(self.date.value.clone())
+            },
             date: if self.date.value.is_empty() {
                 None
             } else {

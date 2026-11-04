@@ -22,13 +22,16 @@ pub struct CreateBugRequest {
     pub title: String,
     /// 所属产品 ID（必填）
     pub product: u64,
+    /// 所属项目 ID（表单上标必填；缺失时禅道返回 201 但静默丢弃）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub project: Option<u64>,
     /// 严重程度：1-4（1 最严重）
     pub severity: u8,
     /// 优先级：0-5
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pri: Option<u8>,
     /// Bug 类型：codeerror/interface/design/others
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
     /// 重现步骤
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -78,7 +81,7 @@ pub struct UpdateBugRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pri: Option<u8>,
     /// Bug 类型：codeerror/interface/design/others
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
     /// 操作系统
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -379,6 +382,7 @@ mod tests {
         let req = CreateBugRequest {
             title: "Test Bug".to_string(),
             product: 1,
+            project: Some(3),
             severity: 3,
             pri: Some(2),
             type_: Some("codeerror".to_string()),
@@ -404,6 +408,7 @@ mod tests {
         let req = CreateBugRequest {
             title: "Minimal Bug".to_string(),
             product: 2,
+            project: Some(3),
             severity: 1,
             pri: None,
             type_: None,

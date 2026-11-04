@@ -37,6 +37,7 @@ impl StoryService {
         category: Option<String>,
         spec: Option<String>,
         estimate: Option<f64>,
+        module: Option<u64>,
     ) -> Result<Story> {
         log(LogLevel::Info, "StoryService", "create");
         let client = ctx.client();
@@ -50,7 +51,7 @@ impl StoryService {
             estimate,
             source: None,
             sourceNote: None,
-            module: None,
+            module,
             keywords: None,
         };
 
@@ -107,7 +108,7 @@ mod tests {
     #[tokio::test]
     async fn create_fails_without_product() {
         let (_server, ctx) = setup(None);
-        let result = StoryService::create(&ctx, "Test".into(), None, 3, None, None, None).await;
+        let result = StoryService::create(&ctx, "Test".into(), None, 3, None, None, None, None).await;
         assert!(result.is_err());
     }
 

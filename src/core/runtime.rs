@@ -2,12 +2,18 @@ use crate::api::ApiClient;
 use crate::core::logging::{log, LogLevel};
 use crate::core::{Config, OutputFormat, ZentaoError};
 use anyhow::Result;
+use std::sync::OnceLock;
 
 #[derive(Clone, Debug)]
 pub struct AppContext {
     pub config: Config,
     pub format: OutputFormat,
     pub dry_run: bool,
+    /// v2 文件上传能力探测结果，首次使用时探测并缓存
+    ///
+    /// 用 `OnceLock` 而非构造时探测：探测需要一次 HTTP 往返，而上传是低频操作，
+    /// 不该让 `bug list` 这类命令为它多付一次 RTT。
+    file_upload_supported: OnceLock<bool>,
 }
 
 impl AppContext {
@@ -16,7 +22,21 @@ impl AppContext {
             config,
             format,
             dry_run,
+            file_upload_supported: OnceLock::new(),
         }
+    }
+
+    /// 是否支持 v2 文件上传接口（首次调用时探测，之后复用结果）
+    ///
+    /// ZenTao 上传附件需要 v22.0+ 的 v2 API；老版本（如 21.6）没有该路由。
+    pub async fn supports_file_upload(&self) -> bool {
+        if let Some(cached) = self.file_upload_supported.get() {
+            return *cached;
+        }
+        let supported = self.client().supports_file_upload().await;
+        // 并发调用时可能都探测了一次，写不进去也无妨——结果一致
+        let _ = self.file_upload_supported.set(supported);
+        supported
     }
 
     /// 获取 API 客户端

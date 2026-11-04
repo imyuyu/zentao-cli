@@ -147,20 +147,42 @@ impl ReleaseApi {
     /// POST /api.php/v1/releases
     ///
     /// ZenTao 创建接口返回 {"id": 123}，需要再调用 get 获取完整信息
+    /// 创建发布
+    ///
+    /// `POST /api.php/v1/projects/{id}/releases` —— 路径必须带 project，
+    /// 打到 `/api.php/v1/releases` 会返回 200 空 body 且不落库。
+    /// 成功时同样返回 200 + 空 body，需要回查列表定位新记录。
     pub async fn create(client: &ApiClient, req: &CreateReleaseRequest) -> Result<Release> {
-        #[derive(Deserialize)]
-        struct CreateResponse {
-            id: Option<u64>,
-        }
+        let product = req.product.ok_or_else(|| {
+            crate::core::ZentaoError::Config("创建发布需要 --product".to_string())
+        })?;
+        let project = req.project.ok_or_else(|| {
+            crate::core::ZentaoError::Config(
+                "创建发布需要 --project（禅道接口按项目维度，缺失会静默失败）".to_string(),
+            )
+        })?;
 
-        let path = "/api.php/v1/releases";
-        let resp: CreateResponse = client.post(path, req).await?;
+        let path = format!("/api.php/v1/projects/{}/releases", project);
+        let id = client.post_allowing_empty(&path, req).await?;
 
-        if let Some(id) = resp.id {
-            Self::get(client, id).await
-        } else {
-            Err(ZentaoError::Api("Failed to create release".to_string()).into())
-        }
+        let release_id = match id {
+            Some(id) => id,
+            // 禅道不回 id：从项目发布列表里按名称找回
+            None => {
+                let list = Self::list_by_project(client, project).await?;
+                list.into_iter()
+                    .filter(|r| r.name == req.name)
+                    .map(|r| r.id)
+                    .max()
+                    .ok_or_else(|| {
+                        crate::core::ZentaoError::Api(format!(
+                            "创建发布后未能定位到记录（name={}, product={}），请到网页端确认",
+                            req.name, product
+                        ))
+                    })?
+            }
+        };
+        Self::get(client, release_id).await
     }
 
     /// 更新发布
@@ -209,7 +231,10 @@ pub struct CreateReleaseRequest {
     /// 发布日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<String>,
-    /// 描述
+    /// 实际发布日期（表单必填，缺失时禅道返回 200 但不落库）
+    #[serde(rename = "releasedDate", skip_serializing_if = "Option::is_none")]
+    pub released_date: Option<String>,
+    /// 描述（表单必填）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
 }

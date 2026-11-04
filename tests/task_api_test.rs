@@ -52,12 +52,13 @@ fn test_task_minimal() {
 fn test_create_task_request() {
     let req = CreateTaskRequest {
         name: "New Task".to_string(),
-        assigned_to: "dev1".to_string(),
+        assigned_to: vec!["dev1".to_string()],
         type_: "development".to_string(),
         est_started: "2024-01-01".to_string(),
         deadline: "2024-01-15".to_string(),
         project: Some(1),
         execution: None,
+        desc: Some("test".to_string()),
         pri: Some(2),
         module: None,
         story: None,

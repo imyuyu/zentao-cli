@@ -177,6 +177,9 @@ pub enum StorySubcommand {
         spec: Option<String>,
         #[arg(long)]
         estimate: Option<f64>,
+        /// 所属模块 ID（禅道服务端必填，缺失会报「所属模块不能为空」）
+        #[arg(long)]
+        module: Option<u64>,
     },
     /// 更新需求（API Commands）
     #[command(name = "update")]
@@ -234,6 +237,9 @@ pub enum BugSubcommand {
         title: String,
         #[arg(long)]
         product: Option<u64>,
+        /// 所属项目 ID（必填，禅道缺它会静默丢弃创建请求）
+        #[arg(long)]
+        project: Option<u64>,
         #[arg(long)]
         severity: u8,
         #[arg(long)]
@@ -260,6 +266,11 @@ pub enum BugSubcommand {
         deadline: Option<String>,
         #[arg(long)]
         opened_build: Option<Vec<String>>,
+        /// 附件文件路径，可重复指定多个
+        ///
+        /// 需要 ZenTao v22.0+（v2 文件接口）。老版本会报明确错误而不是静默失败。
+        #[arg(long = "attachment", value_name = "FILE")]
+        attachments: Option<Vec<String>>,
     },
     /// 更新 Bug（API Commands）
     /// 注意：status/resolution/assignedTo 不能通过此接口修改，需使用专用接口
@@ -837,11 +848,21 @@ pub fn run() -> Result<()> {
             browse::run_tui(&config).expect("Browse failed");
         }
         Commands::Whoami => {
-            if let Some(account) = &config.account {
-                println!("{}", account);
-            } else {
-                println!("Not logged in");
-                println!("  Run 'zentao auth login' to login");
+            // 问服务端「当前 token 是谁的」——只读本地 config.account 会漏掉
+            // 用 ZENTAO_TOKEN 环境变量登录的场景（account 没落盘）
+            match rt.block_on(ctx.client().whoami()) {
+                Ok(profile) => {
+                    println!("{}", profile.account);
+                    if let Some(name) = profile.realname.as_deref() {
+                        if !name.is_empty() {
+                            println!("  {}", name);
+                        }
+                    }
+                }
+                Err(e) => {
+                    println!("Not logged in");
+                    println!("  {}", e);
+                }
             }
         }
     }
