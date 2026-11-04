@@ -267,8 +267,8 @@ mod tests {
         assert_eq!(build.product, 2);
         assert_eq!(build.project, 3);
         assert_eq!(build.branch, Some(1));
-        assert_eq!(build.stories, Some(vec![1,2,3,4,5,6,7,8]));
-        assert_eq!(build.bugs, Some(vec![1,2,3]));
+        assert_eq!(build.stories, Some(vec![1, 2, 3, 4, 5, 6, 7, 8]));
+        assert_eq!(build.bugs, Some(vec![1, 2, 3]));
     }
 
     /// 测试最小 Build JSON 反序列化

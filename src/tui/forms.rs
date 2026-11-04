@@ -16,6 +16,12 @@ pub struct FormField {
     pub is_required: bool,
 }
 
+/// 表单字段容器 —— 让 TUI 的输入处理不必按 AppState 逐个 match
+pub trait FormFields {
+    fn get_fields(&self) -> Vec<&FormField>;
+    fn get_mut_fields(&mut self) -> Vec<&mut FormField>;
+}
+
 impl FormField {
     pub fn new(label: &str, value: &str, placeholder: &str, is_required: bool) -> Self {
         Self {
@@ -141,6 +147,14 @@ impl ProgramFormFields {
         None
     }
 }
+impl FormFields for ProgramFormFields {
+    fn get_fields(&self) -> Vec<&FormField> {
+        self.get_fields()
+    }
+    fn get_mut_fields(&mut self) -> Vec<&mut FormField> {
+        self.get_mut_fields()
+    }
+}
 
 /// ProductPlan 表单字段
 #[derive(Debug, Clone)]
@@ -229,6 +243,14 @@ impl ProductPlanFormFields {
             return Some("标题不能为空".to_string());
         }
         None
+    }
+}
+impl FormFields for ProductPlanFormFields {
+    fn get_fields(&self) -> Vec<&FormField> {
+        self.get_fields()
+    }
+    fn get_mut_fields(&mut self) -> Vec<&mut FormField> {
+        self.get_mut_fields()
     }
 }
 
@@ -338,5 +360,148 @@ impl ReleaseFormFields {
             return Some("名称不能为空".to_string());
         }
         None
+    }
+}
+impl FormFields for ReleaseFormFields {
+    fn get_fields(&self) -> Vec<&FormField> {
+        self.get_fields()
+    }
+    fn get_mut_fields(&mut self) -> Vec<&mut FormField> {
+        self.get_mut_fields()
+    }
+}
+
+/// Bug 表单字段
+///
+/// 禅道提 Bug 的必填项（缺 project/execution/module 会返回 201 但不落库）
+#[derive(Debug, Clone)]
+pub struct BugFormFields {
+    pub title: FormField,
+    pub severity: FormField,
+    pub pri: FormField,
+    pub type_: FormField,
+    pub project: FormField,
+    pub execution: FormField,
+    pub module: FormField,
+    pub steps: FormField,
+}
+
+impl BugFormFields {
+    pub fn new(project_id: Option<u64>) -> Self {
+        Self {
+            title: FormField::new("标题 (Title)", "", "请输入 Bug 标题", true),
+            severity: FormField::new("严重程度 (Severity)", "3", "1-5", true),
+            pri: FormField::new("优先级 (Pri)", "3", "1-4", false),
+            type_: FormField::new(
+                "类型 (Type)",
+                "codeerror",
+                "codeerror/config/install/...",
+                true,
+            ),
+            project: FormField::new(
+                "项目 (Project)",
+                &project_id.map(|v| v.to_string()).unwrap_or_default(),
+                "项目 ID（必填）",
+                true,
+            ),
+            execution: FormField::new("执行 (Execution)", "", "执行 ID（必填）", true),
+            module: FormField::new("模块 (Module)", "", "模块 ID（必填）", true),
+            steps: FormField::new("重现步骤 (Steps)", "", "复现步骤", true),
+        }
+    }
+
+    pub fn from_bug(bug: &crate::api::Bug) -> Self {
+        Self {
+            title: FormField::new("标题 (Title)", &bug.title, "", true),
+            severity: FormField::new("严重程度 (Severity)", &bug.severity.to_string(), "", true),
+            pri: FormField::new("优先级 (Pri)", &bug.pri.to_string(), "", false),
+            type_: FormField::new(
+                "类型 (Type)",
+                bug.type_.as_deref().unwrap_or("codeerror"),
+                "",
+                true,
+            ),
+            project: FormField::readonly("项目 (Project)", ""),
+            execution: FormField::new("执行 (Execution)", "", "", false),
+            module: FormField::new("模块 (Module)", "", "", false),
+            steps: FormField::new(
+                "重现步骤 (Steps)",
+                bug.steps.as_deref().unwrap_or(""),
+                "",
+                true,
+            ),
+        }
+    }
+
+    pub fn validate(&self) -> Option<String> {
+        if self.title.value.trim().is_empty() {
+            return Some("标题不能为空".to_string());
+        }
+        if self.project.value.trim().is_empty() {
+            return Some("项目不能为空（禅道缺 project 会静默不落库）".to_string());
+        }
+        if self.execution.value.trim().is_empty() {
+            return Some("执行不能为空（禅道缺 execution 会静默不落库）".to_string());
+        }
+        if self.module.value.trim().is_empty() {
+            return Some("模块不能为空（禅道缺 module 会静默不落库）".to_string());
+        }
+        None
+    }
+}
+
+impl FormFields for BugFormFields {
+    fn get_fields(&self) -> Vec<&FormField> {
+        vec![
+            &self.title,
+            &self.severity,
+            &self.pri,
+            &self.type_,
+            &self.project,
+            &self.execution,
+            &self.module,
+            &self.steps,
+        ]
+    }
+    fn get_mut_fields(&mut self) -> Vec<&mut FormField> {
+        vec![
+            &mut self.title,
+            &mut self.severity,
+            &mut self.pri,
+            &mut self.type_,
+            &mut self.project,
+            &mut self.execution,
+            &mut self.module,
+            &mut self.steps,
+        ]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// 禅道缺 project/execution/module 会返回 201 但不落库，
+    /// 表单必须在这三项为空时拦住提交。
+    #[test]
+    fn bug_form_rejects_missing_required_fields() {
+        let mut f = BugFormFields::new(Some(1));
+        assert!(f.validate().is_some(), "标题为空应拦截");
+
+        f.title.value = "标题".into();
+        assert!(f.validate().is_some(), "执行/模块为空应拦截");
+
+        f.execution.value = "2".into();
+        f.module.value = "3".into();
+        assert!(f.validate().is_none(), "必填齐全应放行");
+
+        f.project.value.clear();
+        assert!(f.validate().is_some(), "项目为空应拦截");
+    }
+
+    #[test]
+    fn bug_form_carries_config_project_as_default() {
+        assert_eq!(BugFormFields::new(Some(42)).project.value, "42");
+        assert_eq!(BugFormFields::new(None).project.value, "");
     }
 }

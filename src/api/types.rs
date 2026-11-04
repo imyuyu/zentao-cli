@@ -483,7 +483,11 @@ pub struct Build {
     /// 所属分支/平台
     ///
     /// 禅道返回的是字符串（如 `"0"`），不是数字——直接用 Option<u64> 会整条解析失败。
-    #[serde(default, skip_serializing_if = "Option::is_none", deserialize_with = "de_opt_u64_from_any")]
+    #[serde(
+        default,
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "de_opt_u64_from_any"
+    )]
     pub branch: Option<u64>,
     /// SCM 路径
     #[serde(skip_serializing_if = "Option::is_none")]

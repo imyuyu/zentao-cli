@@ -108,7 +108,8 @@ mod tests {
     #[tokio::test]
     async fn create_fails_without_product() {
         let (_server, ctx) = setup(None);
-        let result = StoryService::create(&ctx, "Test".into(), None, 3, None, None, None, None).await;
+        let result =
+            StoryService::create(&ctx, "Test".into(), None, 3, None, None, None, None).await;
         assert!(result.is_err());
     }
 

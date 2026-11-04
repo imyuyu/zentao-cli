@@ -26,6 +26,13 @@ use crate::service::{
     testtask::TesttaskService, ticket::TicketService, user::UserService,
 };
 use crate::tui::forms::{ProductPlanFormFields, ProgramFormFields, ReleaseFormFields};
+use crate::tui::forms_build::BuildFormFields;
+use crate::tui::forms_execution::ExecutionFormFields;
+use crate::tui::forms_project::ProjectFormFields;
+use crate::tui::forms_story::StoryFormFields;
+use crate::tui::forms_task::TaskFormFields;
+use crate::tui::forms_testcase::TestcaseFormFields;
+use crate::tui::forms_user::UserFormFields;
 
 use super::pages::*;
 
@@ -172,6 +179,10 @@ enum EnterAction {
     UpdateProductPlan,
     CreateRelease,
     UpdateRelease,
+    /// 其余 7 个资源的 CRUD 提交（表单已校验通过）
+    Crud(FormSubmitAction),
+    /// 表单校验失败
+    CrudValidateError(String),
 }
 
 enum FormSubmitResult {
@@ -201,6 +212,20 @@ struct AsyncHandle {
     form_tx: std::sync::Arc<mpsc::Sender<FormSubmitResult>>,
 }
 
+/// CRUD 提交结果统一回写：成功回主菜单，失败进错误页（调用方负责刷新列表）
+fn send_crud_result(
+    tx: &mpsc::Sender<(AppState, Option<String>, Option<String>)>,
+    result: anyhow::Result<()>,
+) {
+    let state = match result {
+        Ok(_) => AppState::MainMenu { selected: 0 },
+        Err(e) => AppState::Error {
+            message: e.to_string(),
+        },
+    };
+    let _ = tx.send((state, None, None));
+}
+
 pub enum FormSubmitAction {
     DeleteProgram(u64),
     DeleteProductPlan(u64),
@@ -211,6 +236,27 @@ pub enum FormSubmitAction {
     UpdateProductPlan(u64, ProductPlanFormFields),
     CreateRelease(Option<u64>, ReleaseFormFields),
     UpdateRelease(u64, ReleaseFormFields),
+    DeleteStory(u64),
+    CreateStory(StoryFormFields),
+    UpdateStory(u64, StoryFormFields),
+    DeleteTask(u64),
+    CreateTask(TaskFormFields),
+    UpdateTask(u64, TaskFormFields),
+    DeleteTestcase(u64),
+    CreateTestcase(TestcaseFormFields),
+    UpdateTestcase(u64, TestcaseFormFields),
+    DeleteBuild(u64),
+    CreateBuild(BuildFormFields),
+    UpdateBuild(u64, BuildFormFields),
+    DeleteProject(u64),
+    CreateProject(ProjectFormFields),
+    UpdateProject(u64, ProjectFormFields),
+    DeleteExecution(u64),
+    CreateExecution(ExecutionFormFields),
+    UpdateExecution(u64, ExecutionFormFields),
+    DeleteUser(u64),
+    CreateUser(UserFormFields),
+    UpdateUser(u64, UserFormFields),
 }
 
 impl Browser {
@@ -494,6 +540,167 @@ impl Browser {
                                     }
                                 }
                             }
+                            FormSubmitAction::DeleteStory(id) => {
+                                send_crud_result(
+                                    &tx,
+                                    StoryService::delete(&ctx, id).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::CreateStory(fields) => {
+                                let req = fields.to_create_request();
+                                let r = StoryService::create(
+                                    &ctx,
+                                    req.title,
+                                    Some(req.product),
+                                    req.pri,
+                                    req.category,
+                                    req.spec,
+                                    req.estimate,
+                                    req.module,
+                                )
+                                .await;
+                                send_crud_result(&tx, r.map(|_| ()));
+                            }
+                            FormSubmitAction::UpdateStory(id, fields) => {
+                                send_crud_result(
+                                    &tx,
+                                    StoryService::update(&ctx, id, fields.to_update_request())
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::DeleteTask(id) => {
+                                send_crud_result(
+                                    &tx,
+                                    TaskService::delete(&ctx, id).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::CreateTask(fields) => {
+                                let req = fields.to_create_request();
+                                send_crud_result(
+                                    &tx,
+                                    TaskService::create(&ctx, req).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::UpdateTask(id, fields) => {
+                                send_crud_result(
+                                    &tx,
+                                    TaskService::update(&ctx, id, fields.to_update_request())
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::DeleteTestcase(id) => {
+                                send_crud_result(
+                                    &tx,
+                                    TestcaseService::delete(&ctx, id).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::CreateTestcase(fields) => {
+                                let req = fields.to_create_request();
+                                send_crud_result(
+                                    &tx,
+                                    TestcaseService::create(&ctx, config.product_id, req)
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::UpdateTestcase(id, fields) => {
+                                send_crud_result(
+                                    &tx,
+                                    TestcaseService::update(&ctx, id, fields.to_update_request())
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::DeleteBuild(id) => {
+                                send_crud_result(
+                                    &tx,
+                                    BuildService::delete(&ctx, id).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::CreateBuild(fields) => {
+                                let req = fields.to_create_request();
+                                send_crud_result(
+                                    &tx,
+                                    BuildService::create(&ctx, config.project_id, req)
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::UpdateBuild(id, fields) => {
+                                send_crud_result(
+                                    &tx,
+                                    BuildService::update(&ctx, id, fields.to_update_request())
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::DeleteProject(id) => {
+                                send_crud_result(
+                                    &tx,
+                                    ProjectService::delete(&ctx, id).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::CreateProject(fields) => {
+                                let req = fields.to_create_request();
+                                send_crud_result(
+                                    &tx,
+                                    ProjectService::create(&ctx, req).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::UpdateProject(id, fields) => {
+                                send_crud_result(
+                                    &tx,
+                                    ProjectService::update(&ctx, id, fields.to_update_request())
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::DeleteExecution(id) => {
+                                send_crud_result(
+                                    &tx,
+                                    ExecutionService::delete(&ctx, id).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::CreateExecution(fields) => {
+                                let req = fields.to_create_request();
+                                send_crud_result(
+                                    &tx,
+                                    ExecutionService::create(&ctx, config.project_id, req)
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::UpdateExecution(id, fields) => {
+                                send_crud_result(
+                                    &tx,
+                                    ExecutionService::update(&ctx, id, fields.to_update_request())
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::DeleteUser(id) => {
+                                send_crud_result(
+                                    &tx,
+                                    UserService::delete(&ctx, id).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::CreateUser(fields) => {
+                                let req = fields.to_create_request();
+                                send_crud_result(
+                                    &tx,
+                                    UserService::create(&ctx, &req).await.map(|_| ()),
+                                );
+                            }
+                            FormSubmitAction::UpdateUser(id, fields) => {
+                                send_crud_result(
+                                    &tx,
+                                    UserService::update(&ctx, id, &fields.to_update_request())
+                                        .await
+                                        .map(|_| ()),
+                                );
+                            }
                         }
                     });
                 }
@@ -673,35 +880,22 @@ impl Browser {
                         AppState::BugDetail { bug, .. } => {
                             render_bug_detail(f, area, bug);
                         }
-                        AppState::BugCreate {
-                            fields,
-                            field_order,
-                            focused_field,
-                            error,
-                        } => {
+                        AppState::BugCreate { fields, error } => {
                             Self::render_bug_form(
                                 f,
                                 area,
                                 fields,
-                                field_order,
-                                *focused_field,
+                                selected,
                                 error.as_deref(),
                                 true,
                             );
                         }
-                        AppState::BugUpdate {
-                            fields,
-                            field_order,
-                            focused_field,
-                            error,
-                            ..
-                        } => {
+                        AppState::BugUpdate { fields, error, .. } => {
                             Self::render_bug_form(
                                 f,
                                 area,
                                 fields,
-                                field_order,
-                                *focused_field,
+                                selected,
                                 error.as_deref(),
                                 false,
                             );
@@ -825,6 +1019,32 @@ impl Browser {
                         }
                         AppState::ReleaseDelete { .. } => {
                             render_delete_dialog(f, area, app);
+                        }
+                        // 其余 7 个资源的表单/删除弹窗，统一走通用渲染
+                        AppState::StoryCreate { .. }
+                        | AppState::StoryUpdate { .. }
+                        | AppState::TaskCreate { .. }
+                        | AppState::TaskUpdate { .. }
+                        | AppState::TestcaseCreate { .. }
+                        | AppState::TestcaseUpdate { .. }
+                        | AppState::BuildCreate { .. }
+                        | AppState::BuildUpdate { .. }
+                        | AppState::ProjectCreate { .. }
+                        | AppState::ProjectUpdate { .. }
+                        | AppState::ExecutionCreate { .. }
+                        | AppState::ExecutionUpdate { .. }
+                        | AppState::UserCreate { .. }
+                        | AppState::UserUpdate { .. } => {
+                            Self::render_crud_form(f, area, app);
+                        }
+                        AppState::StoryDelete { .. }
+                        | AppState::TaskDelete { .. }
+                        | AppState::TestcaseDelete { .. }
+                        | AppState::BuildDelete { .. }
+                        | AppState::ProjectDelete { .. }
+                        | AppState::ExecutionDelete { .. }
+                        | AppState::UserDelete { .. } => {
+                            Self::render_crud_delete(f, area, app);
                         }
                         AppState::FormSubmitting { message } => {
                             Self::render_loading(f, area, message, self.spinner_frame);
@@ -1649,6 +1869,42 @@ impl Browser {
                         return;
                     }
                 }
+                AppState::StoryList { .. } => {
+                    let pid = app.config.product_id;
+                    if let Some(pid) = pid {
+                        app.set_story_create(pid);
+                        return;
+                    }
+                }
+                AppState::TaskList { .. } => {
+                    app.set_task_create(None, app.config.project_id);
+                    return;
+                }
+                AppState::TestcaseList { .. } => {
+                    let pid = app.config.product_id;
+                    if let Some(pid) = pid {
+                        app.set_testcase_create(pid);
+                        return;
+                    }
+                }
+                AppState::BuildList { .. } => {
+                    if let (Some(pid), Some(eid)) = (app.config.product_id, app.config.project_id) {
+                        app.set_build_create(pid, eid);
+                        return;
+                    }
+                }
+                AppState::ProjectList { .. } => {
+                    app.set_project_create();
+                    return;
+                }
+                AppState::ExecutionList { .. } => {
+                    app.set_execution_create(app.config.project_id);
+                    return;
+                }
+                AppState::UserList { .. } => {
+                    app.set_user_create();
+                    return;
+                }
                 _ => {}
             }
         }
@@ -1669,6 +1925,41 @@ impl Browser {
                 AppState::ReleaseDetail { release, .. } => {
                     let release_clone = release.clone();
                     app.set_release_update(release_clone.id, &release_clone);
+                    return;
+                }
+                AppState::StoryDetail { story, .. } => {
+                    let s = story.clone();
+                    app.set_story_update(&s);
+                    return;
+                }
+                AppState::TaskDetail { task, .. } => {
+                    let t = task.clone();
+                    app.set_task_update(&t);
+                    return;
+                }
+                AppState::TestcaseDetail { testcase, .. } => {
+                    let t = testcase.clone();
+                    app.set_testcase_update(&t);
+                    return;
+                }
+                AppState::BuildDetail { build, .. } => {
+                    let b = build.clone();
+                    app.set_build_update(&b);
+                    return;
+                }
+                AppState::ProjectDetail { project } => {
+                    let p = project.clone();
+                    app.set_project_update(&p);
+                    return;
+                }
+                AppState::ExecutionDetail { execution, .. } => {
+                    let e = execution.clone();
+                    app.set_execution_update(&e);
+                    return;
+                }
+                AppState::UserDetail { user } => {
+                    let u = user.clone();
+                    app.set_user_update(&u);
                     return;
                 }
                 _ => {}
@@ -1694,6 +1985,34 @@ impl Browser {
                     let id = release.id;
                     let name = release.name.clone();
                     app.set_release_delete(id, &name);
+                    return;
+                }
+                AppState::StoryDetail { story, .. } => {
+                    app.set_story_delete(story.id, &story.title.clone());
+                    return;
+                }
+                AppState::TaskDetail { task, .. } => {
+                    app.set_task_delete(task.id, &task.name.clone());
+                    return;
+                }
+                AppState::TestcaseDetail { testcase, .. } => {
+                    app.set_testcase_delete(testcase.id, &testcase.title.clone());
+                    return;
+                }
+                AppState::BuildDetail { build, .. } => {
+                    app.set_build_delete(build.id, &build.name.clone());
+                    return;
+                }
+                AppState::ProjectDetail { project } => {
+                    app.set_project_delete(project.id, &project.name.clone());
+                    return;
+                }
+                AppState::ExecutionDetail { execution, .. } => {
+                    app.set_execution_delete(execution.id, &execution.name.clone());
+                    return;
+                }
+                AppState::UserDetail { user } => {
+                    app.set_user_delete(user.id, &user.realname.clone());
                     return;
                 }
                 _ => {}
@@ -1888,6 +2207,119 @@ impl Browser {
                     AppState::ReleaseCreate { .. } => Some(EnterAction::CreateRelease),
                     AppState::ReleaseUpdate { .. } => Some(EnterAction::UpdateRelease),
                     AppState::ReleaseDelete { id, .. } => Some(EnterAction::DeleteRelease(*id)),
+                    // 其余 7 个资源：表单校验通过后统一走 Crud
+                    AppState::StoryCreate { fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::CreateStory(
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::StoryUpdate { id, fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::UpdateStory(
+                            *id,
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::StoryDelete { id, .. } => {
+                        Some(EnterAction::Crud(FormSubmitAction::DeleteStory(*id)))
+                    }
+                    AppState::TaskCreate { fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::CreateTask(
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::TaskUpdate { id, fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::UpdateTask(
+                            *id,
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::TaskDelete { id, .. } => {
+                        Some(EnterAction::Crud(FormSubmitAction::DeleteTask(*id)))
+                    }
+                    AppState::TestcaseCreate { fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::CreateTestcase(
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::TestcaseUpdate { id, fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::UpdateTestcase(
+                            *id,
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::TestcaseDelete { id, .. } => {
+                        Some(EnterAction::Crud(FormSubmitAction::DeleteTestcase(*id)))
+                    }
+                    AppState::BuildCreate { fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::CreateBuild(
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::BuildUpdate { id, fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::UpdateBuild(
+                            *id,
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::BuildDelete { id, .. } => {
+                        Some(EnterAction::Crud(FormSubmitAction::DeleteBuild(*id)))
+                    }
+                    AppState::ProjectCreate { fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::CreateProject(
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::ProjectUpdate { id, fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::UpdateProject(
+                            *id,
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::ProjectDelete { id, .. } => {
+                        Some(EnterAction::Crud(FormSubmitAction::DeleteProject(*id)))
+                    }
+                    AppState::ExecutionCreate { fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::CreateExecution(
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::ExecutionUpdate { id, fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::UpdateExecution(
+                            *id,
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::ExecutionDelete { id, .. } => {
+                        Some(EnterAction::Crud(FormSubmitAction::DeleteExecution(*id)))
+                    }
+                    AppState::UserCreate { fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::CreateUser(
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::UserUpdate { id, fields, .. } => fields.validate().map_or(
+                        Some(EnterAction::Crud(FormSubmitAction::UpdateUser(
+                            *id,
+                            fields.clone(),
+                        ))),
+                        |m| Some(EnterAction::CrudValidateError(m)),
+                    ),
+                    AppState::UserDelete { id, .. } => {
+                        Some(EnterAction::Crud(FormSubmitAction::DeleteUser(*id)))
+                    }
                     _ => None,
                 };
 
@@ -1905,7 +2337,7 @@ impl Browser {
                                     let config = app.config.clone();
                                     let form_tx = (**form_tx).clone();
                                     let rt = rt.clone();
-                                    rt.block_on(async move {
+                                    rt.spawn(async move {
                                         let ctx = AppContext::new(
                                             config.clone(),
                                             OutputFormat::Table,
@@ -1913,24 +2345,27 @@ impl Browser {
                                         );
                                         let result = BugService::create(
                                             &ctx,
-                                            fields.get("title").cloned().unwrap_or_default(),
+                                            fields.title.value.clone(),
                                             config.product_id,
-                                            config.project_id,
                                             fields
-                                                .get("severity")
-                                                .and_then(|s| s.parse().ok())
-                                                .unwrap_or(3),
-                                            fields.get("pri").and_then(|s| s.parse().ok()),
-                                            fields.get("type").cloned(),
-                                            fields.get("steps").cloned(),
-                                            fields.get("story").and_then(|s| s.parse().ok()),
-                                            fields.get("branch").and_then(|s| s.parse().ok()),
-                                            fields.get("module").and_then(|s| s.parse().ok()),
-                                            fields.get("execution").and_then(|s| s.parse().ok()),
-                                            fields.get("keywords").cloned(),
-                                            fields.get("os").cloned(),
-                                            fields.get("browser").cloned(),
-                                            fields.get("deadline").cloned(),
+                                                .project
+                                                .value
+                                                .trim()
+                                                .parse()
+                                                .ok()
+                                                .or(config.project_id),
+                                            fields.severity.value.trim().parse().unwrap_or(3),
+                                            fields.pri.value.trim().parse().ok(),
+                                            Some(fields.type_.value.clone()),
+                                            Some(fields.steps.value.clone()),
+                                            None,
+                                            None,
+                                            fields.module.value.trim().parse().ok(),
+                                            fields.execution.value.trim().parse().ok(),
+                                            None,
+                                            None,
+                                            None,
+                                            None,
                                             None,
                                         )
                                         .await;
@@ -1956,36 +2391,28 @@ impl Browser {
                                     let config = app.config.clone();
                                     let form_tx = (**form_tx).clone();
                                     let rt = rt.clone();
-                                    rt.block_on(async move {
+                                    rt.spawn(async move {
                                         let ctx = AppContext::new(
                                             config.clone(),
                                             OutputFormat::Table,
                                             false,
                                         );
                                         let req = crate::api::UpdateBugRequest {
-                                            title: fields.get("title").cloned(),
-                                            keywords: fields.get("keywords").cloned(),
-                                            severity: fields
-                                                .get("severity")
-                                                .and_then(|s| s.parse().ok()),
-                                            pri: fields.get("pri").and_then(|s| s.parse().ok()),
-                                            type_: fields.get("type").cloned(),
-                                            os: fields.get("os").cloned(),
-                                            browser: fields.get("browser").cloned(),
-                                            steps: fields.get("steps").cloned(),
-                                            task: fields.get("task").and_then(|s| s.parse().ok()),
-                                            story: fields.get("story").and_then(|s| s.parse().ok()),
-                                            deadline: fields.get("deadline").cloned(),
+                                            title: Some(fields.title.value.clone()),
+                                            keywords: None,
+                                            severity: fields.severity.value.trim().parse().ok(),
+                                            pri: fields.pri.value.trim().parse().ok(),
+                                            type_: Some(fields.type_.value.clone()),
+                                            os: None,
+                                            browser: None,
+                                            steps: Some(fields.steps.value.clone()),
+                                            task: None,
+                                            story: None,
+                                            deadline: None,
                                             opened_build: None,
-                                            branch: fields
-                                                .get("branch")
-                                                .and_then(|s| s.parse().ok()),
-                                            module: fields
-                                                .get("module")
-                                                .and_then(|s| s.parse().ok()),
-                                            execution: fields
-                                                .get("execution")
-                                                .and_then(|s| s.parse().ok()),
+                                            branch: None,
+                                            module: fields.module.value.trim().parse().ok(),
+                                            execution: fields.execution.value.trim().parse().ok(),
                                         };
                                         let result = BugService::update(&ctx, id, req).await;
                                         match result {
@@ -2008,7 +2435,7 @@ impl Browser {
                                 let config = app.config.clone();
                                 let form_tx = (**form_tx).clone();
                                 let rt = rt.clone();
-                                rt.block_on(async move {
+                                rt.spawn(async move {
                                     let ctx = AppContext::new(config, OutputFormat::Table, false);
                                     let result = BugService::delete(&ctx, id).await;
                                     match result {
@@ -2024,6 +2451,13 @@ impl Browser {
                                     }
                                 });
                             }
+                        }
+                        EnterAction::Crud(action) => {
+                            app.set_form_submitting("正在提交...");
+                            self.pending_form_submit = Some(action);
+                        }
+                        EnterAction::CrudValidateError(msg) => {
+                            app.set_error(msg);
                         }
                         EnterAction::StoryDetail {
                             story,
@@ -2145,15 +2579,11 @@ impl Browser {
                 }
             }
             KeyCode::Tab | KeyCode::BackTab => {
-                // Tab navigation in forms
-                let max_field = match &app.state {
-                    AppState::ProgramCreate { .. } | AppState::ProgramUpdate { .. } => 4,
-                    AppState::ProductPlanCreate { .. } | AppState::ProductPlanUpdate { .. } => 3,
-                    AppState::ReleaseCreate { .. } | AppState::ReleaseUpdate { .. } => 4,
-                    _ => return,
+                let Some(fields) = app.form_fields_mut() else {
+                    return;
                 };
+                let max_field = fields.len().saturating_sub(1);
 
-                // Navigate form fields
                 if key.code == KeyCode::BackTab || key.modifiers.contains(KeyModifiers::SHIFT) {
                     if app.selected_index > 0 {
                         app.selected_index -= 1;
@@ -2163,104 +2593,24 @@ impl Browser {
                 }
             }
             KeyCode::Char(c) => {
-                // Handle character input in forms
-                let is_form_state = match &app.state {
-                    AppState::ProgramCreate { .. }
-                    | AppState::ProgramUpdate { .. }
-                    | AppState::ProductPlanCreate { .. }
-                    | AppState::ProductPlanUpdate { .. }
-                    | AppState::ReleaseCreate { .. }
-                    | AppState::ReleaseUpdate { .. } => true,
-                    _ => false,
+                let idx = app.selected_index;
+                let Some(fields) = app.form_fields_mut() else {
+                    return;
                 };
-
-                if is_form_state {
-                    match &mut app.state {
-                        AppState::ProgramCreate { fields }
-                        | AppState::ProgramUpdate { fields, .. } => {
-                            let idx = app.selected_index;
-                            let mut form_fields = fields.get_mut_fields();
-                            if idx < form_fields.len() {
-                                let field = &mut *form_fields[idx];
-                                if field.editable {
-                                    field.value.push(c);
-                                }
-                            }
-                        }
-                        AppState::ProductPlanCreate { fields, .. }
-                        | AppState::ProductPlanUpdate { fields, .. } => {
-                            let idx = app.selected_index;
-                            let mut form_fields = fields.get_mut_fields();
-                            if idx < form_fields.len() {
-                                let field = &mut *form_fields[idx];
-                                if field.editable {
-                                    field.value.push(c);
-                                }
-                            }
-                        }
-                        AppState::ReleaseCreate { fields, .. }
-                        | AppState::ReleaseUpdate { fields, .. } => {
-                            let idx = app.selected_index;
-                            let mut form_fields = fields.get_mut_fields();
-                            if idx < form_fields.len() {
-                                let field = &mut *form_fields[idx];
-                                if field.editable {
-                                    field.value.push(c);
-                                }
-                            }
-                        }
-                        _ => {}
+                if let Some(field) = fields.into_iter().nth(idx) {
+                    if field.editable {
+                        field.value.push(c);
                     }
                 }
             }
             KeyCode::Backspace => {
-                // Handle backspace in forms
-                let is_form_state = match &app.state {
-                    AppState::ProgramCreate { .. }
-                    | AppState::ProgramUpdate { .. }
-                    | AppState::ProductPlanCreate { .. }
-                    | AppState::ProductPlanUpdate { .. }
-                    | AppState::ReleaseCreate { .. }
-                    | AppState::ReleaseUpdate { .. } => true,
-                    _ => false,
+                let idx = app.selected_index;
+                let Some(fields) = app.form_fields_mut() else {
+                    return;
                 };
-
-                if is_form_state {
-                    match &mut app.state {
-                        AppState::ProgramCreate { fields }
-                        | AppState::ProgramUpdate { fields, .. } => {
-                            let idx = app.selected_index;
-                            let mut form_fields = fields.get_mut_fields();
-                            if idx < form_fields.len() {
-                                let field = &mut *form_fields[idx];
-                                if field.editable {
-                                    field.value.pop();
-                                }
-                            }
-                        }
-                        AppState::ProductPlanCreate { fields, .. }
-                        | AppState::ProductPlanUpdate { fields, .. } => {
-                            let idx = app.selected_index;
-                            let mut form_fields = fields.get_mut_fields();
-                            if idx < form_fields.len() {
-                                let field = &mut *form_fields[idx];
-                                if field.editable {
-                                    field.value.pop();
-                                }
-                            }
-                        }
-                        AppState::ReleaseCreate { fields, .. }
-                        | AppState::ReleaseUpdate { fields, .. } => {
-                            let idx = app.selected_index;
-                            let mut form_fields = fields.get_mut_fields();
-                            if idx < form_fields.len() {
-                                let field = &mut *form_fields[idx];
-                                if field.editable {
-                                    field.value.pop();
-                                }
-                            }
-                        }
-                        _ => {}
+                if let Some(field) = fields.into_iter().nth(idx) {
+                    if field.editable {
+                        field.value.pop();
                     }
                 }
             }
@@ -2374,6 +2724,29 @@ impl Browser {
                 AppState::BugDelete { .. } => {
                     app.restore_list();
                 }
+                AppState::StoryCreate { .. }
+                | AppState::StoryUpdate { .. }
+                | AppState::StoryDelete { .. }
+                | AppState::TaskCreate { .. }
+                | AppState::TaskUpdate { .. }
+                | AppState::TaskDelete { .. }
+                | AppState::TestcaseCreate { .. }
+                | AppState::TestcaseUpdate { .. }
+                | AppState::TestcaseDelete { .. }
+                | AppState::BuildCreate { .. }
+                | AppState::BuildUpdate { .. }
+                | AppState::BuildDelete { .. }
+                | AppState::ProjectCreate { .. }
+                | AppState::ProjectUpdate { .. }
+                | AppState::ProjectDelete { .. }
+                | AppState::ExecutionCreate { .. }
+                | AppState::ExecutionUpdate { .. }
+                | AppState::ExecutionDelete { .. }
+                | AppState::UserCreate { .. }
+                | AppState::UserUpdate { .. }
+                | AppState::UserDelete { .. } => {
+                    app.restore_list();
+                }
                 _ => {}
             },
             KeyCode::Char('r') | KeyCode::F(5) => {
@@ -2405,108 +2778,6 @@ impl Browser {
             KeyCode::Char('d') => {
                 if let AppState::BugDetail { bug, .. } = &app.state {
                     app.set_bug_delete(bug.id, bug.title.clone());
-                }
-            }
-            KeyCode::Tab => {
-                // Navigate to next field in forms
-                if let AppState::BugCreate {
-                    ref mut focused_field,
-                    ..
-                } = &mut app.state
-                {
-                    let max = 4; // field_order.len() - 1
-                    if *focused_field < max {
-                        *focused_field += 1;
-                    }
-                } else if let AppState::BugUpdate {
-                    ref mut focused_field,
-                    ..
-                } = &mut app.state
-                {
-                    let max = 4;
-                    if *focused_field < max {
-                        *focused_field += 1;
-                    }
-                }
-            }
-            KeyCode::BackTab => {
-                // Navigate to previous field in forms
-                if let AppState::BugCreate {
-                    ref mut focused_field,
-                    ..
-                } = &mut app.state
-                {
-                    if *focused_field > 0 {
-                        *focused_field -= 1;
-                    }
-                } else if let AppState::BugUpdate {
-                    ref mut focused_field,
-                    ..
-                } = &mut app.state
-                {
-                    if *focused_field > 0 {
-                        *focused_field -= 1;
-                    }
-                }
-            }
-            KeyCode::Char(c) => {
-                match c {
-                    // Handle quit confirmation
-                    'y' | 'Y' if matches!(app.state, AppState::ConfirmQuit) => {
-                        app.quit();
-                    }
-                    // Type in focused field for BugCreate/BugUpdate
-                    _ => {
-                        if let AppState::BugCreate {
-                            ref mut fields,
-                            ref field_order,
-                            focused_field,
-                            ..
-                        } = &mut app.state
-                        {
-                            if let Some(key) = field_order.get(*focused_field) {
-                                fields.get_mut(key).map(|v| v.push(c));
-                            }
-                        } else if let AppState::BugUpdate {
-                            ref mut fields,
-                            ref field_order,
-                            focused_field,
-                            ..
-                        } = &mut app.state
-                        {
-                            if let Some(key) = field_order.get(*focused_field) {
-                                fields.get_mut(key).map(|v| v.push(c));
-                            }
-                        }
-                    }
-                }
-            }
-            KeyCode::Backspace => {
-                // Delete character in focused field
-                if let AppState::BugCreate {
-                    ref mut fields,
-                    ref field_order,
-                    focused_field,
-                    ..
-                } = &mut app.state
-                {
-                    if let Some(key) = field_order.get(*focused_field) {
-                        fields.get_mut(key).map(|v| {
-                            v.pop();
-                        });
-                    }
-                } else if let AppState::BugUpdate {
-                    ref mut fields,
-                    ref field_order,
-                    focused_field,
-                    ..
-                } = &mut app.state
-                {
-                    if let Some(key) = field_order.get(*focused_field) {
-                        fields.get_mut(key).map(|v| {
-                            v.pop();
-                        });
-                    }
                 }
             }
             _ => {}
@@ -3061,90 +3332,98 @@ impl Browser {
         f.render_widget(choices, chunks[1]);
     }
 
+    /// 7 个资源的表单渲染 —— 全部走统一的 FormFields trait
+    fn render_crud_form(f: &mut ratatui::Frame, area: Rect, app: &crate::tui::app::App) {
+        use crate::tui::forms::FormFields as _;
+        let (title, fields, selected): (&str, Vec<&crate::tui::forms::FormField>, usize) =
+            match &app.state {
+                AppState::StoryCreate { fields, .. } => {
+                    ("创建需求", fields.get_fields(), app.selected_index)
+                }
+                AppState::StoryUpdate { fields, .. } => {
+                    ("编辑需求", fields.get_fields(), app.selected_index)
+                }
+                AppState::TaskCreate { fields, .. } => {
+                    ("创建任务", fields.get_fields(), app.selected_index)
+                }
+                AppState::TaskUpdate { fields, .. } => {
+                    ("编辑任务", fields.get_fields(), app.selected_index)
+                }
+                AppState::TestcaseCreate { fields, .. } => {
+                    ("创建用例", fields.get_fields(), app.selected_index)
+                }
+                AppState::TestcaseUpdate { fields, .. } => {
+                    ("编辑用例", fields.get_fields(), app.selected_index)
+                }
+                AppState::BuildCreate { fields, .. } => {
+                    ("创建版本", fields.get_fields(), app.selected_index)
+                }
+                AppState::BuildUpdate { fields, .. } => {
+                    ("编辑版本", fields.get_fields(), app.selected_index)
+                }
+                AppState::ProjectCreate { fields, .. } => {
+                    ("创建项目", fields.get_fields(), app.selected_index)
+                }
+                AppState::ProjectUpdate { fields, .. } => {
+                    ("编辑项目", fields.get_fields(), app.selected_index)
+                }
+                AppState::ExecutionCreate { fields, .. } => {
+                    ("创建执行", fields.get_fields(), app.selected_index)
+                }
+                AppState::ExecutionUpdate { fields, .. } => {
+                    ("编辑执行", fields.get_fields(), app.selected_index)
+                }
+                AppState::UserCreate { fields, .. } => {
+                    ("创建用户", fields.get_fields(), app.selected_index)
+                }
+                AppState::UserUpdate { fields, .. } => {
+                    ("编辑用户", fields.get_fields(), app.selected_index)
+                }
+                _ => return,
+            };
+        crate::tui::pages::forms::render_form(f, area, title, fields, selected);
+    }
+
+    /// 7 个资源的删除确认弹窗
+    fn render_crud_delete(f: &mut ratatui::Frame, area: Rect, app: &crate::tui::app::App) {
+        let (id, name, kind) = match &app.state {
+            AppState::StoryDelete { id, name, .. } => (*id, name.clone(), "需求"),
+            AppState::TaskDelete { id, name, .. } => (*id, name.clone(), "任务"),
+            AppState::TestcaseDelete { id, name, .. } => (*id, name.clone(), "用例"),
+            AppState::BuildDelete { id, name, .. } => (*id, name.clone(), "版本"),
+            AppState::ProjectDelete { id, name, .. } => (*id, name.clone(), "项目"),
+            AppState::ExecutionDelete { id, name, .. } => (*id, name.clone(), "执行"),
+            AppState::UserDelete { id, name, .. } => (*id, name.clone(), "用户"),
+            _ => return,
+        };
+        Self::render_delete_dialog(f, area, kind, id, name, false);
+    }
+
     fn render_bug_form(
         f: &mut ratatui::Frame,
         area: Rect,
-        fields: &std::collections::HashMap<String, String>,
-        field_order: &[String],
+        fields: &crate::tui::forms::BugFormFields,
         focused_field: usize,
         error: Option<&str>,
         is_create: bool,
     ) {
-        use ratatui::{
-            layout::{Constraint, Direction, Layout},
-            style::{Color, Modifier, Style},
-            text::{Line, Span, Text},
-            widgets::{Block, Borders, Paragraph, Wrap},
-        };
-
+        use crate::tui::forms::FormFields as _;
         let title = if is_create { "Create Bug" } else { "Edit Bug" };
+        crate::tui::pages::forms::render_form(f, area, title, fields.get_fields(), focused_field);
 
-        let chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([
-                Constraint::Length(3),
-                Constraint::Min(0),
-                Constraint::Length(1),
-                Constraint::Length(3),
-            ])
-            .split(area);
-
-        let header = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled(title, Style::default().add_modifier(Modifier::BOLD)),
-            Span::raw(" - Tab:next field, Enter:submit, Esc:cancel"),
-        ])]))
-        .block(Block::default().borders(Borders::ALL).title("Bug Form"));
-
-        f.render_widget(header, chunks[0]);
-
-        // Render form fields
-        let field_lines: Vec<Line> = field_order
-            .iter()
-            .enumerate()
-            .map(|(i, key)| {
-                let is_focused = i == focused_field;
-                let prefix = if is_focused { "> " } else { "  " };
-                let style = if is_focused {
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default()
-                };
-                let display_value = fields.get(key).map(|s| s.as_str()).unwrap_or("");
-                Line::from(vec![
-                    Span::styled(prefix, Style::default().fg(Color::Yellow)),
-                    Span::styled(format!("{}: ", key), style),
-                    Span::raw(display_value),
-                ])
-            })
-            .collect();
-
-        let form = Paragraph::new(Text::from(field_lines))
-            .block(Block::default().borders(Borders::ALL))
-            .wrap(Wrap { trim: false });
-
-        f.render_widget(form, chunks[1]);
-
-        // Error message
         if let Some(err) = error {
-            let error_line = Paragraph::new(Text::from(vec![Line::from(vec![
-                Span::styled("Error: ", Style::default().fg(Color::Red)),
-                Span::raw(err),
-            ])]));
-            f.render_widget(error_line, chunks[2]);
+            let err_area = Rect::new(
+                area.x,
+                area.y + area.height.saturating_sub(1),
+                area.width,
+                1,
+            );
+            f.render_widget(
+                ratatui::widgets::Paragraph::new(format!("Error: {}", err))
+                    .style(ratatui::style::Style::default().fg(ratatui::style::Color::Red)),
+                err_area,
+            );
         }
-
-        // Footer
-        let footer = Paragraph::new(Text::from(vec![Line::from(vec![
-            Span::styled("Tab", Style::default().add_modifier(Modifier::BOLD)),
-            Span::raw(": next  "),
-            Span::styled("Enter", Style::default().add_modifier(Modifier::BOLD)),
-            Span::raw(": submit  "),
-            Span::styled("Esc", Style::default().add_modifier(Modifier::BOLD)),
-            Span::raw(": cancel"),
-        ])]));
-        f.render_widget(footer, chunks[3]);
     }
 
     fn render_delete_dialog(

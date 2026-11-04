@@ -294,7 +294,13 @@ mod tests {
         assert_eq!(testcase.pri, 2);
         assert_eq!(testcase.status, "normal");
         assert_eq!(testcase.product, 1);
-        assert_eq!(testcase.opened_by.as_ref().map(|u| u.account.as_deref().unwrap_or("")), Some("admin"));
+        assert_eq!(
+            testcase
+                .opened_by
+                .as_ref()
+                .map(|u| u.account.as_deref().unwrap_or("")),
+            Some("admin")
+        );
         assert_eq!(testcase.version, 2);
         assert_eq!(testcase.steps.len(), 1);
         assert_eq!(testcase.steps[0].desc, "Step 1: Do something");

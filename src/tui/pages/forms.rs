@@ -79,7 +79,7 @@ pub fn render_release_update(f: &mut Frame, area: Rect, app: &crate::tui::app::A
 }
 
 /// 通用表单渲染
-fn render_form(
+pub fn render_form(
     f: &mut Frame,
     area: Rect,
     title: &str,

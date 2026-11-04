@@ -63,7 +63,9 @@ impl BugService {
         })?;
         let project = ctx.require_project_id(project)?;
         let module = module.ok_or_else(|| {
-            ZentaoError::Config("module (所属模块) 是必需的，用 --module 指定（如 293）".to_string())
+            ZentaoError::Config(
+                "module (所属模块) 是必需的，用 --module 指定（如 293）".to_string(),
+            )
         })?;
         let req = CreateBugRequest {
             title,

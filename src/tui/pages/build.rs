@@ -145,11 +145,25 @@ pub fn render_build_detail(f: &mut Frame, area: Rect, build: &Build) {
         ]),
         Line::from(vec![
             Span::raw("Stories: "),
-            Span::raw(build.stories.as_ref().map(|v| v.len()).unwrap_or(0).to_string()),
+            Span::raw(
+                build
+                    .stories
+                    .as_ref()
+                    .map(|v| v.len())
+                    .unwrap_or(0)
+                    .to_string(),
+            ),
         ]),
         Line::from(vec![
             Span::raw("Bugs: "),
-            Span::raw(build.bugs.as_ref().map(|v| v.len()).unwrap_or(0).to_string()),
+            Span::raw(
+                build
+                    .bugs
+                    .as_ref()
+                    .map(|v| v.len())
+                    .unwrap_or(0)
+                    .to_string(),
+            ),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

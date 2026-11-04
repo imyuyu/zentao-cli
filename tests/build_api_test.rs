@@ -26,8 +26,8 @@ fn test_build_serialization() {
         last_edited_by: Some("admin".to_string()),
         last_edited_date: Some("2024-01-15 10:00:00".to_string()),
         consumed_cards: Some("10".to_string()),
-        stories: Some(vec![1,2,3,4,5]),
-        bugs: Some(vec![1,2]),
+        stories: Some(vec![1, 2, 3, 4, 5]),
+        bugs: Some(vec![1, 2]),
     };
 
     let json = serde_json::to_string(&build).unwrap();
@@ -103,8 +103,8 @@ fn test_build_deserialization() {
     assert_eq!(build.product, 2);
     assert_eq!(build.project, 3);
     assert_eq!(build.branch, Some(1));
-    assert_eq!(build.stories, Some(vec![1,2,3,4,5,6,7,8]));
-    assert_eq!(build.bugs, Some(vec![1,2,3]));
+    assert_eq!(build.stories, Some(vec![1, 2, 3, 4, 5, 6, 7, 8]));
+    assert_eq!(build.bugs, Some(vec![1, 2, 3]));
 }
 
 #[test]

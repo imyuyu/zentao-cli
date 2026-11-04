@@ -20,16 +20,12 @@ pub enum AppState {
     },
     // Bug CRUD
     BugCreate {
-        fields: std::collections::HashMap<String, String>,
-        field_order: Vec<String>,
-        focused_field: usize,
+        fields: crate::tui::forms::BugFormFields,
         error: Option<String>,
     },
     BugUpdate {
         id: u64,
-        fields: std::collections::HashMap<String, String>,
-        field_order: Vec<String>,
-        focused_field: usize,
+        fields: crate::tui::forms::BugFormFields,
         error: Option<String>,
     },
     BugDelete {
@@ -197,6 +193,105 @@ pub enum AppState {
         id: u64,
         name: String,
     },
+    // 其余 7 个资源的 CRUD 表单
+    StoryCreate {
+        fields: crate::tui::forms_story::StoryFormFields,
+        error: Option<String>,
+    },
+    StoryUpdate {
+        id: u64,
+        fields: crate::tui::forms_story::StoryFormFields,
+        error: Option<String>,
+    },
+    StoryDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
+    TaskCreate {
+        fields: crate::tui::forms_task::TaskFormFields,
+        error: Option<String>,
+    },
+    TaskUpdate {
+        id: u64,
+        fields: crate::tui::forms_task::TaskFormFields,
+        error: Option<String>,
+    },
+    TaskDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
+    TestcaseCreate {
+        fields: crate::tui::forms_testcase::TestcaseFormFields,
+        error: Option<String>,
+    },
+    TestcaseUpdate {
+        id: u64,
+        fields: crate::tui::forms_testcase::TestcaseFormFields,
+        error: Option<String>,
+    },
+    TestcaseDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
+    BuildCreate {
+        fields: crate::tui::forms_build::BuildFormFields,
+        error: Option<String>,
+    },
+    BuildUpdate {
+        id: u64,
+        fields: crate::tui::forms_build::BuildFormFields,
+        error: Option<String>,
+    },
+    BuildDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
+    ProjectCreate {
+        fields: crate::tui::forms_project::ProjectFormFields,
+        error: Option<String>,
+    },
+    ProjectUpdate {
+        id: u64,
+        fields: crate::tui::forms_project::ProjectFormFields,
+        error: Option<String>,
+    },
+    ProjectDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
+    ExecutionCreate {
+        fields: crate::tui::forms_execution::ExecutionFormFields,
+        error: Option<String>,
+    },
+    ExecutionUpdate {
+        id: u64,
+        fields: crate::tui::forms_execution::ExecutionFormFields,
+        error: Option<String>,
+    },
+    ExecutionDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
+    UserCreate {
+        fields: crate::tui::forms_user::UserFormFields,
+        error: Option<String>,
+    },
+    UserUpdate {
+        id: u64,
+        fields: crate::tui::forms_user::UserFormFields,
+        error: Option<String>,
+    },
+    UserDelete {
+        id: u64,
+        name: String,
+        confirm: bool,
+    },
     // 表单提交中
     FormSubmitting {
         message: String,
@@ -335,54 +430,20 @@ impl App {
     }
 
     pub fn set_bug_create(&mut self) {
-        let mut fields = std::collections::HashMap::new();
-        fields.insert("title".to_string(), "".to_string());
-        fields.insert("severity".to_string(), "3".to_string());
-        fields.insert("pri".to_string(), "3".to_string());
-        fields.insert("type".to_string(), "codeerror".to_string());
-        fields.insert("steps".to_string(), "".to_string());
-        let field_order = vec![
-            "title".to_string(),
-            "severity".to_string(),
-            "pri".to_string(),
-            "type".to_string(),
-            "steps".to_string(),
-        ];
         self.state = AppState::BugCreate {
-            fields,
-            field_order,
-            focused_field: 0,
+            fields: crate::tui::forms::BugFormFields::new(self.config.project_id),
             error: None,
         };
+        self.selected_index = 0;
     }
 
     pub fn set_bug_update(&mut self, bug: &Bug) {
-        let mut fields = std::collections::HashMap::new();
-        fields.insert("title".to_string(), bug.title.clone());
-        fields.insert("severity".to_string(), bug.severity.to_string());
-        fields.insert("pri".to_string(), bug.pri.to_string());
-        fields.insert(
-            "type".to_string(),
-            bug.type_.as_deref().unwrap_or("codeerror").to_string(),
-        );
-        fields.insert(
-            "steps".to_string(),
-            bug.steps.as_deref().unwrap_or("").to_string(),
-        );
-        let field_order = vec![
-            "title".to_string(),
-            "severity".to_string(),
-            "pri".to_string(),
-            "type".to_string(),
-            "steps".to_string(),
-        ];
         self.state = AppState::BugUpdate {
             id: bug.id,
-            fields,
-            field_order,
-            focused_field: 0,
+            fields: crate::tui::forms::BugFormFields::from_bug(bug),
             error: None,
         };
+        self.selected_index = 0;
     }
 
     pub fn set_bug_delete(&mut self, id: u64, name: String) {
@@ -718,6 +779,43 @@ impl App {
         };
     }
 
+    /// 当前状态若为表单，返回可写字段列表（用于统一的输入/退格/Tab 处理）
+    pub fn form_fields_mut(&mut self) -> Option<Vec<&mut crate::tui::forms::FormField>> {
+        use crate::tui::forms::FormFields as _;
+        match &mut self.state {
+            AppState::ProgramCreate { fields } | AppState::ProgramUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::ProductPlanCreate { fields, .. }
+            | AppState::ProductPlanUpdate { fields, .. } => Some(fields.get_mut_fields()),
+            AppState::ReleaseCreate { fields, .. } | AppState::ReleaseUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::StoryCreate { fields, .. } | AppState::StoryUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::TaskCreate { fields, .. } | AppState::TaskUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::TestcaseCreate { fields, .. } | AppState::TestcaseUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::BuildCreate { fields, .. } | AppState::BuildUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::ProjectCreate { fields, .. } | AppState::ProjectUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::ExecutionCreate { fields, .. } | AppState::ExecutionUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            AppState::UserCreate { fields, .. } | AppState::UserUpdate { fields, .. } => {
+                Some(fields.get_mut_fields())
+            }
+            _ => None,
+        }
+    }
+
     pub fn get_main_menu_modules() -> Vec<&'static str> {
         vec![
             "Bug List",
@@ -800,6 +898,168 @@ impl App {
 
     pub fn quit(&mut self) {
         self.state = AppState::Quit;
+    }
+
+    // ---- 其余 7 个资源的 CRUD setter ----
+    pub fn set_story_create(&mut self, product_id: u64) {
+        self.state = AppState::StoryCreate {
+            fields: crate::tui::forms_story::StoryFormFields::new(product_id),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_story_update(&mut self, story: &Story) {
+        self.state = AppState::StoryUpdate {
+            id: story.id,
+            fields: crate::tui::forms_story::StoryFormFields::from_story(story),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_story_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::StoryDelete {
+            id,
+            name: name.to_string(),
+            confirm: false,
+        };
+    }
+
+    pub fn set_task_create(&mut self, execution_id: Option<u64>, project_id: Option<u64>) {
+        self.state = AppState::TaskCreate {
+            fields: crate::tui::forms_task::TaskFormFields::new(execution_id, project_id),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_task_update(&mut self, task: &Task) {
+        self.state = AppState::TaskUpdate {
+            id: task.id,
+            fields: crate::tui::forms_task::TaskFormFields::from_task(task),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_task_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::TaskDelete {
+            id,
+            name: name.to_string(),
+            confirm: false,
+        };
+    }
+
+    pub fn set_testcase_create(&mut self, product_id: u64) {
+        self.state = AppState::TestcaseCreate {
+            fields: crate::tui::forms_testcase::TestcaseFormFields::new(product_id),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_testcase_update(&mut self, tc: &Testcase) {
+        self.state = AppState::TestcaseUpdate {
+            id: tc.id,
+            fields: crate::tui::forms_testcase::TestcaseFormFields::from_testcase(tc),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_testcase_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::TestcaseDelete {
+            id,
+            name: name.to_string(),
+            confirm: false,
+        };
+    }
+
+    pub fn set_build_create(&mut self, product_id: u64, execution_id: u64) {
+        self.state = AppState::BuildCreate {
+            fields: crate::tui::forms_build::BuildFormFields::new(product_id, execution_id),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_build_update(&mut self, build: &crate::api::Build) {
+        self.state = AppState::BuildUpdate {
+            id: build.id,
+            fields: crate::tui::forms_build::BuildFormFields::from_build(build),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_build_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::BuildDelete {
+            id,
+            name: name.to_string(),
+            confirm: false,
+        };
+    }
+
+    pub fn set_project_create(&mut self) {
+        self.state = AppState::ProjectCreate {
+            fields: crate::tui::forms_project::ProjectFormFields::new(),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_project_update(&mut self, p: &Project) {
+        self.state = AppState::ProjectUpdate {
+            id: p.id,
+            fields: crate::tui::forms_project::ProjectFormFields::from_project(p),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_project_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::ProjectDelete {
+            id,
+            name: name.to_string(),
+            confirm: false,
+        };
+    }
+
+    pub fn set_execution_create(&mut self, project_id: Option<u64>) {
+        self.state = AppState::ExecutionCreate {
+            fields: crate::tui::forms_execution::ExecutionFormFields::new(project_id),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_execution_update(&mut self, e: &crate::api::Execution) {
+        self.state = AppState::ExecutionUpdate {
+            id: e.id,
+            fields: crate::tui::forms_execution::ExecutionFormFields::from_execution(e),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_execution_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::ExecutionDelete {
+            id,
+            name: name.to_string(),
+            confirm: false,
+        };
+    }
+
+    pub fn set_user_create(&mut self) {
+        self.state = AppState::UserCreate {
+            fields: crate::tui::forms_user::UserFormFields::new(),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_user_update(&mut self, u: &User) {
+        self.state = AppState::UserUpdate {
+            id: u.id,
+            fields: crate::tui::forms_user::UserFormFields::from_user(u),
+            error: None,
+        };
+        self.selected_index = 0;
+    }
+    pub fn set_user_delete(&mut self, id: u64, name: &str) {
+        self.state = AppState::UserDelete {
+            id,
+            name: name.to_string(),
+            confirm: false,
+        };
     }
 
     pub fn save_list(&mut self) {

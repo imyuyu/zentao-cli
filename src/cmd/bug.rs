@@ -329,11 +329,7 @@ pub async fn run(cmd: &BugSubcommand, ctx: &AppContext) {
 ///
 /// 禅道的附件上传只存在于 v2 API（ZenTao ≥ v22.0）。老版本没有该路由，
 /// 请求会被兜底路由吃掉并返回 200 空 body——所以先探测，再决定是否上传。
-async fn upload_attachments(
-    ctx: &AppContext,
-    bug_id: u64,
-    files: &[String],
-) -> anyhow::Result<()> {
+async fn upload_attachments(ctx: &AppContext, bug_id: u64, files: &[String]) -> anyhow::Result<()> {
     if !ctx.supports_file_upload().await {
         anyhow::bail!(
             "当前 ZenTao 版本不支持 API 上传附件（需 v22.0+ 的 v2 文件接口）。\
@@ -360,7 +356,8 @@ async fn upload_attachments(
     Ok(())
 }
 
-fn print_bug_list(bugs: &[crate::api::Bug], format: OutputFormat) {    match format {
+fn print_bug_list(bugs: &[crate::api::Bug], format: OutputFormat) {
+    match format {
         OutputFormat::Table => {
             println!("Bugs:");
             for bug in bugs {

@@ -105,7 +105,8 @@ impl ApiClient {
     ///
     /// # 返回
     /// 反序列化后的响应体
-    pub async fn get<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T> {        let url = self.get_url(path);
+    pub async fn get<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T> {
+        let url = self.get_url(path);
 
         let mut req = self.client.get(&url);
 
@@ -378,8 +379,6 @@ impl ApiClient {
 
         json.get("id")
             .and_then(|v| v.as_u64())
-            .ok_or_else(|| {
-                ZentaoError::Api(format!("上传响应缺少文件 id: {}", json)).into()
-            })
+            .ok_or_else(|| ZentaoError::Api(format!("上传响应缺少文件 id: {}", json)).into())
     }
 }
