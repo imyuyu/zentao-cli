@@ -159,7 +159,12 @@ pub fn render_bug_detail(f: &mut Frame, area: Rect, bug: &Bug) {
         ]),
         Line::from(vec![
             Span::raw("Assigned: "),
-            Span::raw(bug.assigned_to.as_deref().unwrap_or("Unassigned")),
+            Span::raw(
+                bug.assigned_to
+                    .as_ref()
+                    .map(|u| u.account_or_realname())
+                    .unwrap_or("Unassigned"),
+            ),
         ]),
     ]))
     .block(Block::default().borders(Borders::ALL).title("Details"));

@@ -127,7 +127,11 @@ pub struct StoryListQuery {
 /// Bug 数据结构
 ///
 /// 对应 ZenTao Bug 模块的字段
+///
+/// ZenTao v1 的 JSON 键是 camelCase（`assignedTo`/`resolvedBy`/`resolvedDate`），
+/// 字段名是 snake_case，靠 `rename_all` 桥接；只给个别字段加 rename 不够。
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Bug {
     /// Bug ID
     pub id: u64,
@@ -143,7 +147,7 @@ pub struct Bug {
     /// 优先级：0-5
     pub pri: u8,
     /// Bug 类型：codeerror/interface/design/others
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub type_: Option<String>,
     /// 解决方案：fixed/bydesign/duplicate/fixed...
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -160,14 +164,38 @@ pub struct Bug {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub story: Option<u64>,
     /// 指派给谁
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub assigned_to: Option<String>,
+    ///
+    /// ZenTao v1 返回的是用户对象 `{"id":43,"account":"liaowei","realname":"廖威"}`，
+    /// 不是字符串。按 `String` 声明会让整个 Bug 反序列化失败——表现为「取不到 steps」。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub assigned_to: Option<BugUser>,
     /// 解决者
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub resolved_by: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resolved_by: Option<BugUser>,
     /// 解决日期
     #[serde(skip_serializing_if = "Option::is_none")]
     pub resolved_date: Option<String>,
+}
+
+/// Bug 关联的用户引用（指派给 / 解决者 / 由谁开启 等）
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BugUser {
+    #[serde(default)]
+    pub id: Option<i64>,
+    #[serde(default)]
+    pub account: Option<String>,
+    #[serde(default)]
+    pub realname: Option<String>,
+}
+
+impl BugUser {
+    /// 优先用账号名，缺失时回退真实姓名，都没有则返回空串
+    pub fn account_or_realname(&self) -> &str {
+        self.account
+            .as_deref()
+            .or(self.realname.as_deref())
+            .unwrap_or("")
+    }
 }
 
 impl Bug {
