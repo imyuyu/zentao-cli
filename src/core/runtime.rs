@@ -58,20 +58,20 @@ impl AppContext {
     ///
     /// 当 API 返回 401 时调用此方法，从 keyring 获取凭据重新登录
     pub async fn refresh_token(&mut self) -> Result<()> {
-        eprintln!("[DEBUG] refresh_token started");
         let account = self.config.account.as_ref().ok_or_else(|| {
-            eprintln!("[DEBUG] refresh_token: no account");
             ZentaoError::Auth("No account configured. Please login first.".into())
         })?;
 
-        eprintln!("[DEBUG] refresh_token: getting credentials");
         let creds = crate::core::Credentials::get(&self.config.url, account)
             .map_err(|e| {
-                eprintln!("[DEBUG] refresh_token: credentials error: {}", e);
+                crate::core::logging::log(
+                    crate::core::logging::LogLevel::Debug,
+                    "Auth",
+                    format!("refresh_token 取凭据失败: {}", e),
+                );
                 ZentaoError::Config(format!("Failed to get credentials: {}", e))
             })?
             .ok_or_else(|| {
-                eprintln!("[DEBUG] refresh_token: no credentials stored");
                 ZentaoError::Auth("No credentials stored. Please login first.".into())
             })?;
 
@@ -79,15 +79,12 @@ impl AppContext {
             .password
             .ok_or_else(|| ZentaoError::Auth("Password not found in credentials".into()))?;
 
-        eprintln!("[DEBUG] refresh_token: calling login API");
         let auth = crate::api::Auth::new(&self.config.url);
         let new_token = auth.login(&creds.account, &password).await?;
 
-        eprintln!("[DEBUG] refresh_token: got new token, saving");
         self.config.token = Some(new_token.clone());
         crate::core::save_config(&self.config)?;
 
-        eprintln!("[DEBUG] refresh_token: success");
         log(LogLevel::Info, "AppContext", "Token refreshed successfully");
 
         Ok(())

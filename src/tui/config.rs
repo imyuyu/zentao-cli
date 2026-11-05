@@ -21,10 +21,12 @@ pub enum ConfigWizardState {
     Success {
         url: String,
         token: String,
+        account: String,
     },
     SelectProduct {
         url: String,
         token: String,
+        account: String,
         products: Vec<Product>,
         selected: usize,
         loading: bool,
@@ -33,6 +35,7 @@ pub enum ConfigWizardState {
     SelectProject {
         url: String,
         token: String,
+        account: String,
         product_id: Option<u64>,
         projects: Vec<Project>,
         selected: usize,
@@ -58,6 +61,23 @@ pub struct ConfigWizard {
     pub state: ConfigWizardState,
 }
 
+/// 规范化禅道地址：只补协议、去尾斜杠
+///
+/// 部署路径（/zentao、/pms…）因环境而异，绝不猜测；缺失时由请求失败反馈给用户。
+pub fn normalize_zentao_url(input: &str) -> String {
+    let mut url = input.trim().to_string();
+    if url.is_empty() {
+        return url;
+    }
+    if !url.starts_with("http://") && !url.starts_with("https://") {
+        url = format!("http://{}", url);
+    }
+    while url.ends_with('/') {
+        url.pop();
+    }
+    url
+}
+
 impl ConfigWizard {
     pub fn new() -> Self {
         Self {
@@ -67,7 +87,7 @@ impl ConfigWizard {
 
     pub fn set_url(&mut self, url: String) {
         self.state = ConfigWizardState::Account {
-            url,
+            url: normalize_zentao_url(&url),
             account: String::new(),
         };
     }
@@ -92,8 +112,12 @@ impl ConfigWizard {
         }
     }
 
-    pub fn set_success(&mut self, url: String, token: String) {
-        self.state = ConfigWizardState::Success { url, token };
+    pub fn set_success(&mut self, url: String, token: String, account: String) {
+        self.state = ConfigWizardState::Success {
+            url,
+            token,
+            account,
+        };
     }
 
     pub fn set_error(&mut self, message: String) {
@@ -104,10 +128,11 @@ impl ConfigWizard {
         self.state = ConfigWizardState::Saved { url, path };
     }
 
-    pub fn set_select_product(&mut self, url: String, token: String) {
+    pub fn set_select_product(&mut self, url: String, token: String, account: String) {
         self.state = ConfigWizardState::SelectProduct {
             url,
             token,
+            account,
             products: Vec::new(),
             selected: 0,
             loading: true,
@@ -128,6 +153,7 @@ impl ConfigWizard {
         if let ConfigWizardState::SelectProduct {
             url,
             token,
+            account,
             products,
             selected,
             ..
@@ -143,6 +169,7 @@ impl ConfigWizard {
             self.state = ConfigWizardState::SelectProject {
                 url: url.clone(),
                 token: token.clone(),
+                account: account.clone(),
                 product_id: selected_product_id,
                 projects: Vec::new(),
                 selected: 0,
@@ -226,5 +253,46 @@ impl Default for ConfigWizardState {
 impl Default for ConfigWizard {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod url_tests {
+    use super::normalize_zentao_url;
+
+    #[test]
+    fn adds_http_scheme() {
+        assert_eq!(
+            normalize_zentao_url("172.168.80.30:8001/zentao"),
+            "http://172.168.80.30:8001/zentao"
+        );
+    }
+
+    #[test]
+    fn keeps_https() {
+        assert_eq!(
+            normalize_zentao_url("https://demo.zentao.site/zentao"),
+            "https://demo.zentao.site/zentao"
+        );
+    }
+
+    #[test]
+    fn strips_trailing_slash() {
+        assert_eq!(
+            normalize_zentao_url("http://h:8001/zentao/"),
+            "http://h:8001/zentao"
+        );
+    }
+
+    /// 部署路径因环境而异（/zentao、/pms、根路径），绝不猜测
+    #[test]
+    fn never_invents_deploy_path() {
+        assert_eq!(normalize_zentao_url("h:8001"), "http://h:8001");
+        assert_eq!(normalize_zentao_url("h:8001/pms"), "http://h:8001/pms");
+    }
+
+    #[test]
+    fn empty_stays_empty() {
+        assert_eq!(normalize_zentao_url("   "), "");
     }
 }

@@ -93,14 +93,37 @@ pub struct MultiAccountConfig {
 
 impl MultiAccountConfig {
     /// 从文件加载多账户配置
+    ///
+    /// 兼容两种写入格式：多账户 `[accounts.xxx]`，以及向导写的单账户 `[default]`。
+    /// 后者按「一个账户」呈现，否则 Settings 的账户列表永远是空的。
     pub fn load() -> Result<Self> {
-        let path = global_config_path();
-        if !path.exists() {
+        // 全局配置优先，没有则回退项目配置（向导默认写项目配置）
+        let path = [global_config_path(), project_config_path()]
+            .into_iter()
+            .find(|p| p.exists());
+
+        let Some(path) = path else {
             return Ok(MultiAccountConfig::default());
-        }
+        };
         let content = std::fs::read_to_string(&path)?;
-        let config: MultiAccountConfig = toml::from_str(&content)?;
-        Ok(config)
+
+        if let Ok(multi) = toml::from_str::<MultiAccountConfig>(&content) {
+            if !multi.accounts.is_empty() {
+                return Ok(multi);
+            }
+        }
+
+        // 回退：按单账户格式解析
+        let single: GlobalConfig = toml::from_str(&content)?;
+        let mut multi = MultiAccountConfig::default();
+        let name = single
+            .default
+            .account
+            .clone()
+            .filter(|a| !a.trim().is_empty())
+            .unwrap_or_else(|| "default".to_string());
+        multi.set_account(name, single.default);
+        Ok(multi)
     }
 
     /// 保存多账户配置到文件
@@ -773,5 +796,36 @@ mod tests {
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert!(err.to_string().contains("Unknown config key"));
+    }
+
+    /// 向导写的是 [default] 单账户格式，Settings 读的是 [accounts]。
+    /// 不兼容的话账户列表永远空白（用户已踩到）。
+    #[test]
+    fn loads_wizard_written_default_section_as_one_account() {
+        let toml_text = r#"
+            [default]
+            url = "http://z/zentao"
+            token = "abc"
+            product_id = 1
+        "#;
+        let single: GlobalConfig = toml::from_str(toml_text).unwrap();
+        assert_eq!(single.default.token.as_deref(), Some("abc"));
+
+        // 复现 load() 的回退分支
+        let mut multi = MultiAccountConfig::default();
+        multi.set_account("default".to_string(), single.default);
+        assert_eq!(multi.list_account_names(), vec!["default"]);
+    }
+
+    #[test]
+    fn multi_account_format_parses() {
+        let toml_text = r#"
+            [accounts.work]
+            url = "http://z/zentao"
+            token = "t1"
+            default_account = "work"
+        "#;
+        let multi: MultiAccountConfig = toml::from_str(toml_text).unwrap();
+        assert!(multi.accounts.contains_key("work"));
     }
 }

@@ -12,7 +12,50 @@ use crate::tui::{App, Browser};
 use anyhow::Result;
 
 /// Run the TUI home screen (module selection)
+///
+/// 进 TUI 前必须先有 token：没有 token 时每个模块都会加载失败并反复触发
+/// refresh_token。缺配置或未登录时直接打开配置向导，而不是把错误抛到命令行。
 pub fn run_tui(config: &Config) -> Result<()> {
+    let mut config = config.clone();
+    let has_token = config.token.as_ref().is_some_and(|t| !t.is_empty());
+
+    if !has_token {
+        let rt = tokio::runtime::Runtime::new()?;
+        // 已有 URL 时只需登录；没有 URL 时走完整配置向导（URL/账号/密码/产品/项目）
+        if config.url.trim().is_empty() {
+            rt.block_on(crate::cmd::config_cmd::run(
+                &crate::cmd::config_cmd::ConfigSubcommand::Init { global: false },
+            ))?;
+        } else {
+            rt.block_on(crate::cmd::auth::run(
+                &crate::cmd::auth::AuthSubcommand::Login {
+                    account: None,
+                    password: None,
+                    global: false,
+                },
+                Some(&config.url),
+                None,
+            ))?;
+        }
+
+        // 向导/登录都会写配置文件，重载拿新凭据；文件里缺失时保留原有值
+        if let Ok(saved) = crate::core::load_config() {
+            if saved.token.as_ref().is_some_and(|t| !t.is_empty()) {
+                config.token = saved.token;
+                config.account = saved.account.or(config.account);
+                config.product_id = saved.product_id.or(config.product_id);
+                config.project_id = saved.project_id.or(config.project_id);
+                if config.url.trim().is_empty() {
+                    config.url = saved.url;
+                }
+            }
+        }
+        if config.token.as_ref().is_none_or(|t| t.is_empty()) {
+            crate::core::output::safe_println("未登录，已退出");
+            return Ok(());
+        }
+    }
+
     let mut app = App::new(
         config.clone(),
         load_multi_account_config().unwrap_or_default(),

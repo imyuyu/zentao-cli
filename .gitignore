@@ -30,3 +30,7 @@ vendor/
 # Claude Code
 .claude/
 .omc/
+
+# 本地禅道凭据（含 token，绝不提交）
+.zentao-cli/
+.tmp/

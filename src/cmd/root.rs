@@ -721,8 +721,10 @@ pub enum TicketSubcommand {
 
 pub fn run() -> Result<()> {
     let cli = Cli::parse();
-    logging::init(cli.debug, cli.log_level);
-    if (cli.debug || cli.log_level.is_some()) && logging::current_log_path().is_some() {
+    // TUI 独占终端：任何 stderr 输出都会打乱画面，此时日志只写文件
+    let is_tui = matches!(cli.command, None | Some(Commands::Browse));
+    logging::init_with(cli.debug, cli.log_level, !is_tui);
+    if !is_tui && (cli.debug || cli.log_level.is_some()) && logging::current_log_path().is_some() {
         eprintln!(
             "zentao-cli logging to {}",
             logging::current_log_path().unwrap().display()
@@ -845,7 +847,7 @@ pub fn run() -> Result<()> {
         }
         Commands::Browse => {
             log_command("root", "dispatch browse (home)");
-            browse::run_tui(&config).expect("Browse failed");
+            browse::run_tui(&config)?;
         }
         Commands::Whoami => {
             // 问服务端「当前 token 是谁的」——只读本地 config.account 会漏掉

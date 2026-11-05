@@ -13,7 +13,6 @@ pub mod forms_user;
 pub mod navigation;
 pub mod pages;
 pub mod widgets;
-pub mod wizard;
 
 pub use api_selector::*;
 pub use app::*;
@@ -28,4 +27,3 @@ pub use forms_task::*;
 pub use forms_testcase::*;
 pub use forms_user::*;
 pub use widgets::*;
-pub use wizard::*;

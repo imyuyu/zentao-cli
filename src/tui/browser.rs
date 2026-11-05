@@ -37,7 +37,83 @@ use crate::tui::forms_user::UserFormFields;
 use super::pages::*;
 
 // Strip HTML tags from a string
+/// 从标签文本里取属性值（如 `<img src="...">` 的 src）
+pub fn extract_attr(tag: &str, name: &str) -> Option<String> {
+    let lower = tag.to_lowercase();
+    let idx = lower.find(&format!("{}=", name))?;
+    let rest = tag[idx + name.len() + 1..].trim_start();
+    let quote = rest.chars().next()?;
+    if quote == '"' || quote == '\'' {
+        let body = &rest[1..];
+        body.find(quote).map(|end| body[..end].to_string())
+    } else {
+        rest.split(|c: char| c.is_whitespace() || c == '>')
+            .next()
+            .map(|v| v.to_string())
+    }
+}
+
+/// 块级标签：前后应当断行，否则多段内容会粘成一行
+fn is_block_tag(name: &str) -> bool {
+    matches!(
+        name,
+        "p" | "div"
+            | "tr"
+            | "br"
+            | "li"
+            | "ul"
+            | "ol"
+            | "table"
+            | "blockquote"
+            | "h1"
+            | "h2"
+            | "h3"
+            | "h4"
+            | "h5"
+            | "h6"
+            | "pre"
+    )
+}
+
+/// 追加换行（避免连续空行）
+fn push_newline(out: &mut String) {
+    if !out.is_empty() && !out.ends_with('\n') {
+        out.push('\n');
+    }
+}
+
+/// 禅道列表接口返回的图片 src 是占位符 `{20220.png}`，alt 里才是真实文件名
+/// (`file-read-20220.png`)。详情接口给的是完整 URL。这里统一还原成完整地址。
+pub fn resolve_img_src(src: &str, alt: &str, base_url: &str) -> String {
+    let src = src.trim();
+    if src.starts_with("http://") || src.starts_with("https://") {
+        return src.to_string();
+    }
+
+    // {20220.png} / {20220} → file-read-20220.png
+    let inner = src.trim_start_matches('{').trim_end_matches('}');
+    let file_name = if !alt.trim().is_empty() && alt.contains("file-read") {
+        alt.trim().to_string()
+    } else if inner.starts_with("file-read") {
+        inner.to_string()
+    } else {
+        let (id, ext) = match inner.rsplit_once('.') {
+            Some((id, ext)) => (id, ext),
+            None => (inner, "png"),
+        };
+        format!("file-read-{}.{}", id, ext)
+    };
+
+    let base = base_url.trim_end_matches('/');
+    format!("{}/{}", base, file_name)
+}
+
 pub fn strip_html_tags(html: &str) -> String {
+    strip_html_tags_with_base(html, "")
+}
+
+/// `base_url` 非空时把 `<img>` 还原成可打开的完整地址
+pub fn strip_html_tags_with_base(html: &str, base_url: &str) -> String {
     let mut result = String::with_capacity(html.len());
     let mut in_tag = false;
     let mut in_entity = false;
@@ -55,13 +131,32 @@ pub fn strip_html_tags(html: &str) -> String {
             tag_buf.push(c);
             if c == '>' {
                 in_tag = false;
-                // Check if it's a <br> tag and convert to newline
+                // tag_buf 以 '>' 结尾、不含开头的 '<'，去掉两端符号后再判断
                 let tag_lower = tag_buf.to_lowercase();
-                if tag_lower.trim() == "br"
-                    || tag_lower.trim() == "br/>"
-                    || tag_lower.trim() == "br /"
-                {
+                let trimmed = tag_lower
+                    .trim()
+                    .trim_end_matches('>')
+                    .trim_end_matches('/')
+                    .trim();
+                // 去掉开头的 '/'（闭合标签）拿到标签名
+                let name = trimmed.trim_start_matches('/');
+                let is_closing = trimmed.starts_with('/');
+
+                // <br> → 换行
+                if name == "br" {
                     result.push('\n');
+                } else if name.starts_with("img") {
+                    // 终端画不了图，至少把地址留下来，用 'o' 能直接打开
+                    if let Some(src) = extract_attr(&tag_buf, "src") {
+                        let alt = extract_attr(&tag_buf, "alt").unwrap_or_default();
+                        let resolved = resolve_img_src(&src, &alt, base_url);
+                        result.push_str(&format!("[图片] {}\n", resolved));
+                    }
+                } else if is_block_tag(name) {
+                    // 块级标签之间必须有换行，否则 <p>a</p><p>b</p> 会粘成一行
+                    push_newline(&mut result);
+                } else if is_closing && name == "li" {
+                    push_newline(&mut result);
                 }
                 tag_buf.clear();
             }
@@ -69,18 +164,19 @@ pub fn strip_html_tags(html: &str) -> String {
             entity_buf.push(c);
             if c == ';' {
                 in_entity = false;
-                // Decode common HTML entities
-                match entity_buf.as_str() {
+                // entity_buf 形如 "&lt;"，去掉首尾符号再匹配
+                let name = entity_buf.trim_start_matches('&').trim_end_matches(';');
+                match name {
                     "nbsp" => result.push(' '),
                     "lt" | "LT" => result.push('<'),
                     "gt" | "GT" => result.push('>'),
                     "amp" | "AMP" => result.push('&'),
                     "quot" | "QUOT" => result.push('"'),
                     "apos" | "APOS" => result.push('\''),
-                    "&" => result.push('&'),
                     _ => {
-                        // Unknown entity, keep as-is
+                        // 未知实体原样保留（entity_buf 不含结尾的 ';'）
                         result.push_str(&entity_buf);
+                        result.push(';');
                     }
                 }
                 entity_buf.clear();
@@ -107,7 +203,8 @@ pub fn strip_html_tags(html: &str) -> String {
         }
     }
 
-    result
+    // 块级标签会在末尾留换行，去掉避免详情页多出空行
+    result.trim_end().to_string()
 }
 
 #[allow(clippy::enum_variant_names)]
@@ -823,7 +920,7 @@ impl Browser {
                             render_bug_list(f, area, bugs, selected, app);
                         }
                         AppState::BugDetail { bug, .. } => {
-                            render_bug_detail(f, area, bug);
+                            render_bug_detail(f, area, bug, &app.config.url);
                         }
                         AppState::BugCreate { fields, error } => {
                             Self::render_bug_form(
@@ -1055,7 +1152,11 @@ impl Browser {
                             {
                                 Ok(b) => Ok(b),
                                 Err(e) => {
-                                    eprintln!("Error loading bugs (trying token refresh): {}", e);
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
+                                        format!("Error loading bugs (trying token refresh): {}", e),
+                                    );
                                     if ctx.refresh_token().await.is_ok() {
                                         BugService::list(
                                             &ctx,
@@ -1099,9 +1200,10 @@ impl Browser {
                             {
                                 Ok(s) => Ok(s),
                                 Err(e) => {
-                                    eprintln!(
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
                                         "Error loading stories (trying token refresh): {}",
-                                        e
                                     );
                                     if ctx.refresh_token().await.is_ok() {
                                         StoryService::list(
@@ -1147,9 +1249,10 @@ impl Browser {
                                 match ExecutionService::list(&ctx, config.project_id).await {
                                     Ok(e) => Ok(e),
                                     Err(e) => {
-                                        eprintln!(
+                                        crate::core::logging::log(
+                                            crate::core::logging::LogLevel::Debug,
+                                            "TUI",
                                             "Error loading executions (trying token refresh): {}",
-                                            e
                                         );
                                         if ctx.refresh_token().await.is_ok() {
                                             ExecutionService::list(&ctx, config.project_id).await
@@ -1195,7 +1298,14 @@ impl Browser {
                             {
                                 Ok(b) => Ok(b),
                                 Err(e) => {
-                                    eprintln!("Error loading builds (trying token refresh): {}", e);
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
+                                        format!(
+                                            "Error loading builds (trying token refresh): {}",
+                                            e
+                                        ),
+                                    );
                                     if ctx.refresh_token().await.is_ok() {
                                         BuildService::list(
                                             &ctx,
@@ -1252,9 +1362,10 @@ impl Browser {
                             {
                                 Ok(r) => Ok(r),
                                 Err(e) => {
-                                    eprintln!(
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
                                         "Error loading releases (trying token refresh): {}",
-                                        e
                                     );
                                     if ctx.refresh_token().await.is_ok() {
                                         ReleaseService::list(
@@ -1297,7 +1408,11 @@ impl Browser {
                         "User List" => match UserService::list(&ctx, None, None).await {
                             Ok(users) => (AppState::UserList { users }, None, None),
                             Err(e) => {
-                                eprintln!("Error loading users (trying token refresh): {}", e);
+                                crate::core::logging::log(
+                                    crate::core::logging::LogLevel::Debug,
+                                    "TUI",
+                                    format!("Error loading users (trying token refresh): {}", e),
+                                );
                                 if ctx.refresh_token().await.is_ok() {
                                     match UserService::list(&ctx, None, None).await {
                                         Ok(users) => (AppState::UserList { users }, None, None),
@@ -1325,9 +1440,10 @@ impl Browser {
                                 (AppState::DepartmentList { departments }, None, None)
                             }
                             Err(e) => {
-                                eprintln!(
+                                crate::core::logging::log(
+                                    crate::core::logging::LogLevel::Debug,
+                                    "TUI",
                                     "Error loading departments (trying token refresh): {}",
-                                    e
                                 );
                                 if ctx.refresh_token().await.is_ok() {
                                     match DepartmentService::list(&ctx).await {
@@ -1359,7 +1475,11 @@ impl Browser {
                         "Product List" => match ProductService::list(&ctx).await {
                             Ok(products) => (AppState::ProductList { products }, None, None),
                             Err(e) => {
-                                eprintln!("Error loading products (trying token refresh): {}", e);
+                                crate::core::logging::log(
+                                    crate::core::logging::LogLevel::Debug,
+                                    "TUI",
+                                    format!("Error loading products (trying token refresh): {}", e),
+                                );
                                 if ctx.refresh_token().await.is_ok() {
                                     match ProductService::list(&ctx).await {
                                         Ok(products) => {
@@ -1387,7 +1507,11 @@ impl Browser {
                         "Project List" => match ProjectService::list(&ctx).await {
                             Ok(projects) => (AppState::ProjectList { projects }, None, None),
                             Err(e) => {
-                                eprintln!("Error loading projects (trying token refresh): {}", e);
+                                crate::core::logging::log(
+                                    crate::core::logging::LogLevel::Debug,
+                                    "TUI",
+                                    format!("Error loading projects (trying token refresh): {}", e),
+                                );
                                 if ctx.refresh_token().await.is_ok() {
                                     match ProjectService::list(&ctx).await {
                                         Ok(projects) => {
@@ -1417,7 +1541,14 @@ impl Browser {
                             {
                                 Ok(t) => Ok(t),
                                 Err(e) => {
-                                    eprintln!("Error loading tasks (trying token refresh): {}", e);
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
+                                        format!(
+                                            "Error loading tasks (trying token refresh): {}",
+                                            e
+                                        ),
+                                    );
                                     if ctx.refresh_token().await.is_ok() {
                                         TaskService::list(&ctx, config.project_id, None).await
                                     } else {
@@ -1463,9 +1594,10 @@ impl Browser {
                             {
                                 Ok(tc) => Ok(tc),
                                 Err(e) => {
-                                    eprintln!(
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
                                         "Error loading testcases (trying token refresh): {}",
-                                        e
                                     );
                                     if ctx.refresh_token().await.is_ok() {
                                         TestcaseService::list(
@@ -1526,9 +1658,10 @@ impl Browser {
                                     )
                                 }
                                 Err(e) => {
-                                    eprintln!(
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
                                         "Error loading testtasks (trying token refresh): {}",
-                                        e
                                     );
                                     if ctx.refresh_token().await.is_ok() {
                                         match TesttaskService::list(&ctx, 1, 100, None, None, None)
@@ -1578,7 +1711,14 @@ impl Browser {
                         "Feedback List" => match FeedbackService::list(&ctx, 1, 100).await {
                             Ok(feedbacks) => (AppState::FeedbackList { feedbacks }, None, None),
                             Err(e) => {
-                                eprintln!("Error loading feedbacks (trying token refresh): {}", e);
+                                crate::core::logging::log(
+                                    crate::core::logging::LogLevel::Debug,
+                                    "TUI",
+                                    format!(
+                                        "Error loading feedbacks (trying token refresh): {}",
+                                        e
+                                    ),
+                                );
                                 if ctx.refresh_token().await.is_ok() {
                                     match FeedbackService::list(&ctx, 1, 100).await {
                                         Ok(feedbacks) => {
@@ -1607,9 +1747,10 @@ impl Browser {
                             match TicketService::list(&ctx, None, None, 1, 100).await {
                                 Ok(tickets) => (AppState::TicketList { tickets }, None, None),
                                 Err(e) => {
-                                    eprintln!(
+                                    crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
                                         "Error loading tickets (trying token refresh): {}",
-                                        e
                                     );
                                     if ctx.refresh_token().await.is_ok() {
                                         match TicketService::list(&ctx, None, None, 1, 100).await {
@@ -1642,7 +1783,11 @@ impl Browser {
                         "Program List" => match ProgramService::list(&ctx).await {
                             Ok(programs) => (AppState::ProgramList { programs }, None, None),
                             Err(e) => {
-                                eprintln!("Error loading programs (trying token refresh): {}", e);
+                                crate::core::logging::log(
+                                    crate::core::logging::LogLevel::Debug,
+                                    "TUI",
+                                    format!("Error loading programs (trying token refresh): {}", e),
+                                );
                                 if ctx.refresh_token().await.is_ok() {
                                     match ProgramService::list(&ctx).await {
                                         Ok(programs) => {
@@ -1672,9 +1817,10 @@ impl Browser {
                                 match ProductPlanService::list(&ctx, config.product_id).await {
                                     Ok(p) => Ok(p),
                                     Err(e) => {
-                                        eprintln!(
+                                        crate::core::logging::log(
+                                        crate::core::logging::LogLevel::Debug,
+                                        "TUI",
                                         "Error loading product plans (trying token refresh): {}",
-                                        e
                                     );
                                         if ctx.refresh_token().await.is_ok() {
                                             ProductPlanService::list(&ctx, config.product_id).await
@@ -3333,5 +3479,84 @@ impl Browser {
         .alignment(ratatui::layout::Alignment::Center);
 
         f.render_widget(choices, chunks[1]);
+    }
+}
+
+#[cfg(test)]
+mod strip_html_tests {
+    use super::strip_html_tags;
+
+    #[test]
+    fn converts_br_to_newline() {
+        assert_eq!(strip_html_tags("a<br>b"), "a\nb");
+    }
+
+    /// 终端画不了图，但地址必须留下来，否则用户完全不知道有截图
+    #[test]
+    fn keeps_img_src_as_link() {
+        let html = r#"步骤：<img src="http://h/z/file-read-1.png">"#;
+        let out = strip_html_tags(html);
+        assert!(out.contains("http://h/z/file-read-1.png"), "实际: {}", out);
+        assert!(out.contains("[图片]"));
+    }
+
+    #[test]
+    fn extracts_unquoted_src() {
+        let out = strip_html_tags(r#"<img src=http://h/a.png>"#);
+        assert!(out.contains("http://h/a.png"), "实际: {}", out);
+    }
+
+    #[test]
+    fn decodes_entities() {
+        assert_eq!(strip_html_tags("a &lt;b&gt; &amp; c"), "a <b> & c");
+    }
+}
+
+#[cfg(test)]
+mod block_tag_tests {
+    use super::{strip_html_tags, strip_html_tags_with_base};
+
+    /// 禅道 steps 是 <p> 分段，丢掉块级标签会让多段粘成一行
+    #[test]
+    fn paragraph_tags_produce_newlines() {
+        let out = strip_html_tags("<p>[步骤]1、打开</p><p>[期望]成功</p>");
+        assert_eq!(out, "[步骤]1、打开\n[期望]成功", "实际: {:?}", out);
+    }
+
+    #[test]
+    fn div_and_li_break_lines() {
+        let out = strip_html_tags("<div>a</div><div>b</div>");
+        assert_eq!(out, "a\nb", "实际: {:?}", out);
+    }
+
+    #[test]
+    fn no_leading_newline_for_block_start() {
+        let out = strip_html_tags("<p>abc</p>");
+        assert_eq!(out, "abc", "实际: {:?}", out);
+    }
+
+    #[test]
+    fn no_duplicate_blank_lines() {
+        let out = strip_html_tags("<p>a</p><p></p><p>b</p>");
+        assert!(!out.contains("\n\n"), "不应出现连续空行: {:?}", out);
+    }
+
+    /// 列表接口给的是占位符，渲染时必须还原成能打开的完整地址
+    #[test]
+    fn resolves_placeholder_img_in_steps() {
+        let html = r#"<p>a</p><img src="{20220.png}" alt="file-read-20220.png" />"#;
+        let out = strip_html_tags_with_base(html, "http://z:8001/zentao");
+        assert!(
+            out.contains("http://z:8001/zentao/file-read-20220.png"),
+            "实际: {}",
+            out
+        );
+    }
+
+    #[test]
+    fn keeps_absolute_img_url() {
+        let html = r#"<img src="http://h/a.png">"#;
+        let out = strip_html_tags_with_base(html, "http://z");
+        assert!(out.contains("http://h/a.png"), "实际: {}", out);
     }
 }

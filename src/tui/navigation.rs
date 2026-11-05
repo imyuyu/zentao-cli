@@ -129,9 +129,75 @@ pub fn get_open_url(app: &App) -> Option<String> {
         AppState::ProductPlanList { plans, .. } => plans
             .get(app.selected_index)
             .map(|p| format!("{}/productplan-view-{}.html", base_url, p.id)),
+        // Bug 详情页：有截图就打开第一张，否则打开 Bug 页面
+        AppState::BugDetail { bug, .. } => {
+            first_image_url(bug.steps.as_deref(), base_url).or_else(|| Some(bug.web_url(base_url)))
+        }
         _ => None,
     }
 }
 
+/// 取 steps 里的第一张图片地址；禅道的图片 src 已是完整 URL
+pub fn first_image_url(steps: Option<&str>, base_url: &str) -> Option<String> {
+    let html = steps?;
+    let lower = html.to_lowercase();
+    let mut from = 0;
+    while let Some(pos) = lower[from..].find("<img") {
+        let start = from + pos;
+        let end = lower[start..].find('>').map(|e| start + e + 1)?;
+        if let Some(src) = super::browser::extract_attr(&html[start..end], "src") {
+            if !src.trim().is_empty() {
+                let alt =
+                    super::browser::extract_attr(&html[start..end], "alt").unwrap_or_default();
+                return Some(super::browser::resolve_img_src(&src, &alt, base_url));
+            }
+        }
+        from = end;
+    }
+    None
+}
+
 // Re-export AppState for use in browser.rs
 pub use super::app::AppState;
+
+#[cfg(test)]
+mod image_tests {
+    use super::first_image_url;
+
+    const BASE: &str = "http://z:8001/zentao";
+
+    #[test]
+    fn finds_full_url_as_is() {
+        let html = r#"<img src="http://h/z/file-read-1.png" alt="x">"#;
+        assert_eq!(
+            first_image_url(Some(html), BASE).as_deref(),
+            Some("http://h/z/file-read-1.png")
+        );
+    }
+
+    /// 列表接口返回占位符 src + 真实文件名 alt，必须还原成可打开的地址
+    #[test]
+    fn resolves_placeholder_src_from_alt() {
+        let html = r#"<img src="{20220.png}" alt="file-read-20220.png" />"#;
+        assert_eq!(
+            first_image_url(Some(html), BASE).as_deref(),
+            Some("http://z:8001/zentao/file-read-20220.png")
+        );
+    }
+
+    /// 没有 alt 时按 {id.ext} 规则拼
+    #[test]
+    fn resolves_placeholder_without_alt() {
+        let html = r#"<img src="{20094.gif}">"#;
+        assert_eq!(
+            first_image_url(Some(html), BASE).as_deref(),
+            Some("http://z:8001/zentao/file-read-20094.gif")
+        );
+    }
+
+    #[test]
+    fn returns_none_when_no_image() {
+        assert_eq!(first_image_url(Some("<p>纯文本</p>"), BASE), None);
+        assert_eq!(first_image_url(None, BASE), None);
+    }
+}

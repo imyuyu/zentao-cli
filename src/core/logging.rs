@@ -16,7 +16,7 @@ static LOGGER: OnceLock<Option<LogState>> = OnceLock::new();
 struct LogState {
     level: LogLevel,
     path: PathBuf,
-    _stderr_guard: WorkerGuard,
+    _stderr_guard: Option<WorkerGuard>,
     _file_guard: WorkerGuard,
 }
 
@@ -115,6 +115,11 @@ pub fn default_log_file_pattern() -> &'static str {
 }
 
 pub fn init(debug: bool, level: Option<LogLevel>) {
+    init_with(debug, level, false)
+}
+
+/// `console: false` 时不写 stderr —— TUI 占用终端，任何 stderr 输出都会打乱画面
+pub fn init_with(debug: bool, level: Option<LogLevel>, console: bool) {
     let level = effective_level(debug, level);
     let logger = level.and_then(|level| {
         let dir = default_log_dir();
@@ -122,16 +127,9 @@ pub fn init(debug: bool, level: Option<LogLevel>) {
             return None;
         }
 
-        let (stderr_writer, stderr_guard) = tracing_appender::non_blocking(std::io::stderr());
         let file_appender = rolling::daily(&dir, "zentao-cli.log");
         let (file_writer, file_guard) = tracing_appender::non_blocking(file_appender);
         let level_filter = level.as_filter();
-
-        let stderr_layer = fmt::layer()
-            .with_writer(stderr_writer)
-            .with_target(true)
-            .with_ansi(false)
-            .with_filter(level_filter);
 
         let file_layer = fmt::layer()
             .with_writer(file_writer)
@@ -139,11 +137,21 @@ pub fn init(debug: bool, level: Option<LogLevel>) {
             .with_ansi(false)
             .with_filter(level_filter);
 
-        tracing_subscriber::registry()
-            .with(stderr_layer)
-            .with(file_layer)
-            .try_init()
-            .ok()?;
+        let registry = tracing_subscriber::registry().with(file_layer);
+
+        let stderr_guard = if console {
+            let (stderr_writer, guard) = tracing_appender::non_blocking(std::io::stderr());
+            let stderr_layer = fmt::layer()
+                .with_writer(stderr_writer)
+                .with_target(true)
+                .with_ansi(false)
+                .with_filter(level_filter);
+            registry.with(stderr_layer).try_init().ok()?;
+            Some(guard)
+        } else {
+            registry.try_init().ok()?;
+            None
+        };
 
         Some(LogState {
             level,

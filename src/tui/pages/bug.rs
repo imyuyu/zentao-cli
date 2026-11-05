@@ -117,7 +117,7 @@ pub fn render_bug_list(
     f.render_widget(footer, chunks[2]);
 }
 
-pub fn render_bug_detail(f: &mut Frame, area: Rect, bug: &Bug) {
+pub fn render_bug_detail(f: &mut Frame, area: Rect, bug: &Bug, base_url: &str) {
     use ratatui::{
         layout::{Constraint, Direction, Layout},
         style::{Modifier, Style},
@@ -176,22 +176,29 @@ pub fn render_bug_detail(f: &mut Frame, area: Rect, bug: &Bug) {
         .steps
         .as_deref()
         .unwrap_or("No reproduction steps provided.");
-    let steps_text = crate::tui::browser::strip_html_tags(steps_text);
-    // Split by newline to create multiple lines
+    let steps_text = crate::tui::browser::strip_html_tags_with_base(steps_text, base_url);
     let steps_lines: Vec<Line> = steps_text
         .split('\n')
-        .map(|s| Line::from(Span::raw(s)))
+        .map(|s| Line::from(Span::raw(s.to_string())))
         .collect();
     let steps = Paragraph::new(Text::from(steps_lines))
-        .block(Block::default().borders(Borders::ALL).title("Steps"));
+        .block(Block::default().borders(Borders::ALL).title("Steps"))
+        // 不换行的话长步骤会被裁掉，堆栈和长描述就看不全
+        .wrap(ratatui::widgets::Wrap { trim: false });
 
     f.render_widget(steps, chunks[2]);
 
+    let has_image =
+        crate::tui::navigation::first_image_url(bug.steps.as_deref(), base_url).is_some();
     let footer = Paragraph::new(Text::from(vec![Line::from(vec![
         Span::styled("q", Style::default().add_modifier(Modifier::BOLD)),
         Span::raw(" back  "),
         Span::styled("o", Style::default().add_modifier(Modifier::BOLD)),
-        Span::raw(" open"),
+        Span::raw(if has_image {
+            " open screenshot"
+        } else {
+            " open in browser"
+        }),
     ])]));
 
     f.render_widget(footer, chunks[3]);

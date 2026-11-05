@@ -92,10 +92,17 @@ pub async fn run_tui_wizard(global: bool) -> Result<()> {
                     // 在选择状态下，Esc 跳过选择
                     if matches!(wizard.state, ConfigWizardState::SelectProduct { .. }) {
                         // 跳过产品选择，transition to SelectProject
-                        if let ConfigWizardState::SelectProduct { url, token, .. } = &wizard.state {
+                        if let ConfigWizardState::SelectProduct {
+                            url,
+                            token,
+                            account,
+                            ..
+                        } = &wizard.state
+                        {
                             wizard.state = ConfigWizardState::SelectProject {
                                 url: url.clone(),
                                 token: token.clone(),
+                                account: account.clone(),
                                 product_id: None,
                                 projects: Vec::new(),
                                 selected: 0,
@@ -108,12 +115,13 @@ pub async fn run_tui_wizard(global: bool) -> Result<()> {
                         if let ConfigWizardState::SelectProject {
                             url,
                             token,
+                            account,
                             product_id,
                             projects: _,
                             ..
                         } = &wizard.state
                         {
-                            let path = save_config(url, token, *product_id, None, global)
+                            let path = save_config(url, token, account, *product_id, None, global)
                                 .await
                                 .unwrap_or_default();
                             wizard.set_saved(url.clone(), path);
@@ -213,19 +221,38 @@ async fn handle_enter(wizard: &mut ConfigWizard, input_buffer: &str, global: boo
                 let auth = Auth::new(url);
                 match auth.login(account, password).await {
                     Ok(token) => {
-                        wizard.set_success(url.clone(), token);
+                        wizard.set_success(url.clone(), token, account.clone());
                     }
                     Err(e) => {
-                        wizard.set_error(e.to_string());
+                        // 路径写错时表现为 404/连接失败，直接说清楚该查什么
+                        let msg = e.to_string();
+                        let hint = if msg.contains("404")
+                            || msg.contains("Not Found")
+                            || msg.contains("Network")
+                            || msg.contains("connection")
+                        {
+                            format!(
+                                "{}\n\n请确认地址是否包含正确的部署路径（如 {}/zentao）",
+                                msg, url
+                            )
+                        } else {
+                            msg
+                        };
+                        wizard.set_error(hint);
                     }
                 }
             }
         }
-        ConfigWizardState::Success { url, token } => {
+        ConfigWizardState::Success {
+            url,
+            token,
+            account,
+        } => {
             // 登录成功后，进入产品选择
             let url = url.clone();
             let token = token.clone();
-            wizard.set_select_product(url.clone(), token.clone());
+            let account = account.clone();
+            wizard.set_select_product(url.clone(), token.clone(), account);
             // 同步加载产品列表
             let client = ApiClient::new(&url, Some(token));
             match ProductApi::list(&client).await {
@@ -250,6 +277,7 @@ async fn handle_enter(wizard: &mut ConfigWizard, input_buffer: &str, global: boo
         ConfigWizardState::SelectProject {
             url,
             token,
+            account,
             product_id,
             projects,
             ..
@@ -264,7 +292,8 @@ async fn handle_enter(wizard: &mut ConfigWizard, input_buffer: &str, global: boo
             } else {
                 None
             };
-            let path = save_config(url, token, *product_id, selected_project, global).await?;
+            let path =
+                save_config(url, token, account, *product_id, selected_project, global).await?;
             wizard.set_saved(url.clone(), path);
         }
         ConfigWizardState::Error { .. } => {
@@ -280,6 +309,7 @@ async fn handle_enter(wizard: &mut ConfigWizard, input_buffer: &str, global: boo
 async fn save_config(
     url: &str,
     token: &str,
+    account: &str,
     product_id: Option<u64>,
     project_id: Option<u64>,
     global: bool,
@@ -300,7 +330,11 @@ async fn save_config(
         product_id,
         project_id,
         api_version: None,
-        account: None,
+        account: if account.trim().is_empty() {
+            None
+        } else {
+            Some(account.to_string())
+        },
     };
 
     let global = GlobalConfig { default: config };
@@ -391,6 +425,15 @@ fn render_wizard_frame(
                 Line::from(prompt),
                 Line::from(""),
                 Line::from(spans),
+                Line::from(""),
+                Line::from(Span::styled(
+                    if matches!(state, ConfigWizardState::Url) {
+                        "格式：http://host:port/部署路径（如 /zentao 或 /pms，因环境而异，不能省略）"
+                    } else {
+                        ""
+                    },
+                    Style::default().fg(Color::DarkGray),
+                )),
             ]);
             f.render_widget(content, chunks[1]);
         }
@@ -406,7 +449,7 @@ fn render_wizard_frame(
             ]);
             f.render_widget(content, chunks[1]);
         }
-        ConfigWizardState::Success { url, token } => {
+        ConfigWizardState::Success { url, token, .. } => {
             let masked = if token.len() > 8 {
                 format!("{}...", &token[..8])
             } else {
