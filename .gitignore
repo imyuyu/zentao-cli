@@ -23,7 +23,8 @@ Thumbs.db
 
 # Node modules (for npm package)
 node_modules/
-Cargo.lock
+# Cargo.lock 必须提交：这是二进制项目，不锁依赖会导致 CI 解析到新版
+# （曾因 keyring 4.2 移除 use_native_store 导致全部平台构建失败）
 package-lock.json
 vendor/
 

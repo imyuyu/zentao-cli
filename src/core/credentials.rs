@@ -16,8 +16,12 @@ use std::collections::HashMap;
 const SERVICE_NAME: &str = "zentao-cli";
 
 /// 初始化 keyring store
+///
+/// keyring 4.1+ 移除了 use_native_store；改用 v1 模块的 Entry::new 触发
+/// 平台凭据库的惰性初始化（内部会 set_default_store）。失败不致命——
+/// 后续真正读写时会再报错，不影响不使用凭据库的命令。
 fn init_keyring_store() {
-    let _ = keyring::use_native_store(false);
+    let _ = keyring::Entry::new(SERVICE_NAME, "__init__");
 }
 
 /// 凭据结构体
