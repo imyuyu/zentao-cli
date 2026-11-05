@@ -1,11 +1,11 @@
-# productplan list
+# product-plan list
 
 列出产品计划列表。
 
 ## Command
 
 ```bash
-zentao-cli productplan list [--product <id>]
+zentao-cli product-plan list [--product <id>]
 ```
 
 ## Options

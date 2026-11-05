@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli testcase create --product <id> --title <title> [--type <type>] [--severity <level>] [--pri <priority>] [--steps <steps>] [--expectation <expectation>] [--story <story_id>] [--project <project_id>]
+zentao-cli testcase create --product <id> --title <title> [--type <type>] [--pri <priority>] [--steps <steps>] [--story <story_id>]
 ```
 
 ## Options
@@ -14,12 +14,14 @@ zentao-cli testcase create --product <id> --title <title> [--type <type>] [--sev
 | `--product` | Yes | Product ID |
 | `--title` | Yes | Testcase title |
 | `--type` | No | Testcase type: feature/performance/interface/security/concurrency/destructive/install/others |
-| `--severity` | No | Severity level (1-4, 1 is most severe) |
 | `--pri` | No | Priority (0-5) |
 | `--steps` | No | Test steps |
-| `--expectation` | No | Expected result |
 | `--story` | No | Related story ID |
-| `--project` | No | Project ID |
+| `--branch` | No | 分支 ID |
+| `--module` | No | 模块 ID |
+| `--stage` | No | 适用阶段 |
+| `--precondition` | No | 前置条件 |
+| `--keywords` | No | 关键词 |
 
 ## Examples
 
@@ -32,8 +34,7 @@ zentao-cli testcase create \
   --product 1 \
   --title "用户登录测试" \
   --type feature \
-  --severity 2 \
   --pri 1 \
   --steps "1. 输入正确账号密码\n2. 点击登录" \
-  --expectation "登录成功，跳转首页"
+  --keywords "登录,冒烟"
 ```

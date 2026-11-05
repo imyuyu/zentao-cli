@@ -1,11 +1,11 @@
-# productplan update
+# product-plan update
 
 修改产品计划信息。
 
 ## Command
 
 ```bash
-zentao-cli productplan update <plan_id> [--title <title>] [--code <code>] [--desc <desc>] [--begin <begin>] [--end <end>]
+zentao-cli product-plan update <plan_id> [--name <name>] [--desc <desc>] [--begin <begin>] [--end <end>] [--status <status>]
 ```
 
 ## Options
@@ -13,21 +13,21 @@ zentao-cli productplan update <plan_id> [--title <title>] [--code <code>] [--des
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
 | `<plan_id>` | u64 | Yes | 计划 ID |
-| `--title` | string | No | 计划标题 |
-| `--code` | string | No | 计划代号 |
+| `--name` | string | No | 计划名称 |
 | `--desc` | string | No | 计划描述 |
 | `--begin` | string | No | 开始日期（YYYY-MM-DD） |
 | `--end` | string | No | 结束日期（YYYY-MM-DD） |
+| `--status` | string | No | 状态 |
 
 ## Examples
 
 ```bash
 # 修改计划标题
-zentao-cli productplan update 1 --title "新计划标题"
+zentao-cli product-plan update 1 --name "新计划标题"
 
 # 修改计划详细信息
-zentao-cli productplan update 1 \
-  --title "更新后的计划" \
+zentao-cli product-plan update 1 \
+  --name "更新后的计划" \
   --desc "修改后的描述" \
   --end "2025-06-30"
 ```

@@ -17,6 +17,11 @@ zentao-cli execution create --name <name> --project <id> --type <type> [--begin 
 | `--begin` | No | Start date (YYYY-MM-DD) |
 | `--end` | No | End date (YYYY-MM-DD) |
 | `--days` | No | Duration in days |
+| `--code` | Yes | 执行代号 |
+| `--desc` | No | 描述 |
+| `--pm` | No | 负责人 |
+| `--qd` | No | 测试负责人 |
+| `--rd` | No | 研发负责人 |
 
 ## Examples
 

@@ -5,7 +5,7 @@
 ## Command
 
 ```bash
-zentao-cli user update <id> [--account <account>] [--realname <realname>] [--role <role>] [--dept <dept>] [--mobile <mobile>] [--email <email>] [--phone <phone>]
+zentao-cli user update <id> [--realname <realname>] [--role <role>] [--dept <dept>] [--mobile <mobile>] [--email <email>] [--phone <phone>]
 ```
 
 ## Options
@@ -13,7 +13,6 @@ zentao-cli user update <id> [--account <account>] [--realname <realname>] [--rol
 | Option | Required | Description |
 |--------|----------|-------------|
 | `<id>` | Yes | 用户 ID |
-| `--account` | No | 登录账号名 |
 | `--realname` | No | 真实姓名 |
 | `--role` | No | 角色 |
 | `--dept` | No | 部门 ID |

@@ -14,6 +14,10 @@ zentao-cli project create --name <name> --code <code> [--desc <description>]
 | `--name` | Yes | Project name |
 | `--code` | Yes | Project code |
 | `--desc` | No | Project description |
+| `--begin` | Yes | 开始日期 |
+| `--end` | Yes | 结束日期 |
+| `--products` | Yes | 关联产品 ID（逗号分隔） |
+| `--model` | No | 项目模型 |
 
 ## Examples
 

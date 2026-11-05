@@ -17,6 +17,10 @@ zentao-cli execution update <id> [--name <name>] [--status <status>] [--begin <d
 | `--begin` | No | New start date (YYYY-MM-DD) |
 | `--end` | No | New end date (YYYY-MM-DD) |
 | `--days` | No | New duration in days |
+| `--desc` | No | 描述 |
+| `--pm` | No | 负责人 |
+| `--qd` | No | 测试负责人 |
+| `--rd` | No | 研发负责人 |
 
 ## Examples
 

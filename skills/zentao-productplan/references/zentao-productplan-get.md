@@ -1,11 +1,11 @@
-# productplan get
+# product-plan get
 
 获取指定产品计划的详细信息。
 
 ## Command
 
 ```bash
-zentao-cli productplan get <id>
+zentao-cli product-plan get <id>
 ```
 
 ## Arguments

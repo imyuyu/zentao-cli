@@ -5,7 +5,7 @@
 ## Command
 
 ```bash
-zentao-cli ticket update <id> [--title <title>] [--type <type>] [--desc <description>]
+zentao-cli ticket update <id> [--title <title>] [--desc <description>]
 ```
 
 ## Options
@@ -14,7 +14,6 @@ zentao-cli ticket update <id> [--title <title>] [--type <type>] [--desc <descrip
 |--------|----------|-------------|
 | `<id>` | Yes | 工单 ID |
 | `--title` | No | 工单标题 |
-| `--type` | No | 工单类型 |
 | `--desc` | No | 工单描述 |
 
 ## Examples
@@ -24,7 +23,7 @@ zentao-cli ticket update <id> [--title <title>] [--type <type>] [--desc <descrip
 zentao-cli ticket update 1 --title "新标题"
 
 # 更新工单类型和描述
-zentao-cli ticket update 1 --type "improvement" --desc "更新后的描述"
+zentao-cli ticket update 1 --title "新标题" --desc "更新后的描述"
 ```
 
 ## API Endpoint

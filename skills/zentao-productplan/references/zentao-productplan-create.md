@@ -1,11 +1,11 @@
-# productplan create
+# product-plan create
 
 创建新产品计划。
 
 ## Command
 
 ```bash
-zentao-cli productplan create --product <product_id> --title <title> [--code <code>] [--desc <desc>] [--begin <begin>] [--end <end>]
+zentao-cli product-plan create --product <product_id> --title <title> [--code <code>] [--desc <desc>] [--begin <begin>] [--end <end>]
 ```
 
 ## Options
@@ -23,10 +23,10 @@ zentao-cli productplan create --product <product_id> --title <title> [--code <co
 
 ```bash
 # 创建基本产品计划
-zentao-cli productplan create --product 1 --title "Q1发布计划"
+zentao-cli product-plan create --product 1 --title "Q1发布计划"
 
 # 创建带详细信息的计划
-zentao-cli productplan create \
+zentao-cli product-plan create \
   --product 1 \
   --title "2024年度规划" \
   --code "2024_PLAN" \

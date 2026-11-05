@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli product update <id> [--name <name>] [--code <code>] [--status <status>] [--desc <description>]
+zentao-cli product update <id> [--name <name>] [--status <status>] [--desc <description>]
 ```
 
 ## Options
@@ -13,7 +13,6 @@ zentao-cli product update <id> [--name <name>] [--code <code>] [--status <status
 |--------|----------|-------------|
 | `<id>` | Yes | Product ID |
 | `--name` | No | New product name |
-| `--code` | No | New product code |
 | `--status` | No | New status (normal, closed) |
 | `--desc` | No | New product description |
 

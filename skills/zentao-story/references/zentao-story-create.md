@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli story create --title <title> --product <id> --pri <priority> [--type <type>] [--category <category>] [--spec <spec>] [--estimate <estimate>]
+zentao-cli story create --title <title> --product <id> --pri <priority> [--category <category>] [--spec <spec>] [--estimate <estimate>]
 ```
 
 ## Options
@@ -14,10 +14,10 @@ zentao-cli story create --title <title> --product <id> --pri <priority> [--type 
 | `--title` | Yes | Story title |
 | `--product` | Yes | Product ID |
 | `--pri` | Yes | Priority (1-4) |
-| `--type` | No | Story type (feature, enhance, bugfix, task, story) |
 | `--category` | No | Category (feature/requirement/bug/improvement) |
 | `--spec` | No | Specification details |
 | `--estimate` | No | Estimated hours |
+| `--module` | No | 所属模块 ID |
 
 ## Examples
 
@@ -30,7 +30,7 @@ zentao-cli story create \
   --title "用户注册功能" \
   --product 1 \
   --pri 1 \
-  --type feature \
+  --category feature \
   --estimate 8
 ```
 

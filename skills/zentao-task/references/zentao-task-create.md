@@ -21,6 +21,8 @@ zentao-cli task create --name <name> --project <id> --assigned-to <user> --type 
 | `--estimate` | No | Estimated hours |
 | `--module` | No | Module ID |
 | `--story` | No | Related story ID |
+| `--execution` | Yes | 执行 ID |
+| `--desc` | Yes | 任务描述（缺失会返回 200 但不落库） |
 
 ## Examples
 

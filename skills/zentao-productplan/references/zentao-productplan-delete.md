@@ -1,11 +1,11 @@
-# productplan delete
+# product-plan delete
 
 删除产品计划。
 
 ## Command
 
 ```bash
-zentao-cli productplan delete <plan_id>
+zentao-cli product-plan delete <plan_id>
 ```
 
 ## Options
@@ -18,7 +18,7 @@ zentao-cli productplan delete <plan_id>
 
 ```bash
 # 删除产品计划
-zentao-cli productplan delete 1
+zentao-cli product-plan delete 1
 ```
 
 ## Gotchas

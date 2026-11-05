@@ -26,6 +26,8 @@ zentao-cli bug create --title <title> --product <id> --severity <level> [--pri <
 | `--browser` | No | Browser |
 | `--deadline` | No | Deadline |
 | `--opened-build` | No | Affected build (e.g., trunk) |
+| `--project` | Yes | 项目 ID（禅道必填，缺失会返回 201 但不落库） |
+| `--attachment` | No | 附件本地路径（需服务端支持 v2 文件接口） |
 
 ## Examples
 

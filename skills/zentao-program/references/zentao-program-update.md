@@ -5,7 +5,7 @@
 ## Command
 
 ```bash
-zentao-cli program update <program_id> [--name <name>] [--code <code>] [--desc <desc>] [--begin <begin>] [--end <end>]
+zentao-cli program update <program_id> [--name <name>] [--desc <desc>] [--begin <begin>] [--end <end>]
 ```
 
 ## Options
@@ -14,7 +14,6 @@ zentao-cli program update <program_id> [--name <name>] [--code <code>] [--desc <
 |--------|------|----------|-------------|
 | `<program_id>` | u64 | Yes | 项目集 ID |
 | `--name` | string | No | 项目集名称 |
-| `--code` | string | No | 项目集代号（唯一） |
 | `--desc` | string | No | 项目集描述 |
 | `--begin` | string | No | 开始日期（YYYY-MM-DD） |
 | `--end` | string | No | 结束日期（YYYY-MM-DD） |

@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli project update <id> [--name <name>] [--code <code>] [--status <status>] [--desc <description>]
+zentao-cli project update <id> [--name <name>] [--status <status>] [--desc <description>]
 ```
 
 ## Options
@@ -13,9 +13,13 @@ zentao-cli project update <id> [--name <name>] [--code <code>] [--status <status
 |--------|----------|-------------|
 | `<id>` | Yes | Project ID |
 | `--name` | No | New project name |
-| `--code` | No | New project code |
 | `--status` | No | New status (wait, doing, closed, suspended) |
 | `--desc` | No | New project description |
+| `--pm` | No | 项目经理 |
+| `--budget` | No | 预算 |
+| `--budget-unit` | No | 币种 |
+| `--days` | No | 工作日 |
+| `--acl` | No | 访问控制 |
 
 ## Examples
 

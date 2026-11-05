@@ -5,7 +5,7 @@
 ## Command
 
 ```bash
-zentao-cli release update <release_id> [--name <name>] [--build <build_id>]
+zentao-cli release update <release_id> [--name <name>] [--build <build_id>]   [--date <date>] [--desc <desc>] [--status <status>]
 ```
 
 ## Options
@@ -15,6 +15,9 @@ zentao-cli release update <release_id> [--name <name>] [--build <build_id>]
 | `<release_id>` | u64 | Yes | 发布 ID |
 | `--name` | string | No | 发布名称 |
 | `--build` | u64 | No | 关联的 Build ID |
+| `--date` | string | No | 发布日期（YYYY-MM-DD） |
+| `--desc` | string | No | 描述 |
+| `--status` | string | No | 发布状态：normal / closed |
 
 ## Examples
 

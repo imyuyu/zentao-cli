@@ -18,6 +18,7 @@ zentao-cli task update <id> [--name <name>] [--status <status>] [--pri <priority
 | `--assigned-to` | No | Assign to user |
 | `--est-started` | No | Estimated start date |
 | `--deadline` | No | Deadline |
+| `--from-bug` | No | 来源于 Bug 的 ID |
 
 ## Examples
 

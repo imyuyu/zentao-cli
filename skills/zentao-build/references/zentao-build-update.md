@@ -4,7 +4,7 @@
 
 ## Command
 ```bash
-zentao-cli build update <id> [--name <name>] [--status <status>]
+zentao-cli build update <id> [--name <name>]
 ```
 
 ## Options
@@ -13,7 +13,11 @@ zentao-cli build update <id> [--name <name>] [--status <status>]
 |--------|----------|-------------|
 | `<id>` | Yes | Build ID |
 | `--name` | No | New build name |
-| `--status` | No | New status |
+| `--desc` | No | 版本描述 |
+| `--builder` | No | 构建者 |
+| `--date` | No | 打包日期 |
+| `--file-path` | No | 下载地址 |
+| `--scm-path` | No | 源码地址 |
 
 ## Examples
 
@@ -22,6 +26,6 @@ zentao-cli build update <id> [--name <name>] [--status <status>]
 zentao-cli build update 1 --name "v1.0.1"
 
 # Update build status
-zentao-cli build update 1 --status released
+zentao-cli build update 1 --name "v1.0.1" --desc "修复打包"
 ```
 
