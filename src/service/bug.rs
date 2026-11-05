@@ -16,13 +16,45 @@ impl BugService {
     ) -> Result<Vec<Bug>> {
         log(LogLevel::Info, "BugService", "list");
         let client = ctx.client();
-        BugApi::list(
-            &client,
-            ctx.require_product_id(product)?,
-            status,
-            assigned_to,
-        )
-        .await
+        let product_id = ctx.require_product_id(product)?;
+
+        // 禅道 21.6 的 /products/{id}/bugs 不认 assignedTo 参数（传不存在的账号
+        // 也返回全量），只能客户端过滤。过滤就必须翻页拿全量，否则目标 bug
+        // 不在第一页时结果为空。
+        let Some(account) = assigned_to else {
+            return BugApi::list(&client, product_id, status, None).await;
+        };
+        let account = account.trim().to_lowercase();
+
+        let mut matched = Vec::new();
+        let mut page = 1u32;
+        loop {
+            let batch =
+                BugApi::list_with_pagination(&client, product_id, status.clone(), None, page, 100)
+                    .await?;
+            if batch.is_empty() {
+                break;
+            }
+            matched.extend(
+                batch
+                    .iter()
+                    .filter(|b| {
+                        b.assigned_to
+                            .as_ref()
+                            .is_some_and(|u| u.account_or_realname().to_lowercase() == account)
+                    })
+                    .cloned(),
+            );
+            // 最后一页（不满 limit）即结束
+            if batch.len() < 100 {
+                break;
+            }
+            page += 1;
+            if page > 200 {
+                break; // 兜底，避免异常数据导致无限翻页
+            }
+        }
+        Ok(matched)
     }
 
     pub async fn get(ctx: &AppContext, id: u64) -> Result<Bug> {
@@ -256,5 +288,68 @@ mod tests {
         assert_eq!(result.id, 99);
         post_mock.assert();
         get_mock.assert();
+    }
+
+    /// 禅道 21.6 的接口不认 assignedTo，必须在客户端过滤；
+    /// 且目标 bug 可能不在第一页，所以要翻页拿全量。
+    #[tokio::test]
+    async fn assigned_to_filters_client_side_across_pages() {
+        let (server, ctx) = setup(Some(1));
+
+        // 第 1 页：100 条别人的 bug（满页，触发翻页）
+        let mut page1 = Vec::new();
+        for i in 1..=100 {
+            page1.push(serde_json::json!({
+                "id": i, "title": "other", "product": 1, "status": "active",
+                "severity": 2, "pri": 1,
+                "assignedTo": {"id": 1, "account": "someone_else"}
+            }));
+        }
+        // 第 2 页：1 条目标 bug（不满页，结束）
+        let page2 = vec![serde_json::json!({
+            "id": 999, "title": "mine", "product": 1, "status": "active",
+            "severity": 2, "pri": 1,
+            "assignedTo": {"id": 2, "account": "me"}
+        })];
+
+        let m1 = server.mock(|when, then| {
+            when.method(GET)
+                .path("/api.php/v1/products/1/bugs")
+                .query_param("page", "1");
+            then.status(200)
+                .json_body(serde_json::json!({"total": 101, "bugs": page1}));
+        });
+        let m2 = server.mock(|when, then| {
+            when.method(GET)
+                .path("/api.php/v1/products/1/bugs")
+                .query_param("page", "2");
+            then.status(200)
+                .json_body(serde_json::json!({"total": 101, "bugs": page2}));
+        });
+
+        let bugs = BugService::list(&ctx, Some(1), None, Some("me".into()))
+            .await
+            .unwrap();
+
+        assert_eq!(bugs.len(), 1, "应只返回自己的 bug");
+        assert_eq!(bugs[0].id, 999);
+        m1.assert();
+        m2.assert();
+    }
+
+    #[tokio::test]
+    async fn list_without_assigned_to_keeps_first_page_only() {
+        let (server, ctx) = setup(Some(1));
+        let mock = server.mock(|when, then| {
+            when.method(GET).path("/api.php/v1/products/1/bugs");
+            then.status(200).json_body(serde_json::json!({
+                "total": 1,
+                "bugs": [serde_json::from_str::<serde_json::Value>(BUG_JSON).unwrap()]
+            }));
+        });
+
+        let bugs = BugService::list(&ctx, Some(1), None, None).await.unwrap();
+        assert_eq!(bugs.len(), 1);
+        mock.assert();
     }
 }
