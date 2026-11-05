@@ -1,6 +1,6 @@
 //! Build（版本）表单字段
 
-use crate::api::build::{CreateBuildRequest, UpdateBuildRequest};
+use crate::api::build::UpdateBuildRequest;
 
 use super::forms::{FormField, FormFields};
 
@@ -29,19 +29,6 @@ fn opt(value: &str) -> Option<String> {
 }
 
 impl BuildFormFields {
-    pub fn new(product_id: u64, execution_id: u64) -> Self {
-        Self {
-            product: FormField::readonly("产品 (Product)", &product_id.to_string()),
-            execution: FormField::readonly("执行 (Execution)", &execution_id.to_string()),
-            name: FormField::new("名称 (Name)", "", "请输入版本名称", true),
-            builder: FormField::new("构建者 (Builder)", "", "请输入构建者", true),
-            date: FormField::new("打包日期 (Date)", "", "YYYY-MM-DD", false),
-            scm_path: FormField::new("源码地址 (SCM Path)", "", "git@host:repo.git", false),
-            file_path: FormField::new("下载地址 (File Path)", "", "包文件路径", false),
-            desc: FormField::new("描述 (Desc)", "", "请输入描述", false),
-        }
-    }
-
     pub fn from_build(build: &crate::api::Build) -> Self {
         Self {
             product: FormField::readonly("产品 (Product)", &build.product.to_string()),
@@ -88,20 +75,6 @@ impl BuildFormFields {
         None
     }
 
-    pub fn to_create_request(&self) -> CreateBuildRequest {
-        CreateBuildRequest {
-            execution: self.execution.value.parse().unwrap_or(0),
-            product: self.product.value.parse().unwrap_or(0),
-            name: self.name.value.clone(),
-            builder: self.builder.value.clone(),
-            branch: None,
-            date: opt(&self.date.value),
-            scm_path: opt(&self.scm_path.value),
-            file_path: opt(&self.file_path.value),
-            desc: opt(&self.desc.value),
-        }
-    }
-
     pub fn to_update_request(&self) -> UpdateBuildRequest {
         UpdateBuildRequest {
             name: opt(&self.name.value),
@@ -145,20 +118,23 @@ impl FormFields for BuildFormFields {
 mod tests {
     use super::*;
 
-    #[test]
-    fn build_form_rejects_empty_name() {
-        let f = BuildFormFields::new(1, 2);
-        assert!(f.validate().is_some(), "名称为空应拦截");
+    fn sample() -> crate::api::Build {
+        serde_json::from_str(r#"{"id":1,"name":"v1.0","product":7,"project":3}"#)
+            .expect("样例 JSON 应能解析")
     }
 
+    /// 编辑态必须能从已有实体回填关键字段
     #[test]
-    fn build_form_empty_fields_become_none() {
-        let f = BuildFormFields::new(1, 2);
-        let req = f.to_update_request();
-        assert!(req.file_path.is_none());
-        assert!(req.date.is_none());
-        assert!(req.scm_path.is_none());
-        assert!(req.builder.is_none());
-        assert!(req.desc.is_none());
+    fn from_build_fills_key_field() {
+        let f = BuildFormFields::from_build(&sample());
+        assert_eq!(f.name.value, sample().name);
+    }
+
+    /// 名称/标题清空后必须拦住提交
+    #[test]
+    fn rejects_empty_name() {
+        let mut f = BuildFormFields::from_build(&sample());
+        f.name.value.clear();
+        assert!(f.validate().is_some(), "空 name 应拦截");
     }
 }

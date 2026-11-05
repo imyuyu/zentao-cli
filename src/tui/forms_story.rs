@@ -1,6 +1,6 @@
 //! 需求(Story)表单字段
 
-use crate::api::story::{CreateStoryRequest, UpdateStoryRequest};
+use crate::api::story::UpdateStoryRequest;
 use crate::tui::forms::{FormField, FormFields};
 
 /// Story 表单字段
@@ -20,25 +20,6 @@ pub struct StoryFormFields {
 }
 
 impl StoryFormFields {
-    pub fn new(product_id: u64) -> Self {
-        Self {
-            title: FormField::new("标题 (Title)", "", "请输入需求标题", true),
-            pri: FormField::new("优先级 (Pri)", "3", "0-5", false),
-            category: FormField::new(
-                "类别 (Category)",
-                "feature",
-                "feature/requirement/bug/...",
-                false,
-            ),
-            spec: FormField::new("描述 (Spec)", "", "需求描述", false),
-            verify: FormField::new("验收标准 (Verify)", "", "验收标准", false),
-            source: FormField::new("来源 (Source)", "", "需求来源", false),
-            module: FormField::new("模块 (Module)", "", "模块 ID", false),
-            keywords: FormField::new("关键字 (Keywords)", "", "关键字", false),
-            product: FormField::readonly("产品 (Product)", &product_id.to_string()),
-        }
-    }
-
     /// Story 结构体不含 spec/verify/source/sourceNote，只能留空
     pub fn from_story(story: &crate::api::Story) -> Self {
         Self {
@@ -77,22 +58,6 @@ impl StoryFormFields {
             return Some("产品不能为空".to_string());
         }
         None
-    }
-
-    pub fn to_create_request(&self) -> CreateStoryRequest {
-        CreateStoryRequest {
-            title: self.title.value.clone(),
-            product: self.product.value.trim().parse().unwrap_or(0),
-            pri: self.pri.value.trim().parse().unwrap_or(0),
-            category: opt_string(&self.category.value),
-            spec: opt_string(&self.spec.value),
-            verify: opt_string(&self.verify.value),
-            estimate: None,
-            source: opt_string(&self.source.value),
-            sourceNote: None,
-            module: self.module.value.trim().parse().ok(),
-            keywords: opt_string(&self.keywords.value),
-        }
     }
 
     pub fn to_update_request(&self) -> UpdateStoryRequest {
@@ -161,21 +126,23 @@ impl FormFields for StoryFormFields {
 mod tests {
     use super::*;
 
-    #[test]
-    fn story_form_rejects_empty_title() {
-        let mut f = StoryFormFields::new(1);
-        assert!(f.validate().is_some(), "标题为空应拦截");
-        f.title.value = "标题".into();
-        assert!(f.validate().is_none(), "必填齐全应放行");
+    fn sample() -> crate::api::Story {
+        serde_json::from_str(r#"{"id":1,"title":"登录异常","status":"active","pri":2,"product":7}"#)
+            .expect("样例 JSON 应能解析")
     }
 
+    /// 编辑态必须能从已有实体回填关键字段
     #[test]
-    fn story_form_parses_pri() {
-        let mut f = StoryFormFields::new(7);
-        f.title.value = "标题".into();
-        f.pri.value = "3".into();
-        let req = f.to_create_request();
-        assert_eq!(req.pri, 3);
-        assert_eq!(req.product, 7);
+    fn from_story_fills_key_field() {
+        let f = StoryFormFields::from_story(&sample());
+        assert_eq!(f.title.value, sample().title);
+    }
+
+    /// 名称/标题清空后必须拦住提交
+    #[test]
+    fn rejects_empty_title() {
+        let mut f = StoryFormFields::from_story(&sample());
+        f.title.value.clear();
+        assert!(f.validate().is_some(), "空 title 应拦截");
     }
 }

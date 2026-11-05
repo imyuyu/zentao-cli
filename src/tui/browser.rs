@@ -226,6 +226,21 @@ fn send_crud_result(
     let _ = tx.send((state, None, None));
 }
 
+/// 创建类操作在 TUI 里只给提示，指向 CLI 命令
+fn create_hint(state: &AppState) -> String {
+    let cmd = match state {
+        AppState::StoryList { .. } => "zentao-cli story create",
+        AppState::TaskList { .. } => "zentao-cli task create",
+        AppState::TestcaseList { .. } => "zentao-cli testcase create",
+        AppState::BuildList { .. } => "zentao-cli build create",
+        AppState::ProjectList { .. } => "zentao-cli project create",
+        AppState::ExecutionList { .. } => "zentao-cli execution create",
+        AppState::UserList { .. } => "zentao-cli user create",
+        _ => return String::new(),
+    };
+    format!("创建请用命令行（关联 ID 需精确填写）：{} --help", cmd)
+}
+
 pub enum FormSubmitAction {
     DeleteProgram(u64),
     DeleteProductPlan(u64),
@@ -237,25 +252,18 @@ pub enum FormSubmitAction {
     CreateRelease(Option<u64>, ReleaseFormFields),
     UpdateRelease(u64, ReleaseFormFields),
     DeleteStory(u64),
-    CreateStory(StoryFormFields),
     UpdateStory(u64, StoryFormFields),
     DeleteTask(u64),
-    CreateTask(TaskFormFields),
     UpdateTask(u64, TaskFormFields),
     DeleteTestcase(u64),
-    CreateTestcase(TestcaseFormFields),
     UpdateTestcase(u64, TestcaseFormFields),
     DeleteBuild(u64),
-    CreateBuild(BuildFormFields),
     UpdateBuild(u64, BuildFormFields),
     DeleteProject(u64),
-    CreateProject(ProjectFormFields),
     UpdateProject(u64, ProjectFormFields),
     DeleteExecution(u64),
-    CreateExecution(ExecutionFormFields),
     UpdateExecution(u64, ExecutionFormFields),
     DeleteUser(u64),
-    CreateUser(UserFormFields),
     UpdateUser(u64, UserFormFields),
 }
 
@@ -546,21 +554,6 @@ impl Browser {
                                     StoryService::delete(&ctx, id).await.map(|_| ()),
                                 );
                             }
-                            FormSubmitAction::CreateStory(fields) => {
-                                let req = fields.to_create_request();
-                                let r = StoryService::create(
-                                    &ctx,
-                                    req.title,
-                                    Some(req.product),
-                                    req.pri,
-                                    req.category,
-                                    req.spec,
-                                    req.estimate,
-                                    req.module,
-                                )
-                                .await;
-                                send_crud_result(&tx, r.map(|_| ()));
-                            }
                             FormSubmitAction::UpdateStory(id, fields) => {
                                 send_crud_result(
                                     &tx,
@@ -573,13 +566,6 @@ impl Browser {
                                 send_crud_result(
                                     &tx,
                                     TaskService::delete(&ctx, id).await.map(|_| ()),
-                                );
-                            }
-                            FormSubmitAction::CreateTask(fields) => {
-                                let req = fields.to_create_request();
-                                send_crud_result(
-                                    &tx,
-                                    TaskService::create(&ctx, req).await.map(|_| ()),
                                 );
                             }
                             FormSubmitAction::UpdateTask(id, fields) => {
@@ -596,15 +582,6 @@ impl Browser {
                                     TestcaseService::delete(&ctx, id).await.map(|_| ()),
                                 );
                             }
-                            FormSubmitAction::CreateTestcase(fields) => {
-                                let req = fields.to_create_request();
-                                send_crud_result(
-                                    &tx,
-                                    TestcaseService::create(&ctx, config.product_id, req)
-                                        .await
-                                        .map(|_| ()),
-                                );
-                            }
                             FormSubmitAction::UpdateTestcase(id, fields) => {
                                 send_crud_result(
                                     &tx,
@@ -617,15 +594,6 @@ impl Browser {
                                 send_crud_result(
                                     &tx,
                                     BuildService::delete(&ctx, id).await.map(|_| ()),
-                                );
-                            }
-                            FormSubmitAction::CreateBuild(fields) => {
-                                let req = fields.to_create_request();
-                                send_crud_result(
-                                    &tx,
-                                    BuildService::create(&ctx, config.project_id, req)
-                                        .await
-                                        .map(|_| ()),
                                 );
                             }
                             FormSubmitAction::UpdateBuild(id, fields) => {
@@ -642,13 +610,6 @@ impl Browser {
                                     ProjectService::delete(&ctx, id).await.map(|_| ()),
                                 );
                             }
-                            FormSubmitAction::CreateProject(fields) => {
-                                let req = fields.to_create_request();
-                                send_crud_result(
-                                    &tx,
-                                    ProjectService::create(&ctx, req).await.map(|_| ()),
-                                );
-                            }
                             FormSubmitAction::UpdateProject(id, fields) => {
                                 send_crud_result(
                                     &tx,
@@ -663,15 +624,6 @@ impl Browser {
                                     ExecutionService::delete(&ctx, id).await.map(|_| ()),
                                 );
                             }
-                            FormSubmitAction::CreateExecution(fields) => {
-                                let req = fields.to_create_request();
-                                send_crud_result(
-                                    &tx,
-                                    ExecutionService::create(&ctx, config.project_id, req)
-                                        .await
-                                        .map(|_| ()),
-                                );
-                            }
                             FormSubmitAction::UpdateExecution(id, fields) => {
                                 send_crud_result(
                                     &tx,
@@ -684,13 +636,6 @@ impl Browser {
                                 send_crud_result(
                                     &tx,
                                     UserService::delete(&ctx, id).await.map(|_| ()),
-                                );
-                            }
-                            FormSubmitAction::CreateUser(fields) => {
-                                let req = fields.to_create_request();
-                                send_crud_result(
-                                    &tx,
-                                    UserService::create(&ctx, &req).await.map(|_| ()),
                                 );
                             }
                             FormSubmitAction::UpdateUser(id, fields) => {
@@ -1021,19 +966,12 @@ impl Browser {
                             render_delete_dialog(f, area, app);
                         }
                         // 其余 7 个资源的表单/删除弹窗，统一走通用渲染
-                        AppState::StoryCreate { .. }
-                        | AppState::StoryUpdate { .. }
-                        | AppState::TaskCreate { .. }
+                        AppState::StoryUpdate { .. }
                         | AppState::TaskUpdate { .. }
-                        | AppState::TestcaseCreate { .. }
                         | AppState::TestcaseUpdate { .. }
-                        | AppState::BuildCreate { .. }
                         | AppState::BuildUpdate { .. }
-                        | AppState::ProjectCreate { .. }
                         | AppState::ProjectUpdate { .. }
-                        | AppState::ExecutionCreate { .. }
                         | AppState::ExecutionUpdate { .. }
-                        | AppState::UserCreate { .. }
                         | AppState::UserUpdate { .. } => {
                             Self::render_crud_form(f, area, app);
                         }
@@ -1869,40 +1807,16 @@ impl Browser {
                         return;
                     }
                 }
-                AppState::StoryList { .. } => {
-                    let pid = app.config.product_id;
-                    if let Some(pid) = pid {
-                        app.set_story_create(pid);
-                        return;
-                    }
-                }
-                AppState::TaskList { .. } => {
-                    app.set_task_create(None, app.config.project_id);
-                    return;
-                }
-                AppState::TestcaseList { .. } => {
-                    let pid = app.config.product_id;
-                    if let Some(pid) = pid {
-                        app.set_testcase_create(pid);
-                        return;
-                    }
-                }
-                AppState::BuildList { .. } => {
-                    if let (Some(pid), Some(eid)) = (app.config.product_id, app.config.project_id) {
-                        app.set_build_create(pid, eid);
-                        return;
-                    }
-                }
-                AppState::ProjectList { .. } => {
-                    app.set_project_create();
-                    return;
-                }
-                AppState::ExecutionList { .. } => {
-                    app.set_execution_create(app.config.project_id);
-                    return;
-                }
-                AppState::UserList { .. } => {
-                    app.set_user_create();
+                // 这 7 类资源创建需要项目/执行/模块等关联 ID（多级联动），
+                // TUI 手填 ID 易错且体验差，统一引导用 CLI（参数可脚本化、可补全）
+                AppState::StoryList { .. }
+                | AppState::TaskList { .. }
+                | AppState::TestcaseList { .. }
+                | AppState::BuildList { .. }
+                | AppState::ProjectList { .. }
+                | AppState::ExecutionList { .. }
+                | AppState::UserList { .. } => {
+                    app.set_error(create_hint(&app.state));
                     return;
                 }
                 _ => {}
@@ -2208,12 +2122,6 @@ impl Browser {
                     AppState::ReleaseUpdate { .. } => Some(EnterAction::UpdateRelease),
                     AppState::ReleaseDelete { id, .. } => Some(EnterAction::DeleteRelease(*id)),
                     // 其余 7 个资源：表单校验通过后统一走 Crud
-                    AppState::StoryCreate { fields, .. } => fields.validate().map_or(
-                        Some(EnterAction::Crud(FormSubmitAction::CreateStory(
-                            fields.clone(),
-                        ))),
-                        |m| Some(EnterAction::CrudValidateError(m)),
-                    ),
                     AppState::StoryUpdate { id, fields, .. } => fields.validate().map_or(
                         Some(EnterAction::Crud(FormSubmitAction::UpdateStory(
                             *id,
@@ -2224,12 +2132,6 @@ impl Browser {
                     AppState::StoryDelete { id, .. } => {
                         Some(EnterAction::Crud(FormSubmitAction::DeleteStory(*id)))
                     }
-                    AppState::TaskCreate { fields, .. } => fields.validate().map_or(
-                        Some(EnterAction::Crud(FormSubmitAction::CreateTask(
-                            fields.clone(),
-                        ))),
-                        |m| Some(EnterAction::CrudValidateError(m)),
-                    ),
                     AppState::TaskUpdate { id, fields, .. } => fields.validate().map_or(
                         Some(EnterAction::Crud(FormSubmitAction::UpdateTask(
                             *id,
@@ -2240,12 +2142,6 @@ impl Browser {
                     AppState::TaskDelete { id, .. } => {
                         Some(EnterAction::Crud(FormSubmitAction::DeleteTask(*id)))
                     }
-                    AppState::TestcaseCreate { fields, .. } => fields.validate().map_or(
-                        Some(EnterAction::Crud(FormSubmitAction::CreateTestcase(
-                            fields.clone(),
-                        ))),
-                        |m| Some(EnterAction::CrudValidateError(m)),
-                    ),
                     AppState::TestcaseUpdate { id, fields, .. } => fields.validate().map_or(
                         Some(EnterAction::Crud(FormSubmitAction::UpdateTestcase(
                             *id,
@@ -2256,12 +2152,6 @@ impl Browser {
                     AppState::TestcaseDelete { id, .. } => {
                         Some(EnterAction::Crud(FormSubmitAction::DeleteTestcase(*id)))
                     }
-                    AppState::BuildCreate { fields, .. } => fields.validate().map_or(
-                        Some(EnterAction::Crud(FormSubmitAction::CreateBuild(
-                            fields.clone(),
-                        ))),
-                        |m| Some(EnterAction::CrudValidateError(m)),
-                    ),
                     AppState::BuildUpdate { id, fields, .. } => fields.validate().map_or(
                         Some(EnterAction::Crud(FormSubmitAction::UpdateBuild(
                             *id,
@@ -2272,12 +2162,6 @@ impl Browser {
                     AppState::BuildDelete { id, .. } => {
                         Some(EnterAction::Crud(FormSubmitAction::DeleteBuild(*id)))
                     }
-                    AppState::ProjectCreate { fields, .. } => fields.validate().map_or(
-                        Some(EnterAction::Crud(FormSubmitAction::CreateProject(
-                            fields.clone(),
-                        ))),
-                        |m| Some(EnterAction::CrudValidateError(m)),
-                    ),
                     AppState::ProjectUpdate { id, fields, .. } => fields.validate().map_or(
                         Some(EnterAction::Crud(FormSubmitAction::UpdateProject(
                             *id,
@@ -2288,12 +2172,6 @@ impl Browser {
                     AppState::ProjectDelete { id, .. } => {
                         Some(EnterAction::Crud(FormSubmitAction::DeleteProject(*id)))
                     }
-                    AppState::ExecutionCreate { fields, .. } => fields.validate().map_or(
-                        Some(EnterAction::Crud(FormSubmitAction::CreateExecution(
-                            fields.clone(),
-                        ))),
-                        |m| Some(EnterAction::CrudValidateError(m)),
-                    ),
                     AppState::ExecutionUpdate { id, fields, .. } => fields.validate().map_or(
                         Some(EnterAction::Crud(FormSubmitAction::UpdateExecution(
                             *id,
@@ -2304,12 +2182,6 @@ impl Browser {
                     AppState::ExecutionDelete { id, .. } => {
                         Some(EnterAction::Crud(FormSubmitAction::DeleteExecution(*id)))
                     }
-                    AppState::UserCreate { fields, .. } => fields.validate().map_or(
-                        Some(EnterAction::Crud(FormSubmitAction::CreateUser(
-                            fields.clone(),
-                        ))),
-                        |m| Some(EnterAction::CrudValidateError(m)),
-                    ),
                     AppState::UserUpdate { id, fields, .. } => fields.validate().map_or(
                         Some(EnterAction::Crud(FormSubmitAction::UpdateUser(
                             *id,
@@ -2724,25 +2596,18 @@ impl Browser {
                 AppState::BugDelete { .. } => {
                     app.restore_list();
                 }
-                AppState::StoryCreate { .. }
-                | AppState::StoryUpdate { .. }
+                AppState::StoryUpdate { .. }
                 | AppState::StoryDelete { .. }
-                | AppState::TaskCreate { .. }
                 | AppState::TaskUpdate { .. }
                 | AppState::TaskDelete { .. }
-                | AppState::TestcaseCreate { .. }
                 | AppState::TestcaseUpdate { .. }
                 | AppState::TestcaseDelete { .. }
-                | AppState::BuildCreate { .. }
                 | AppState::BuildUpdate { .. }
                 | AppState::BuildDelete { .. }
-                | AppState::ProjectCreate { .. }
                 | AppState::ProjectUpdate { .. }
                 | AppState::ProjectDelete { .. }
-                | AppState::ExecutionCreate { .. }
                 | AppState::ExecutionUpdate { .. }
                 | AppState::ExecutionDelete { .. }
-                | AppState::UserCreate { .. }
                 | AppState::UserUpdate { .. }
                 | AppState::UserDelete { .. } => {
                     app.restore_list();
@@ -3337,44 +3202,23 @@ impl Browser {
         use crate::tui::forms::FormFields as _;
         let (title, fields, selected): (&str, Vec<&crate::tui::forms::FormField>, usize) =
             match &app.state {
-                AppState::StoryCreate { fields, .. } => {
-                    ("创建需求", fields.get_fields(), app.selected_index)
-                }
                 AppState::StoryUpdate { fields, .. } => {
                     ("编辑需求", fields.get_fields(), app.selected_index)
-                }
-                AppState::TaskCreate { fields, .. } => {
-                    ("创建任务", fields.get_fields(), app.selected_index)
                 }
                 AppState::TaskUpdate { fields, .. } => {
                     ("编辑任务", fields.get_fields(), app.selected_index)
                 }
-                AppState::TestcaseCreate { fields, .. } => {
-                    ("创建用例", fields.get_fields(), app.selected_index)
-                }
                 AppState::TestcaseUpdate { fields, .. } => {
                     ("编辑用例", fields.get_fields(), app.selected_index)
-                }
-                AppState::BuildCreate { fields, .. } => {
-                    ("创建版本", fields.get_fields(), app.selected_index)
                 }
                 AppState::BuildUpdate { fields, .. } => {
                     ("编辑版本", fields.get_fields(), app.selected_index)
                 }
-                AppState::ProjectCreate { fields, .. } => {
-                    ("创建项目", fields.get_fields(), app.selected_index)
-                }
                 AppState::ProjectUpdate { fields, .. } => {
                     ("编辑项目", fields.get_fields(), app.selected_index)
                 }
-                AppState::ExecutionCreate { fields, .. } => {
-                    ("创建执行", fields.get_fields(), app.selected_index)
-                }
                 AppState::ExecutionUpdate { fields, .. } => {
                     ("编辑执行", fields.get_fields(), app.selected_index)
-                }
-                AppState::UserCreate { fields, .. } => {
-                    ("创建用户", fields.get_fields(), app.selected_index)
                 }
                 AppState::UserUpdate { fields, .. } => {
                     ("编辑用户", fields.get_fields(), app.selected_index)

@@ -2,7 +2,7 @@
 //!
 //! 简化版：steps 只编辑单步（desc + expect），多步请走 API 直传
 
-use crate::api::testcase::{CreateTestcaseRequest, TestcaseStep, UpdateTestcaseRequest};
+use crate::api::testcase::{TestcaseStep, UpdateTestcaseRequest};
 use crate::tui::forms::{FormField, FormFields};
 
 /// 测试用例表单字段
@@ -21,31 +21,6 @@ pub struct TestcaseFormFields {
 }
 
 impl TestcaseFormFields {
-    pub fn new(product_id: u64) -> Self {
-        Self {
-            product: FormField::readonly("产品 (Product)", &product_id.to_string()),
-            module: FormField::readonly("模块 (Module)", ""),
-            title: FormField::new("标题 (Title)", "", "请输入用例标题", true),
-            type_: FormField::new(
-                "类型 (Type)",
-                "feature",
-                "feature/performance/config/install/security/interface/unit/other",
-                true,
-            ),
-            stage: FormField::new(
-                "阶段 (Stage)",
-                "",
-                "unitest/feature/intergrate/system/smoke/bvt",
-                false,
-            ),
-            precondition: FormField::new("前置条件 (Precondition)", "", "前置条件", false),
-            pri: FormField::new("优先级 (Pri)", "3", "0-5", false),
-            steps_desc: FormField::new("步骤 (Steps)", "", "操作步骤", true),
-            steps_expect: FormField::new("期望结果 (Expect)", "", "期望结果", false),
-            keywords: FormField::new("关键词 (Keywords)", "", "多个用逗号分隔", false),
-        }
-    }
-
     pub fn from_testcase(tc: &crate::api::Testcase) -> Self {
         let step = tc.steps.first();
         Self {
@@ -77,25 +52,6 @@ impl TestcaseFormFields {
             return Some("标题不能为空".to_string());
         }
         None
-    }
-
-    pub fn to_create_request(&self) -> CreateTestcaseRequest {
-        CreateTestcaseRequest {
-            product: self.product.value.parse().unwrap_or_default(),
-            title: self.title.value.clone(),
-            type_: self.type_.value.clone(),
-            branch: None,
-            module: self.module.value.parse().ok(),
-            story: None,
-            stage: opt(&self.stage.value),
-            precondition: opt(&self.precondition.value),
-            pri: self.pri.value.parse().ok(),
-            steps: vec![TestcaseStep {
-                desc: self.steps_desc.value.clone(),
-                expect: self.steps_expect.value.clone(),
-            }],
-            keywords: opt(&self.keywords.value),
-        }
     }
 
     pub fn to_update_request(&self) -> UpdateTestcaseRequest {
@@ -161,21 +117,22 @@ impl FormFields for TestcaseFormFields {
 mod tests {
     use super::*;
 
-    #[test]
-    fn testcase_form_rejects_empty_title() {
-        let f = TestcaseFormFields::new(1);
-        assert!(f.validate().is_some(), "标题为空应拦截");
+    fn sample() -> crate::api::Testcase {
+        serde_json::from_str(r#"{"id":1,"product":7,"branch":0,"module":0,"story":0,"storyVersion":1,"title":"登录用例","precondition":"","pri":2,"type":"feature","stage":"","status":"normal","steps":[],"openedDate":"2026-01-01","version":1}"#).expect("样例 JSON 应能解析")
     }
 
+    /// 编辑态必须能从已有实体回填关键字段
     #[test]
-    fn testcase_form_create_has_single_step() {
-        let mut f = TestcaseFormFields::new(7);
-        f.title.value = "登录用例".into();
-        f.steps_desc.value = "输入账号密码".into();
-        let req = f.to_create_request();
-        assert_eq!(req.product, 7);
-        assert_eq!(req.steps.len(), 1);
-        assert_eq!(req.steps[0].desc, "输入账号密码");
-        assert_eq!(req.type_, "feature");
+    fn from_testcase_fills_key_field() {
+        let f = TestcaseFormFields::from_testcase(&sample());
+        assert_eq!(f.title.value, sample().title);
+    }
+
+    /// 名称/标题清空后必须拦住提交
+    #[test]
+    fn rejects_empty_title() {
+        let mut f = TestcaseFormFields::from_testcase(&sample());
+        f.title.value.clear();
+        assert!(f.validate().is_some(), "空 title 应拦截");
     }
 }

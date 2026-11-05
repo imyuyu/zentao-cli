@@ -1,6 +1,6 @@
 //! 用户表单字段
 
-use crate::api::user::{CreateUserRequest, UpdateUserRequest};
+use crate::api::user::UpdateUserRequest;
 use crate::tui::forms::{FormField, FormFields};
 
 /// 用户表单字段
@@ -19,19 +19,6 @@ pub struct UserFormFields {
 }
 
 impl UserFormFields {
-    pub fn new() -> Self {
-        Self {
-            account: FormField::new("账号 (Account)", "", "登录账号", true),
-            password: FormField::new("密码 (Password)", "", "登录密码", true),
-            realname: FormField::new("姓名 (Realname)", "", "真实姓名", true),
-            role: FormField::new("角色 (Role)", "", "角色标识，如 dev", false),
-            dept: FormField::new("部门 (Dept)", "", "部门 ID", false),
-            email: FormField::new("邮箱 (Email)", "", "user@example.com", false),
-            mobile: FormField::new("手机 (Mobile)", "", "手机号", false),
-            phone: FormField::new("电话 (Phone)", "", "座机/分机", false),
-        }
-    }
-
     /// 从已有用户填充（编辑场景，账号不可改）
     pub fn from_user(u: &crate::api::User) -> Self {
         Self {
@@ -64,19 +51,6 @@ impl UserFormFields {
         None
     }
 
-    pub fn to_create_request(&self) -> CreateUserRequest {
-        CreateUserRequest {
-            account: self.account.value.clone(),
-            password: self.password.value.clone(),
-            realname: self.realname.value.clone(),
-            role: opt(&self.role.value),
-            dept: self.dept.value.parse().ok(),
-            mobile: opt(&self.mobile.value),
-            email: opt(&self.email.value),
-            phone: opt(&self.phone.value),
-        }
-    }
-
     pub fn to_update_request(&self) -> UpdateUserRequest {
         UpdateUserRequest {
             dept: self.dept.value.parse().ok(),
@@ -86,12 +60,6 @@ impl UserFormFields {
             email: opt(&self.email.value),
             phone: opt(&self.phone.value),
         }
-    }
-}
-
-impl Default for UserFormFields {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -135,40 +103,23 @@ impl FormFields for UserFormFields {
 mod tests {
     use super::*;
 
-    #[test]
-    fn user_form_rejects_missing_required_fields() {
-        let mut f = UserFormFields::new();
-        assert!(f.validate().is_some(), "账号为空应拦截");
-
-        f.account.value = "zhangsan".into();
-        assert!(f.validate().is_some(), "密码为空应拦截");
-
-        f.password.value = "123456".into();
-        assert!(f.validate().is_some(), "姓名为空应拦截");
-
-        f.realname.value = "张三".into();
-        assert!(f.validate().is_none(), "必填齐全应放行");
+    fn sample() -> crate::api::User {
+        serde_json::from_str(r#"{"id":1,"account":"admin","realname":"管理员","role":"dev"}"#)
+            .expect("样例 JSON 应能解析")
     }
 
+    /// 编辑态必须能从已有实体回填关键字段
     #[test]
-    fn user_form_empty_strings_become_none() {
-        let mut f = UserFormFields::new();
-        f.account.value = "zhangsan".into();
-        f.password.value = "123456".into();
-        f.realname.value = "张三".into();
+    fn from_user_fills_key_field() {
+        let f = UserFormFields::from_user(&sample());
+        assert_eq!(f.realname.value, sample().realname);
+    }
 
-        let req = f.to_create_request();
-        assert_eq!(req.role, None);
-        assert_eq!(req.dept, None);
-        assert_eq!(req.email, None);
-        assert_eq!(req.mobile, None);
-        assert_eq!(req.phone, None);
-
-        f.dept.value = "42".into();
-        f.email.value = "a@b.com".into();
-        let req = f.to_update_request();
-        assert_eq!(req.dept, Some(42));
-        assert_eq!(req.email, Some("a@b.com".to_string()));
-        assert_eq!(req.mobile, None);
+    /// 名称/标题清空后必须拦住提交
+    #[test]
+    fn rejects_empty_name() {
+        let mut f = UserFormFields::from_user(&sample());
+        f.realname.value.clear();
+        assert!(f.validate().is_some(), "空 name 应拦截");
     }
 }

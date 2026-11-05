@@ -1,6 +1,6 @@
 //! Project（项目）表单字段
 
-use crate::api::project::{CreateProjectRequest, UpdateProjectRequest};
+use crate::api::project::UpdateProjectRequest;
 
 use super::forms::{FormField, FormFields};
 
@@ -33,35 +33,21 @@ fn opt(value: &str) -> Option<String> {
 }
 
 impl ProjectFormFields {
-    pub fn new() -> Self {
-        Self {
-            name: FormField::new("名称 (Name)", "", "请输入项目名称", true),
-            code: FormField::new("代号 (Code)", "", "请输入项目代号", true),
-            status: FormField::new(
-                "状态 (Status)",
-                "wait",
-                "wait / doing / closed / suspend",
-                false,
-            ),
-            desc: FormField::new("描述 (Desc)", "", "请输入描述", false),
-            PM: FormField::new("项目经理 (PM)", "", "请输入 PM 账号", false),
-            budget: FormField::new("预算 (Budget)", "", "数字", false),
-            budgetUnit: FormField::new("币种 (BudgetUnit)", "CNY", "CNY / USD", false),
-            days: FormField::new("工作日 (Days)", "", "数字", false),
-            begin: FormField::new("开始日期 (Begin)", "", "YYYY-MM-DD", true),
-            end: FormField::new("结束日期 (End)", "", "YYYY-MM-DD", true),
-            products: FormField::new("关联产品 (Products)", "", "产品 ID，逗号分隔，如 1,2", true),
-        }
-    }
-
     pub fn from_project(p: &crate::api::Project) -> Self {
-        let mut f = Self::new();
-        f.name.value = p.name.clone();
-        f.code.value = p.code.clone();
-        f.status.value = p.status.clone();
-        f.desc.value = p.desc.clone().unwrap_or_default();
-        // Project 无 PM/预算/日期/关联产品字段，保持为空
-        f
+        Self {
+            name: FormField::new("名称 (Name)", &p.name, "", true),
+            code: FormField::new("代号 (Code)", &p.code, "", true),
+            status: FormField::new("状态 (Status)", &p.status, "", false),
+            desc: FormField::new("描述 (Desc)", p.desc.as_deref().unwrap_or(""), "", false),
+            // Project 无 PM/预算/日期/关联产品字段，编辑时保持为空
+            PM: FormField::new("项目经理 (PM)", "", "", false),
+            budget: FormField::new("预算 (Budget)", "", "", false),
+            budgetUnit: FormField::new("币种 (BudgetUnit)", "CNY", "", false),
+            days: FormField::new("工作日 (Days)", "", "", false),
+            begin: FormField::new("开始日期 (Begin)", "", "", false),
+            end: FormField::new("结束日期 (End)", "", "", false),
+            products: FormField::new("关联产品 (Products)", "", "", false),
+        }
     }
 
     pub fn validate(&self) -> Option<String> {
@@ -81,24 +67,6 @@ impl ProjectFormFields {
             return Some("关联产品不能为空（至少一个产品 ID）".to_string());
         }
         None
-    }
-
-    pub fn to_create_request(&self) -> CreateProjectRequest {
-        CreateProjectRequest {
-            name: self.name.value.clone(),
-            code: self.code.value.clone(),
-            begin: self.begin.value.clone(),
-            end: self.end.value.clone(),
-            products: self
-                .products
-                .value
-                .split(',')
-                .filter_map(|s| s.trim().parse().ok())
-                .collect(),
-            model: None,
-            parent: None,
-            desc: opt(&self.desc.value),
-        }
     }
 
     pub fn to_update_request(&self) -> UpdateProjectRequest {
@@ -155,30 +123,23 @@ impl FormFields for ProjectFormFields {
 mod tests {
     use super::*;
 
-    #[test]
-    fn project_form_rejects_empty_name() {
-        let f = ProjectFormFields::new();
-        assert!(f.validate().is_some(), "名称为空应拦截");
+    fn sample() -> crate::api::Project {
+        serde_json::from_str(r#"{"id":1,"name":"智小途","code":"tuzai","status":"doing"}"#)
+            .expect("样例 JSON 应能解析")
     }
 
+    /// 编辑态必须能从已有实体回填关键字段
     #[test]
-    fn project_form_empty_fields_become_none() {
-        let f = ProjectFormFields::new();
-        let req = f.to_update_request();
-        assert!(req.name.is_none());
-        assert!(req.desc.is_none());
-        assert!(req.PM.is_none());
-        assert!(req.budget.is_none());
-        assert!(req.days.is_none());
-        // status / budgetUnit 默认值非空
-        assert_eq!(req.status.as_deref(), Some("wait"));
-        assert_eq!(req.budgetUnit.as_deref(), Some("CNY"));
+    fn from_project_fills_key_field() {
+        let f = ProjectFormFields::from_project(&sample());
+        assert_eq!(f.name.value, sample().name);
     }
 
+    /// 名称/标题清空后必须拦住提交
     #[test]
-    fn project_create_request_parses_products() {
-        let mut f = ProjectFormFields::new();
-        f.products.value = " 1, 2 ,x".into();
-        assert_eq!(f.to_create_request().products, vec![1, 2]);
+    fn rejects_empty_name() {
+        let mut f = ProjectFormFields::from_project(&sample());
+        f.name.value.clear();
+        assert!(f.validate().is_some(), "空 name 应拦截");
     }
 }

@@ -194,10 +194,6 @@ pub enum AppState {
         name: String,
     },
     // 其余 7 个资源的 CRUD 表单
-    StoryCreate {
-        fields: crate::tui::forms_story::StoryFormFields,
-        error: Option<String>,
-    },
     StoryUpdate {
         id: u64,
         fields: crate::tui::forms_story::StoryFormFields,
@@ -207,10 +203,6 @@ pub enum AppState {
         id: u64,
         name: String,
         confirm: bool,
-    },
-    TaskCreate {
-        fields: crate::tui::forms_task::TaskFormFields,
-        error: Option<String>,
     },
     TaskUpdate {
         id: u64,
@@ -222,10 +214,6 @@ pub enum AppState {
         name: String,
         confirm: bool,
     },
-    TestcaseCreate {
-        fields: crate::tui::forms_testcase::TestcaseFormFields,
-        error: Option<String>,
-    },
     TestcaseUpdate {
         id: u64,
         fields: crate::tui::forms_testcase::TestcaseFormFields,
@@ -235,10 +223,6 @@ pub enum AppState {
         id: u64,
         name: String,
         confirm: bool,
-    },
-    BuildCreate {
-        fields: crate::tui::forms_build::BuildFormFields,
-        error: Option<String>,
     },
     BuildUpdate {
         id: u64,
@@ -250,10 +234,6 @@ pub enum AppState {
         name: String,
         confirm: bool,
     },
-    ProjectCreate {
-        fields: crate::tui::forms_project::ProjectFormFields,
-        error: Option<String>,
-    },
     ProjectUpdate {
         id: u64,
         fields: crate::tui::forms_project::ProjectFormFields,
@@ -264,10 +244,6 @@ pub enum AppState {
         name: String,
         confirm: bool,
     },
-    ExecutionCreate {
-        fields: crate::tui::forms_execution::ExecutionFormFields,
-        error: Option<String>,
-    },
     ExecutionUpdate {
         id: u64,
         fields: crate::tui::forms_execution::ExecutionFormFields,
@@ -277,10 +253,6 @@ pub enum AppState {
         id: u64,
         name: String,
         confirm: bool,
-    },
-    UserCreate {
-        fields: crate::tui::forms_user::UserFormFields,
-        error: Option<String>,
     },
     UserUpdate {
         id: u64,
@@ -791,27 +763,13 @@ impl App {
             AppState::ReleaseCreate { fields, .. } | AppState::ReleaseUpdate { fields, .. } => {
                 Some(fields.get_mut_fields())
             }
-            AppState::StoryCreate { fields, .. } | AppState::StoryUpdate { fields, .. } => {
-                Some(fields.get_mut_fields())
-            }
-            AppState::TaskCreate { fields, .. } | AppState::TaskUpdate { fields, .. } => {
-                Some(fields.get_mut_fields())
-            }
-            AppState::TestcaseCreate { fields, .. } | AppState::TestcaseUpdate { fields, .. } => {
-                Some(fields.get_mut_fields())
-            }
-            AppState::BuildCreate { fields, .. } | AppState::BuildUpdate { fields, .. } => {
-                Some(fields.get_mut_fields())
-            }
-            AppState::ProjectCreate { fields, .. } | AppState::ProjectUpdate { fields, .. } => {
-                Some(fields.get_mut_fields())
-            }
-            AppState::ExecutionCreate { fields, .. } | AppState::ExecutionUpdate { fields, .. } => {
-                Some(fields.get_mut_fields())
-            }
-            AppState::UserCreate { fields, .. } | AppState::UserUpdate { fields, .. } => {
-                Some(fields.get_mut_fields())
-            }
+            AppState::StoryUpdate { fields, .. } => Some(fields.get_mut_fields()),
+            AppState::TaskUpdate { fields, .. } => Some(fields.get_mut_fields()),
+            AppState::TestcaseUpdate { fields, .. } => Some(fields.get_mut_fields()),
+            AppState::BuildUpdate { fields, .. } => Some(fields.get_mut_fields()),
+            AppState::ProjectUpdate { fields, .. } => Some(fields.get_mut_fields()),
+            AppState::ExecutionUpdate { fields, .. } => Some(fields.get_mut_fields()),
+            AppState::UserUpdate { fields, .. } => Some(fields.get_mut_fields()),
             _ => None,
         }
     }
@@ -900,14 +858,7 @@ impl App {
         self.state = AppState::Quit;
     }
 
-    // ---- 其余 7 个资源的 CRUD setter ----
-    pub fn set_story_create(&mut self, product_id: u64) {
-        self.state = AppState::StoryCreate {
-            fields: crate::tui::forms_story::StoryFormFields::new(product_id),
-            error: None,
-        };
-        self.selected_index = 0;
-    }
+    // ---- 其余 7 个资源的编辑/删除 setter（创建走 CLI，TUI 不做）----
     pub fn set_story_update(&mut self, story: &Story) {
         self.state = AppState::StoryUpdate {
             id: story.id,
@@ -924,13 +875,6 @@ impl App {
         };
     }
 
-    pub fn set_task_create(&mut self, execution_id: Option<u64>, project_id: Option<u64>) {
-        self.state = AppState::TaskCreate {
-            fields: crate::tui::forms_task::TaskFormFields::new(execution_id, project_id),
-            error: None,
-        };
-        self.selected_index = 0;
-    }
     pub fn set_task_update(&mut self, task: &Task) {
         self.state = AppState::TaskUpdate {
             id: task.id,
@@ -947,13 +891,6 @@ impl App {
         };
     }
 
-    pub fn set_testcase_create(&mut self, product_id: u64) {
-        self.state = AppState::TestcaseCreate {
-            fields: crate::tui::forms_testcase::TestcaseFormFields::new(product_id),
-            error: None,
-        };
-        self.selected_index = 0;
-    }
     pub fn set_testcase_update(&mut self, tc: &Testcase) {
         self.state = AppState::TestcaseUpdate {
             id: tc.id,
@@ -970,13 +907,6 @@ impl App {
         };
     }
 
-    pub fn set_build_create(&mut self, product_id: u64, execution_id: u64) {
-        self.state = AppState::BuildCreate {
-            fields: crate::tui::forms_build::BuildFormFields::new(product_id, execution_id),
-            error: None,
-        };
-        self.selected_index = 0;
-    }
     pub fn set_build_update(&mut self, build: &crate::api::Build) {
         self.state = AppState::BuildUpdate {
             id: build.id,
@@ -993,13 +923,6 @@ impl App {
         };
     }
 
-    pub fn set_project_create(&mut self) {
-        self.state = AppState::ProjectCreate {
-            fields: crate::tui::forms_project::ProjectFormFields::new(),
-            error: None,
-        };
-        self.selected_index = 0;
-    }
     pub fn set_project_update(&mut self, p: &Project) {
         self.state = AppState::ProjectUpdate {
             id: p.id,
@@ -1016,13 +939,6 @@ impl App {
         };
     }
 
-    pub fn set_execution_create(&mut self, project_id: Option<u64>) {
-        self.state = AppState::ExecutionCreate {
-            fields: crate::tui::forms_execution::ExecutionFormFields::new(project_id),
-            error: None,
-        };
-        self.selected_index = 0;
-    }
     pub fn set_execution_update(&mut self, e: &crate::api::Execution) {
         self.state = AppState::ExecutionUpdate {
             id: e.id,
@@ -1039,13 +955,6 @@ impl App {
         };
     }
 
-    pub fn set_user_create(&mut self) {
-        self.state = AppState::UserCreate {
-            fields: crate::tui::forms_user::UserFormFields::new(),
-            error: None,
-        };
-        self.selected_index = 0;
-    }
     pub fn set_user_update(&mut self, u: &User) {
         self.state = AppState::UserUpdate {
             id: u.id,

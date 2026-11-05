@@ -1,7 +1,7 @@
 //! Task 表单字段
 
 use super::forms::{FormField, FormFields};
-use crate::api::{CreateTaskRequest, Task, UpdateTaskRequest};
+use crate::api::{Task, UpdateTaskRequest};
 
 /// Task 表单字段
 ///
@@ -21,32 +21,6 @@ pub struct TaskFormFields {
 }
 
 impl TaskFormFields {
-    pub fn new(execution_id: Option<u64>, project_id: Option<u64>) -> Self {
-        Self {
-            name: FormField::new("名称 (Name)", "", "请输入任务名称", true),
-            assigned_to: FormField::new("指派给 (Assigned To)", "", "账号", true),
-            type_: FormField::new(
-                "类型 (Type)",
-                "development",
-                "development/design/test/study/discuss/ui/other",
-                true,
-            ),
-            est_started: FormField::new("预计开始 (EstStarted)", "", "YYYY-MM-DD", true),
-            deadline: FormField::new("预计结束 (Deadline)", "", "YYYY-MM-DD", true),
-            desc: FormField::new("描述 (Desc)", "", "请输入任务描述", false),
-            pri: FormField::new("优先级 (Pri)", "3", "1-5", false),
-            module: FormField::new("模块 (Module)", "", "模块 ID", false),
-            execution: FormField::readonly(
-                "执行 (Execution)",
-                &execution_id.map(|v| v.to_string()).unwrap_or_default(),
-            ),
-            project: FormField::readonly(
-                "项目 (Project)",
-                &project_id.map(|v| v.to_string()).unwrap_or_default(),
-            ),
-        }
-    }
-
     /// 编辑用。Task 没有 type/日期/desc/module，留空或取默认值
     pub fn from_task(task: &Task) -> Self {
         Self {
@@ -82,29 +56,6 @@ impl TaskFormFields {
             return Some("预计结束日期不能为空".to_string());
         }
         None
-    }
-
-    pub fn to_create_request(&self) -> CreateTaskRequest {
-        CreateTaskRequest {
-            name: self.name.value.clone(),
-            // 禅道创建要求数组，传字符串会 200 但不落库
-            assigned_to: vec![self.assigned_to.value.clone()],
-            type_: self.type_.value.clone(),
-            est_started: self.est_started.value.clone(),
-            deadline: self.deadline.value.clone(),
-            project: self.project.value.parse().ok(),
-            execution: self.execution.value.parse().ok(),
-            desc: if self.desc.value.is_empty() {
-                None
-            } else {
-                Some(self.desc.value.clone())
-            },
-            pri: self.pri.value.parse().ok(),
-            module: self.module.value.parse().ok(),
-            story: None,
-            from_bug: None,
-            estimate: None,
-        }
     }
 
     pub fn to_update_request(&self) -> UpdateTaskRequest {
@@ -168,29 +119,23 @@ impl FormFields for TaskFormFields {
 mod tests {
     use super::*;
 
-    fn filled() -> TaskFormFields {
-        let mut f = TaskFormFields::new(Some(1), Some(2));
-        f.name.value = "任务".into();
-        f.assigned_to.value = "admin".into();
-        f.est_started.value = "2024-01-01".into();
-        f.deadline.value = "2024-01-15".into();
-        f
+    fn sample() -> crate::api::Task {
+        serde_json::from_str(r#"{"id":1,"name":"修登录","project":3,"status":"todo","pri":2}"#)
+            .expect("样例 JSON 应能解析")
     }
 
+    /// 编辑态必须能从已有实体回填关键字段
+    #[test]
+    fn from_task_fills_key_field() {
+        let f = TaskFormFields::from_task(&sample());
+        assert_eq!(f.name.value, sample().name);
+    }
+
+    /// 名称/标题清空后必须拦住提交
     #[test]
     fn rejects_empty_name() {
-        let mut f = filled();
-        assert!(f.validate().is_none());
+        let mut f = TaskFormFields::from_task(&sample());
         f.name.value.clear();
-        assert!(f.validate().is_some());
-    }
-
-    #[test]
-    fn create_request_uses_single_element_array() {
-        let req = filled().to_create_request();
-        assert_eq!(req.assigned_to, vec!["admin".to_string()]);
-        assert_eq!(req.assigned_to.len(), 1);
-        assert_eq!(req.execution, Some(1));
-        assert_eq!(req.project, Some(2));
+        assert!(f.validate().is_some(), "空 name 应拦截");
     }
 }

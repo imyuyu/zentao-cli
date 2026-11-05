@@ -3,7 +3,7 @@
 //!
 //! 禅道创建执行时 name/project/code/begin/end 为必填
 
-use crate::api::execution::{CreateExecutionRequest, UpdateExecutionRequest};
+use crate::api::execution::UpdateExecutionRequest;
 
 use super::forms::{FormField, FormFields};
 
@@ -36,30 +36,6 @@ pub struct ExecutionFormFields {
 }
 
 impl ExecutionFormFields {
-    pub fn new(project_id: Option<u64>) -> Self {
-        Self {
-            name: FormField::new("名称 (Name)", "", "请输入执行名称", true),
-            code: FormField::new("代号 (Code)", "", "请输入执行代号", true),
-            status: FormField::new(
-                "状态 (Status)",
-                "wait",
-                "wait / doing / closed / suspended",
-                false,
-            ),
-            begin: FormField::new("开始日期 (Begin)", "", "YYYY-MM-DD", true),
-            end: FormField::new("结束日期 (End)", "", "YYYY-MM-DD", true),
-            days: FormField::new("工作日 (Days)", "", "可用工作日", false),
-            desc: FormField::new("描述 (Desc)", "", "请输入描述", false),
-            PM: FormField::new("负责人 (PM)", "", "迭代负责人", false),
-            project: FormField::new(
-                "项目 (Project)",
-                &project_id.map(|v| v.to_string()).unwrap_or_default(),
-                "项目 ID（必填）",
-                true,
-            ),
-        }
-    }
-
     pub fn from_execution(e: &crate::api::Execution) -> Self {
         Self {
             name: FormField::new("名称 (Name)", &e.name, "", true),
@@ -114,27 +90,6 @@ impl ExecutionFormFields {
         None
     }
 
-    pub fn to_create_request(&self) -> CreateExecutionRequest {
-        CreateExecutionRequest {
-            name: self.name.value.clone(),
-            project: self.project.value.trim().parse().unwrap_or_default(),
-            code: self.code.value.clone(),
-            begin: self.begin.value.clone(),
-            end: self.end.value.clone(),
-            type_: None,
-            days: parse_opt(&self.days.value),
-            lifetime: None,
-            PO: None,
-            PM: non_empty(&self.PM.value),
-            QD: None,
-            RD: None,
-            teamMembers: None,
-            desc: non_empty(&self.desc.value),
-            acl: None,
-            whitelist: None,
-        }
-    }
-
     pub fn to_update_request(&self) -> UpdateExecutionRequest {
         UpdateExecutionRequest {
             name: non_empty(&self.name.value),
@@ -184,27 +139,23 @@ impl FormFields for ExecutionFormFields {
 mod tests {
     use super::*;
 
-    #[test]
-    fn execution_form_rejects_empty_name() {
-        let mut f = ExecutionFormFields::new(Some(1));
-        f.code.value = "c1".into();
-        f.begin.value = "2024-01-01".into();
-        f.end.value = "2024-01-14".into();
-        assert!(f.validate().is_some(), "名称为空应拦截");
-
-        f.name.value = "Sprint 1".into();
-        assert!(f.validate().is_none(), "必填齐全应放行");
+    fn sample() -> crate::api::Execution {
+        serde_json::from_str(r#"{"id":1,"name":"迭代一","code":"s1","status":"doing","project":3}"#)
+            .expect("样例 JSON 应能解析")
     }
 
+    /// 编辑态必须能从已有实体回填关键字段
     #[test]
-    fn execution_form_empty_fields_become_none() {
-        let mut f = ExecutionFormFields::new(Some(1));
-        f.name.value = "Sprint 1".into();
-        f.days.value = "5".into();
-        let req = f.to_update_request();
-        assert_eq!(req.name, Some("Sprint 1".into()));
-        assert_eq!(req.days, Some(5));
-        assert!(req.desc.is_none());
-        assert!(req.PM.is_none());
+    fn from_execution_fills_key_field() {
+        let f = ExecutionFormFields::from_execution(&sample());
+        assert_eq!(f.name.value, sample().name);
+    }
+
+    /// 名称/标题清空后必须拦住提交
+    #[test]
+    fn rejects_empty_name() {
+        let mut f = ExecutionFormFields::from_execution(&sample());
+        f.name.value.clear();
+        assert!(f.validate().is_some(), "空 name 应拦截");
     }
 }
