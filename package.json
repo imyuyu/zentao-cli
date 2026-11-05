@@ -1,6 +1,6 @@
 {
   "name": "@imyuyu/zentao-cli",
-  "version": "0.0.1-beta.12",
+  "version": "0.0.1-beta.13",
   "description": "ZenTao CLI - Command line tool for ZenTao project management",
   "license": "MIT",
   "repository": {
@@ -40,11 +40,11 @@
     "README.en.md"
   ],
   "optionalDependencies": {
-    "@imyuyu/zentao-cli-linux-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.12-linux-x64",
-    "@imyuyu/zentao-cli-linux-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.12-linux-arm64",
-    "@imyuyu/zentao-cli-darwin-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.12-darwin-x64",
-    "@imyuyu/zentao-cli-darwin-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.12-darwin-arm64",
-    "@imyuyu/zentao-cli-win32-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.12-win32-x64",
-    "@imyuyu/zentao-cli-win32-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.12-win32-arm64"
+    "@imyuyu/zentao-cli-linux-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.13-linux-x64",
+    "@imyuyu/zentao-cli-linux-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.13-linux-arm64",
+    "@imyuyu/zentao-cli-darwin-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.13-darwin-x64",
+    "@imyuyu/zentao-cli-darwin-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.13-darwin-arm64",
+    "@imyuyu/zentao-cli-win32-x64": "npm:@imyuyu/zentao-cli@0.0.1-beta.13-win32-x64",
+    "@imyuyu/zentao-cli-win32-arm64": "npm:@imyuyu/zentao-cli@0.0.1-beta.13-win32-arm64"
   }
 }
