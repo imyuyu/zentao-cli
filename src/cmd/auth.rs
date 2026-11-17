@@ -82,6 +82,21 @@ pub async fn run(
                 .map(String::from)
                 .unwrap_or_else(|| config.url.clone());
 
+            // URL 未配置时在命令行直接问，不拉起 TUI —— TUI 只应由用户主动进入。
+            let (url, url_from_prompt) = if url.is_empty() {
+                print!("请输入 ZenTao 服务器地址: ");
+                std::io::stdout().flush().ok();
+                let mut input = String::new();
+                std::io::stdin().read_line(&mut input).ok();
+                let entered = crate::tui::config::normalize_zentao_url(&input);
+                if entered.is_empty() {
+                    anyhow::bail!("ZenTao 服务器地址不能为空");
+                }
+                (entered, true)
+            } else {
+                (url, false)
+            };
+
             // 如果 account 或 password 未提供，使用终端输入
             let account = if let Some(a) = account {
                 a.clone()
@@ -101,71 +116,34 @@ pub async fn run(
                 rpassword::read_password().unwrap_or_default()
             };
 
-            // URL 为空，启动完整配置向导
-            if url.is_empty() {
-                safe_println("ZenTao URL not configured. Starting interactive setup...");
-                crate::cmd::config_cmd::run(&crate::cmd::config_cmd::ConfigSubcommand::Init {
-                    global: false,
-                })
-                .await?;
-                let config = load_config()?;
-                if config.url.is_empty() {
-                    anyhow::bail!("Setup cancelled or failed. Please configure URL manually.");
+            println!("Logging in to {}", url);
+            let auth = Auth::new(&url);
+            match auth.login(&account, &password).await {
+                Ok(token) => {
+                    safe_println("✓ Login successful");
+                    // 手输的 URL 落盘，避免每次登录都要重输
+                    if url_from_prompt {
+                        update_config("url", &url, *global)?;
+                    }
+                    // 保存 account 到 config
+                    update_config("account", &account, *global)?;
+                    // 保存 password 到系统凭据库
+                    if let Err(e) = Credentials::store(&url, &account, &password) {
+                        println!("⚠ Failed to store credentials: {}", e);
+                    }
+                    update_config("token", &token, *global)?;
+                    safe_println("✓ Token saved to config");
+                    println!("  Token: {}...", &token[..token.len().min(8)]);
+                    match auth.verify_token(&token).await {
+                        Ok(true) => safe_println("✓ Token verified"),
+                        Ok(false) => safe_println("⚠ Token verification failed"),
+                        Err(e) => println!("⚠ Token verification error: {}", e),
+                    }
+                    Ok(())
                 }
-                let url = config.url;
-                println!("Logging in to {}", url);
-                let auth = Auth::new(&url);
-                match auth.login(&account, &password).await {
-                    Ok(token) => {
-                        safe_println("✓ Login successful");
-                        // 保存 account 到 config
-                        update_config("account", &account, *global)?;
-                        // 保存 password 到系统凭据库
-                        if let Err(e) = Credentials::store(&url, &account, &password) {
-                            println!("⚠ Failed to store credentials: {}", e);
-                        }
-                        update_config("token", &token, *global)?;
-                        safe_println("✓ Token saved to config");
-                        println!("  Token: {}...", &token[..token.len().min(8)]);
-                        match auth.verify_token(&token).await {
-                            Ok(true) => safe_println("✓ Token verified"),
-                            Ok(false) => safe_println("⚠ Token verification failed"),
-                            Err(e) => println!("⚠ Token verification error: {}", e),
-                        }
-                        Ok(())
-                    }
-                    Err(e) => {
-                        println!("✗ Login failed: {}", e);
-                        Err(e)
-                    }
-                }
-            } else {
-                // URL 已配置，直接登录
-                println!("Logging in to {}", url);
-                let auth = Auth::new(&url);
-                match auth.login(&account, &password).await {
-                    Ok(token) => {
-                        safe_println("✓ Login successful");
-                        // 保存 account 到 config
-                        update_config("account", &account, *global)?;
-                        // 保存 password 到系统凭据库
-                        if let Err(e) = Credentials::store(&url, &account, &password) {
-                            println!("⚠ Failed to store credentials: {}", e);
-                        }
-                        update_config("token", &token, *global)?;
-                        safe_println("✓ Token saved to config");
-                        println!("  Token: {}...", &token[..token.len().min(8)]);
-                        match auth.verify_token(&token).await {
-                            Ok(true) => safe_println("✓ Token verified"),
-                            Ok(false) => safe_println("⚠ Token verification failed"),
-                            Err(e) => println!("⚠ Token verification error: {}", e),
-                        }
-                        Ok(())
-                    }
-                    Err(e) => {
-                        println!("✗ Login failed: {}", e);
-                        Err(e)
-                    }
+                Err(e) => {
+                    println!("✗ Login failed: {}", e);
+                    Err(e)
                 }
             }
         }
